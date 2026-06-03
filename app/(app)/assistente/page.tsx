@@ -140,10 +140,14 @@ export default function AssistentePage() {
                 <Bot size={16} strokeWidth={2.5} />
               </div>
               <div className="rounded-[20px] rounded-tl-none bg-gray-50 px-4 py-3 shadow-sm">
-                <div className="flex gap-1">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-forest" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-forest [animation-delay:0.2s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-forest [animation-delay:0.4s]" />
+                <div className="flex gap-1.5 items-center h-4">
+                  {[0, 1, 2].map((i) => (
+                    <div 
+                      key={i} 
+                      className="h-1.5 w-1.5 rounded-full bg-[#1c4d2e] subtle-bounce" 
+                      style={{ animationDelay: `${i * 0.15}s` }}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
