@@ -8,18 +8,20 @@ import { FornecedoresSectionClient } from "./FornecedoresSectionClient";
 export async function FornecedoresSection({ userId }: { userId: string }) {
   const supabase = createServerClient();
 
-  // 1. Get patient's state for region filtering
+  // 1. Get patient's location for region filtering
   const { data: profile } = await supabase
     .from("profiles")
-    .select("estado")
+    .select("cidade, estado")
     .eq("id", userId)
     .single();
 
+  const cidade = profile?.cidade || null;
   const estado = profile?.estado || null;
 
   // 2. Fetch suppliers with their minimum product price in a single efficient query
   const { data: fornecedores } = await supabase
     .rpc('get_active_suppliers_with_prices', { 
+      p_cidade: cidade,
       p_estado: estado 
     });
 

@@ -22,9 +22,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function FornecedoresSectionClient({ 
   fornecedores, 
+  cidade,
   estado 
 }: { 
   fornecedores: any[], 
+  cidade: string | null,
   estado: string | null 
 }) {
   const [search, setSearch] = useState("");
@@ -57,7 +59,7 @@ export function FornecedoresSectionClient({
         <div className="space-y-1">
           <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/60">Comprar ampolas</p>
           <h2 className="text-2xl font-black text-white">Fornecedores</h2>
-          <p className="text-xs font-medium text-white/50">Entrega rápida via motoboy</p>
+          <p className="text-xs font-medium text-white/50">Entrega rápida na sua região</p>
         </div>
 
         {/* Search Bar Overlay */}
@@ -106,7 +108,7 @@ export function FornecedoresSectionClient({
               <MapPin className="mx-auto text-slate-200 mb-4" size={40} />
               <p className="text-slate-500 font-bold">Nenhum fornecedor disponível</p>
               <p className="text-xs text-slate-400 mt-1">
-                {estado ? `Na região de ${estado}` : "Ajuste seus filtros ou busca"}
+                {cidade ? `Na região de ${cidade}` : "Ajuste seus filtros ou busca"}
               </p>
             </motion.div>
           ) : (
@@ -174,7 +176,7 @@ export function FornecedoresSectionClient({
                         {TIPO_FORNECEDOR_LABEL[f.tipo] || "Farmácia"}
                       </span>
                       <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-[9px] font-black uppercase tracking-wider">
-                        🏍 Motoboy
+                        📍 {f.endereco_cidade} e região ({f.raio_entrega_km || 50}km)
                       </span>
                     </div>
 

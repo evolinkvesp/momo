@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Save, LogOut, Store, Bike, Banknote } from "lucide-react";
+import { Save, LogOut, Store, MapPin, X, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
-const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
-const TEMPOS_ENTREGA = ["30 min", "45 min", "1h", "1h30", "2h"];
+const RAIOS = [10, 20, 30, 50, 100];
 
 export function ConfigFornecedorClient({ initial }: { initial: any }) {
   const [form, setForm] = useState({
@@ -19,23 +18,29 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
     prazo_entrega_dias: initial.prazo_entrega_dias?.toString() || "",
     entrega_gratis_acima: initial.entrega_gratis_acima?.toString() || "",
   });
-  const [regioes, setRegioes] = useState<string[]>(initial.regioes_entrega || []);
+  
+  const [raioEntrega, setRaioEntrega] = useState<number>(initial.raio_entrega_km || 50);
+  const [cidadesEntrega, setCidadesEntrega] = useState<string[]>(initial.cidades_entrega || []);
+  const [novaCidade, setNovaCidade] = useState("");
+  
   const [loading, setLoading] = useState(false);
-
-  // Entregas: Frete Full (motoboy) + COD
-  const [freteFullAtivo, setFreteFullAtivo] = useState<boolean>(initial.frete_full_ativo ?? false);
-  const [freteFullTaxa, setFreteFullTaxa] = useState<string>(initial.frete_full_taxa != null ? String(initial.frete_full_taxa) : "15.00");
-  const [freteFullTempo, setFreteFullTempo] = useState<string>(initial.frete_full_tempo || "1h");
-  const [codAtivo, setCodAtivo] = useState<boolean>(initial.cod_ativo ?? false);
-  const [codTaxaAtiva, setCodTaxaAtiva] = useState<boolean>(initial.cod_taxa_adicional_ativa ?? false);
-  const [codTaxaPct, setCodTaxaPct] = useState<string>(initial.cod_taxa_adicional_pct != null ? String(initial.cod_taxa_adicional_pct) : "");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const toggleRegiao = (uf: string) => {
-    setRegioes((prev) => (prev.includes(uf) ? prev.filter((r) => r !== uf) : [...prev, uf]));
+  const addCidade = () => {
+    if (!novaCidade.trim()) return;
+    if (cidadesEntrega.includes(novaCidade.trim())) {
+      toast.error("Cidade já adicionada");
+      return;
+    }
+    setCidadesEntrega([...cidadesEntrega, novaCidade.trim()]);
+    setNovaCidade("");
+  };
+
+  const removeCidade = (cidade: string) => {
+    setCidadesEntrega(cidadesEntrega.filter(c => c !== cidade));
   };
 
   const handleSave = async () => {
@@ -49,9 +54,11 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
         telefone: form.telefone || null,
         prazo_entrega_dias: form.prazo_entrega_dias ? Number(form.prazo_entrega_dias) : null,
         entrega_gratis_acima: form.entrega_gratis_acima ? Number(form.entrega_gratis_acima) : null,
-        regioes_entrega: regioes.length ? regioes : null,
+        raio_entrega_km: raioEntrega,
+        cidades_entrega: cidadesEntrega,
       })
       .eq("id", initial.id);
+    
     if (error) toast.error("Erro ao salvar.");
     else toast.success("Perfil atualizado!");
     setLoading(false);
@@ -75,6 +82,7 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
       </div>
 
       <div className="bg-white rounded-[24px] p-5 border border-slate-50 shadow-sm space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dados Gerais</p>
         <Field label="Nome Fantasia">
           <input name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} className="input-standard" />
         </Field>
@@ -99,21 +107,78 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
         </div>
       </div>
 
-      <div className="bg-white rounded-[24px] p-5 border border-slate-50 shadow-sm">
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Regiões de entrega</p>
-        <div className="flex flex-wrap gap-2">
-          {UFS.map((uf) => (
-            <button
-              key={uf}
-              type="button"
-              onClick={() => toggleRegiao(uf)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                regioes.includes(uf) ? "bg-forest text-white" : "bg-slate-50 text-slate-500"
-              }`}
+      {/* ÁREA DE ENTREGA */}
+      <div className="bg-white rounded-[24px] p-5 border border-slate-50 shadow-sm space-y-6">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-forest" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Área de Entrega</p>
+        </div>
+
+        <Field label="Cidade base">
+          <div className="relative">
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+            <input 
+              readOnly 
+              value={`${initial.endereco_cidade}, ${initial.endereco_estado}`} 
+              className="input-standard pl-11 bg-slate-50 text-slate-500 cursor-not-allowed" 
+            />
+          </div>
+        </Field>
+
+        <div>
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Raio de entrega</label>
+          <div className="flex flex-wrap gap-2">
+            {RAIOS.map((km) => (
+              <button
+                key={km}
+                type="button"
+                onClick={() => setRaioEntrega(km)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  raioEntrega === km ? "bg-forest text-white shadow-md" : "bg-slate-900 text-slate-400"
+                }`}
+              >
+                {km}km
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Cidades adicionais</label>
+          <div className="flex gap-2">
+            <input 
+              placeholder="Ex: Contagem, MG" 
+              value={novaCidade}
+              onChange={(e) => setNovaCidade(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addCidade()}
+              className="input-standard flex-1" 
+            />
+            <button 
+              onClick={addCidade}
+              className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center active:scale-90 transition-transform"
             >
-              {uf}
+              <Plus size={20} />
             </button>
-          ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <AnimatePresence>
+              {cidadesEntrega.map((cidade) => (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  key={cidade}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 text-xs font-bold text-slate-600"
+                >
+                  {cidade}
+                  <button onClick={() => removeCidade(cidade)} className="text-slate-300 hover:text-red-500 transition-colors">
+                    <X size={14} />
+                  </button>
+                </motion.span>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
