@@ -5,6 +5,7 @@ import { Bot, Send, User, Sparkles, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFabVisibility } from "@/components/FabVisibilityContext";
+import ReactMarkdown from 'react-markdown';
 
 const suggestions = [
   "Quais proteínas comer na janta?",
@@ -132,13 +133,35 @@ export default function AssistentePage() {
                   )}
                 </div>
                 <div
-                  className={`max-w-[85%] rounded-[20px] px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] rounded-[18px] px-4 py-3.5 shadow-[0_1px_8px_rgba(0,0,0,0.06)] ${
                     message.role === "user"
-                      ? "rounded-tr-none bg-[#1c4d2e] text-white"
-                      : "rounded-tl-none bg-gray-50 text-gray-800"
+                      ? "rounded-tr-none bg-[#1c4d2e] text-white max-w-[80%] self-end"
+                      : "rounded-tl-none bg-white border border-[#f0f0f0] text-gray-800"
                   }`}
                 >
-                  {message.content}
+                  {message.role === "assistant" ? (
+                    <ReactMarkdown
+                      components={{
+                        h1: ({children}) => <p style={{fontWeight:700, fontSize:15, color:'#111', marginBottom:4}}>{children}</p>,
+                        h2: ({children}) => <p style={{fontWeight:700, fontSize:14, color:'#111', marginBottom:4}}>{children}</p>,
+                        h3: ({children}) => <p style={{fontWeight:600, fontSize:13, color:'#374151', marginBottom:4}}>{children}</p>,
+                        p: ({children}) => <p style={{fontSize:14, color:'#374151', lineHeight:1.65, marginBottom:8}}>{children}</p>,
+                        strong: ({children}) => <strong style={{fontWeight:700, color:'#111'}}>{children}</strong>,
+                        ul: ({children}) => <ul style={{paddingLeft:0, margin:'6px 0', listStyle:'none'}}>{children}</ul>,
+                        ol: ({children}) => <ol style={{paddingLeft:0, margin:'6px 0', listStyle:'none', counterReset:'item'}}>{children}</ol>,
+                        li: ({children}) => (
+                          <li style={{display:'flex', gap:8, marginBottom:6, fontSize:14, color:'#374151'}}>
+                            <span style={{color:'#16a34a', flexShrink:0, marginTop:2}}>•</span>
+                            <span>{children}</span>
+                          </li>
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -149,7 +172,7 @@ export default function AssistentePage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-forest text-white shadow-sm">
                 <Bot size={16} strokeWidth={2.5} />
               </div>
-              <div className="rounded-[20px] rounded-tl-none bg-gray-50 px-4 py-3 shadow-sm">
+              <div className="rounded-[18px] rounded-tl-none bg-white border border-[#f0f0f0] px-4 py-3 shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
                 <div className="flex gap-1.5 items-center h-4">
                   {[0, 1, 2].map((i) => (
                     <div 
@@ -164,7 +187,7 @@ export default function AssistentePage() {
           )}
         </div>
 
-        <div className="fixed bottom-[70px] left-0 right-0 z-[45] z-45 border-t border-gray-100 bg-white p-4">
+        <div className="fixed bottom-[70px] left-0 right-0 z-[45] border-t border-gray-100 bg-white p-4">
           <div className="mx-auto w-full max-w-md px-4">
           {messages.length <= 1 && !isLoading && (
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">

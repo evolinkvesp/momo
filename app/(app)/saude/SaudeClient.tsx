@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
-import { format } from "date-fns";
+import { format, differenceInWeeks, differenceInDays, parseISO, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, X, Download, Scale, HeartPulse, Activity, Trophy, TrendingDown, Star, AlertCircle, Droplets, CheckCircle2, ChevronDown, ChevronUp, TrendingUp, Minus } from "lucide-react";
+import { Plus, X, Download, Scale, HeartPulse, Activity, Trophy, TrendingDown, Star, AlertCircle, Droplets, CheckCircle2, ChevronDown, ChevronUp, TrendingUp, Minus, Target } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine } from 'recharts';
 import { PageHeader } from "@/components/PageHeader";
 import toast from "react-hot-toast";
 
@@ -33,20 +33,13 @@ interface Sintoma {
   duracao_horas: number;
 }
 
-interface Achievements {
-  lost5kg: boolean;
-  tenWeeks: boolean;
-  imcBelow30: boolean;
-}
-
 type Tab = "Peso" | "Pressão" | "Sintomas";
 
-export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas, achievements }: { 
+export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas }: { 
   userId: string, 
-  alturaCm: number | null, 
+  profile: any, 
   initialMedicoes: Medicao[], 
-  initialSintomas: Sintoma[],
-  achievements: Achievements 
+  initialSintomas: Sintoma[]
 }) {
   const [medicoes, setMedicoes] = useState<Medicao[]>(initialMedicoes);
   const [sintomas, setSintomas] = useState<Sintoma[]>(initialSintomas);
@@ -55,7 +48,7 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
   const [showMedicaoForm, setShowMedicaoForm] = useState(false);
   const [showSintomaForm, setShowSintomaForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [periodoGrafico, setPeriodoGrafico] = useState<number>(30);
+  const [periodoGrafico, setPeriodoGrafico] = useState<number>(30); // 30, 60, 90, 0 (all)
 
   // Form Medicao
   const [dataMedicao, setDataMedicao] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
@@ -127,22 +120,57 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `mounjaro_dados_saude_${format(new Date(), "yyyyMMdd")}.csv`);
+    link.setAttribute("download", `momo_dados_saude_${format(new Date(), "yyyyMMdd")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const chartDataMedicoes = [...medicoes].reverse().map(m => ({
-    name: format(new Date(m.data_medicao), "dd/MM"),
-    peso: m.peso_kg,
-    pressaoSis: m.pressao_sistolica,
-    pressaoDia: m.pressao_diastolica
-  }));
-
   const pesoAtual = medicoes[0]?.peso_kg;
-  const pesoAnterior = medicoes[1]?.peso_kg;
-  const deltaPeso = pesoAtual && pesoAnterior ? (pesoAtual - pesoAnterior).toFixed(1) : null;
+  const pesoInicial = medicoes[medicoes.length - 1]?.peso_kg;
+  const deltaPeso = pesoAtual && pesoInicial ? (pesoAtual - pesoInicial) : 0;
+  
+  const imcAtual = medicoes[0]?.imc || 0;
+  const classImc = imcAtual < 18.5 ? "Abaixo" : imcAtual < 25 ? "Normal" : imcAtual < 30 ? "Sobrepeso" : "Obesidade";
+
+  const dataInicio = profile?.data_inicio_tratamento ? new Date(profile.data_inicio_tratamento) : null;
+  const semanasTratamento = dataInicio ? differenceInWeeks(new Date(), dataInicio) : 0;
+  const diasTratamento = dataInicio ? differenceInDays(new Date(), dataInicio) : 0;
+  const mediaSemana = semanasTratamento > 0 ? (Math.abs(deltaPeso) / semanasTratamento).toFixed(1) : "0.0";
+
+  const chartDataMedicoes = useMemo(() => {
+    let data = [...medicoes].filter(m => m.peso_kg).reverse();
+    if (periodoGrafico > 0) {
+      const limitDate = subDays(new Date(), periodoGrafico);
+      data = data.filter(m => new Date(m.data_medicao) >= limitDate);
+    }
+    return data.map(m => ({
+      name: format(new Date(m.data_medicao), "dd/MM"),
+      peso: m.peso_kg,
+      pressaoSis: m.pressao_sistolica,
+      pressaoDia: m.pressao_diastolica,
+      fullDate: format(new Date(m.data_medicao), "dd 'de' MMM, yyyy", { locale: ptBR })
+    }));
+  }, [medicoes, periodoGrafico]);
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 rounded-2xl shadow-xl border border-slate-50">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{payload[0].payload.fullDate}</p>
+          <p className="text-lg font-black text-forest mt-1">{payload[0].value} kg</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const hasFirstWeight = medicoes.length > 0;
+  const isOneMonth = diasTratamento >= 30;
+  const isTenWeeks = semanasTratamento >= 10;
+  const isLost5kg = deltaPeso <= -5;
+  const isLost10kg = deltaPeso <= -10;
+  const isImcOk = imcAtual > 0 && imcAtual < 30;
 
   return (
     <div className="space-y-6 pb-32">
@@ -167,68 +195,212 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
 
       {activeTab === "Peso" && (
         <div className="space-y-6 page-transition-enter">
+          {/* Card Peso Atual */}
           <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-50 text-center">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Peso Atual</p>
-            <div className="flex items-end justify-center gap-1 mt-2">
-              <span className="text-5xl font-black text-slate-900">{pesoAtual || "--"}</span>
-              <span className="text-lg font-bold text-slate-400 mb-1.5">kg</span>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Peso Atual</p>
+            <div className="flex items-end justify-center gap-1 mt-1">
+              <span className="text-[40px] font-black tracking-tighter text-slate-900">{pesoAtual || "--"}</span>
+              <span className="text-base font-bold text-slate-400 mb-2">kg</span>
             </div>
-            {deltaPeso && (
-              <div className={`inline-flex items-center gap-1 mt-3 px-3 py-1 rounded-full text-xs font-bold ${
-                parseFloat(deltaPeso) < 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-              }`}>
-                {parseFloat(deltaPeso) < 0 ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
-                {deltaPeso}kg desde a última pesagem
+            
+            {pesoInicial && (
+              <div className="mt-3">
+                {deltaPeso === 0 ? (
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500">
+                    Mesmo peso inicial
+                  </div>
+                ) : deltaPeso < 0 ? (
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-100">
+                    <TrendingDown size={14} strokeWidth={3} />
+                    {Math.abs(deltaPeso).toFixed(1)}kg desde o início
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-100">
+                    <TrendingUp size={14} strokeWidth={3} />
+                    +{Math.abs(deltaPeso).toFixed(1)}kg desde o início
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Conquistas */}
+          {/* Mini Stats */}
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { ok: achievements.lost5kg, icon: <TrendingDown size={20} />, label: "5kg perdidos" },
-              { ok: achievements.tenWeeks, icon: <Trophy size={20} />, label: "10+ semanas" },
-              { ok: achievements.imcBelow30, icon: <CheckCircle2 size={20} />, label: "IMC < 30" },
-            ].map((a) => (
-              <div
-                key={a.label}
-                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-[20px] border text-center transition-colors ${
-                  a.ok ? "bg-amber-50 border-amber-100 text-amber-600" : "bg-white border-slate-50 text-slate-300"
-                }`}
-              >
-                {a.icon}
-                <span className={`text-[10px] font-bold leading-tight ${a.ok ? "text-amber-700" : "text-slate-400"}`}>{a.label}</span>
-              </div>
-            ))}
+            <div className="bg-white p-3 rounded-[20px] shadow-sm border border-slate-50 text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">IMC</p>
+              <p className="text-base font-black text-slate-900 mt-0.5">{imcAtual ? imcAtual.toFixed(1) : "--"}</p>
+              <p className="text-[10px] font-bold text-forest mt-0.5">{classImc}</p>
+            </div>
+            <div className="bg-white p-3 rounded-[20px] shadow-sm border border-slate-50 text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Perdido</p>
+              <p className="text-base font-black text-slate-900 mt-0.5">{deltaPeso < 0 ? Math.abs(deltaPeso).toFixed(1) : "0"}</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-0.5">kg total</p>
+            </div>
+            <div className="bg-white p-3 rounded-[20px] shadow-sm border border-slate-50 text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Média</p>
+              <p className="text-base font-black text-slate-900 mt-0.5">{mediaSemana}</p>
+              <p className="text-[10px] font-bold text-slate-400 mt-0.5">kg / sem</p>
+            </div>
           </div>
 
+          {/* Gráfico */}
           <div className="bg-white p-5 rounded-[24px] shadow-sm border border-slate-50">
-            <div className="h-64 mt-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold text-slate-900">Evolução</h3>
+              <div className="flex gap-1 bg-slate-50 p-1 rounded-full">
+                {[
+                  { label: "30d", val: 30 }, 
+                  { label: "60d", val: 60 }, 
+                  { label: "90d", val: 90 }, 
+                  { label: "Tudo", val: 0 }
+                ].map(p => (
+                  <button 
+                    key={p.label}
+                    onClick={() => setPeriodoGrafico(p.val)}
+                    className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${
+                      periodoGrafico === p.val ? "bg-white text-forest shadow-sm" : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartDataMedicoes.filter(d => d.peso)}>
+                <AreaChart data={chartDataMedicoes}>
                   <defs>
                     <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2d8653" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#2d8653" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#1c4d2e" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#1c4d2e" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                  <YAxis domain={['auto', 'auto']} axisLine={false} tickLine={false} hide />
-                  <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                  <Area type="monotone" dataKey="peso" stroke="#2d8653" strokeWidth={3} fillOpacity={1} fill="url(#colorPeso)" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
+                  <YAxis domain={['dataMin - 2', 'dataMax + 2']} axisLine={false} tickLine={false} hide />
+                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                  
+                  {profile?.peso_meta && (
+                    <ReferenceLine y={profile.peso_meta} stroke="#94a3b8" strokeDasharray="3 3" />
+                  )}
+
+                  <Area 
+                    type="monotone" 
+                    dataKey="peso" 
+                    stroke="#1c4d2e" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#colorPeso)" 
+                    activeDot={{ r: 6, fill: '#1c4d2e', stroke: '#fff', strokeWidth: 3 }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+            
+            {profile?.peso_meta && (
+              <div className="mt-4 flex items-center gap-2 justify-center">
+                <div className="h-0.5 w-4 border-b-2 border-dashed border-slate-400" />
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Meta: {profile.peso_meta}kg
+                </p>
+              </div>
+            )}
           </div>
-          
+
           <button 
             onClick={() => setShowMedicaoForm(true)}
-            className="fixed bottom-24 left-5 right-5 z-40 bg-forest text-white py-4 rounded-2xl font-bold shadow-lg shadow-forest/20 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            className="w-full h-[52px] bg-[#1c4d2e] text-white rounded-full font-bold text-sm shadow-lg shadow-forest/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
           >
-            <Scale size={20} />
+            <Scale size={18} strokeWidth={2.5} />
             Pesar agora
           </button>
+
+          {/* Conquistas Detalhadas */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">Conquistas</h3>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {/* Primeira Pesagem */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${hasFirstWeight ? "bg-amber-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${hasFirstWeight ? "bg-amber-100 text-amber-500" : "bg-slate-200 text-slate-400"}`}>
+                  <Scale size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${hasFirstWeight ? "text-amber-700" : "text-slate-400"}`}>1ª Pesagem</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${hasFirstWeight ? "text-amber-600/80" : "text-slate-400"}`}>
+                    {hasFirstWeight ? "Desbloqueada" : "Registre o peso"}
+                  </p>
+                </div>
+              </div>
+
+              {/* 5kg */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${isLost5kg ? "bg-indigo-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isLost5kg ? "bg-indigo-100 text-indigo-500" : "bg-slate-200 text-slate-400"}`}>
+                  <TrendingDown size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${isLost5kg ? "text-indigo-700" : "text-slate-400"}`}>5kg perdidos</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${isLost5kg ? "text-indigo-600/80" : "text-slate-400"}`}>
+                    {isLost5kg ? "Alcançada!" : `Faltam ${Math.max(0, 5 + deltaPeso).toFixed(1)}kg`}
+                  </p>
+                </div>
+              </div>
+
+              {/* 1 Mês */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${isOneMonth ? "bg-pink-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isOneMonth ? "bg-pink-100 text-pink-500" : "bg-slate-200 text-slate-400"}`}>
+                  <Trophy size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${isOneMonth ? "text-pink-700" : "text-slate-400"}`}>1º Mês</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${isOneMonth ? "text-pink-600/80" : "text-slate-400"}`}>
+                    {isOneMonth ? "Completado" : `${diasTratamento} de 30 dias`}
+                  </p>
+                </div>
+              </div>
+
+              {/* IMC < 30 */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${isImcOk ? "bg-emerald-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isImcOk ? "bg-emerald-100 text-emerald-500" : "bg-slate-200 text-slate-400"}`}>
+                  <Target size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${isImcOk ? "text-emerald-700" : "text-slate-400"}`}>IMC &lt; 30</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${isImcOk ? "text-emerald-600/80" : "text-slate-400"}`}>
+                    {isImcOk ? "Alcançado!" : `Atual: ${imcAtual.toFixed(1)}`}
+                  </p>
+                </div>
+              </div>
+              
+              {/* 10kg */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${isLost10kg ? "bg-blue-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isLost10kg ? "bg-blue-100 text-blue-500" : "bg-slate-200 text-slate-400"}`}>
+                  <TrendingDown size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${isLost10kg ? "text-blue-700" : "text-slate-400"}`}>10kg perdidos</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${isLost10kg ? "text-blue-600/80" : "text-slate-400"}`}>
+                    {isLost10kg ? "Incrível!" : `Faltam ${Math.max(0, 10 + deltaPeso).toFixed(1)}kg`}
+                  </p>
+                </div>
+              </div>
+              
+              {/* 10 semanas */}
+              <div className={`p-4 rounded-[20px] flex flex-col items-center justify-center text-center gap-2 transition-all ${isTenWeeks ? "bg-purple-50" : "bg-slate-50"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isTenWeeks ? "bg-purple-100 text-purple-500" : "bg-slate-200 text-slate-400"}`}>
+                  <Star size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold ${isTenWeeks ? "text-purple-700" : "text-slate-400"}`}>10+ Semanas</p>
+                  <p className={`text-[10px] font-medium mt-0.5 ${isTenWeeks ? "text-purple-600/80" : "text-slate-400"}`}>
+                    {isTenWeeks ? "Consistência!" : `Semana ${semanasTratamento} de 10`}
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       )}
 
@@ -281,7 +453,7 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
       {(showMedicaoForm || showSintomaForm) && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => { setShowMedicaoForm(false); setShowSintomaForm(false); }} />
-          <div className="relative z-[101] w-full max-w-md bg-white rounded-t-[32px] p-6 shadow-xl animate-slide-up">
+          <div className="relative z-[101] w-full max-w-md bg-white rounded-t-[32px] p-6 shadow-xl animate-slide-up pb-10">
             <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
             <h2 className="text-xl font-bold mb-6">{showMedicaoForm ? "Nova Medição" : "Registrar Sintoma"}</h2>
             
@@ -307,7 +479,7 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
                      <input type="number" value={pressaoDia} onChange={e => setPressaoDia(e.target.value)} className="input-standard mt-1" placeholder="80" />
                    </div>
                 </div>
-                <button type="submit" disabled={loading} className="btn-primary w-full py-4 text-base mt-2">
+                <button type="submit" disabled={loading} className="w-full h-[52px] bg-[#1c4d2e] text-white rounded-full font-bold text-sm shadow-lg shadow-forest/20 mt-4 active:scale-[0.98] transition-all disabled:opacity-50">
                   {loading ? <LoadingSpinner size="sm" /> : "Salvar Medição"}
                 </button>
               </form>
@@ -321,7 +493,7 @@ export function SaudeClient({ userId, alturaCm, initialMedicoes, initialSintomas
                   </div>
                 </div>
                 <textarea value={descricaoSintoma} onChange={e => setDescricaoSintoma(e.target.value)} className="input-standard mt-1" placeholder="Descrição (opcional)" rows={3} />
-                <button type="submit" disabled={loading} className="btn-primary w-full py-4 text-base mt-2">
+                <button type="submit" disabled={loading} className="w-full h-[52px] bg-[#1c4d2e] text-white rounded-full font-bold text-sm shadow-lg shadow-forest/20 mt-4 active:scale-[0.98] transition-all disabled:opacity-50">
                   {loading ? <LoadingSpinner size="sm" /> : "Salvar Sintoma"}
                 </button>
               </form>

@@ -17,8 +17,14 @@ Diretrizes:
 1. Seja empático, encorajador e profissional.
 2. Foque em dicas para lidar com efeitos colaterais (náusea, constipação), importância da hidratação e consumo de proteínas.
 3. SEMPRE inclua o aviso: "Lembre-se: Sou uma IA e não substituo o conselho do seu médico."
-4. Mantenha as respostas concisas e formatadas em Markdown para fácil leitura.
-5. Nunca sugira mudanças na dose da medicação; diga ao usuário para consultar o médico assistente.`,
+4. Nunca sugira mudanças na dose da medicação; diga ao usuário para consultar o médico assistente.
+
+FORMATAÇÃO OBRIGATÓRIA:
+- Use bullet points com hífen (- item) para listas
+- Use **negrito** apenas para termos-chave, máximo 3 por resposta  
+- NUNCA use ### ou ## ou # headers
+- Máximo 120 palavras por resposta
+- Separe em parágrafos curtos de no máximo 2 linhas`,
     });
 
     return NextResponse.json({ text: result.text });

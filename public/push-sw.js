@@ -12,8 +12,8 @@ self.addEventListener("push", function (event) {
   const title = data.title || "Momo";
   const options = {
     body: data.body || "",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-192x192.png",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
     data: { url: data.url || "/" },
   };
 
