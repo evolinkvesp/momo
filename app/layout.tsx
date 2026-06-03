@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#16a34a",
+  themeColor: "#1c4d2e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -40,7 +40,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={dmSans.variable}>
-      <body className={`${dmSans.className} font-sans`} suppressHydrationWarning>
+      <body className={`${dmSans.className} font-sans bg-[#f2f2f7]`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

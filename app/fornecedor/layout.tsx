@@ -1,6 +1,12 @@
+import type { Viewport } from "next";
 import { createServerClient } from "@/lib/supabase-server";
 import "./fornecedor.css";
 import { SupplierBottomNav } from "@/components/SupplierBottomNav";
+
+// Dark portal: status bar / theme-color should match the #0d0d0d background.
+export const viewport: Viewport = {
+  themeColor: "#0d0d0d",
+};
 
 export default async function FornecedorLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerClient();
@@ -24,7 +30,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
   }
 
   return (
-    <div data-portal="fornecedor" className="min-h-screen bg-[#0d0d0d] text-white">
+    <div data-portal="fornecedor" className="app-container min-h-screen bg-[#0d0d0d] text-white">
       <main className="mx-auto w-full max-w-lg px-6 pb-[100px] pt-8">
         {children}
       </main>

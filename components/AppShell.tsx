@@ -12,7 +12,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const { fabHidden } = useFabVisibility();
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="app-container min-h-screen bg-bg">
       <main className="mx-auto w-full max-w-md px-6 pb-32 pt-6">
         <div>{children}</div>
       </main>
