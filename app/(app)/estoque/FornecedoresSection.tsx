@@ -48,9 +48,10 @@ export async function FornecedoresSection({ userId }: { userId: string }) {
 
   return (
     <section className="mt-8">
-      <FornecedoresSectionClient 
-        fornecedores={suppliersList} 
-        estado={estado} 
+      <FornecedoresSectionClient
+        fornecedores={suppliersList}
+        cidade={cidade}
+        estado={estado}
       />
     </section>
   );
