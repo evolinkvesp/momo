@@ -106,25 +106,35 @@ export default function LoginPage() {
             </div>
 
             {/* Password Input */}
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                <Lock className="h-5 w-5" />
+            <div className="space-y-1">
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block h-[52px] w-full rounded-full border-gray-200 bg-gray-50 pl-11 pr-12 py-3 text-sm focus:border-forest focus:ring-forest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block h-[52px] w-full rounded-full border-gray-200 bg-gray-50 pl-11 pr-12 py-3 text-sm focus:border-forest focus:ring-forest"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
+              <div className="flex justify-end px-2">
+                <Link 
+                  href="/esqueceu-senha" 
+                  className="text-[13px] font-bold text-forest hover:underline"
+                >
+                  Esqueceu a senha?
+                </Link>
+              </div>
             </div>
 
             <button
