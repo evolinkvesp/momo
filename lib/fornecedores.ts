@@ -6,7 +6,8 @@ export interface Fornecedor {
   razao_social: string;
   nome_fantasia: string | null;
   tipo: "farmacia" | "distribuidor" | "fabricante" | null;
-  regioes_entrega: string[] | null;
+  raio_entrega_km: number | null;
+  cidades_entrega: string[] | null;
   prazo_entrega_dias: number | null;
   entrega_gratis_acima: number | null;
   logo_url: string | null;

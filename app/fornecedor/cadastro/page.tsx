@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Store, ShieldCheck } from "lucide-react";
+import { Store, ShieldCheck, MapPin, X, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { motion, AnimatePresence } from "framer-motion";
 
-const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+const RAIOS = [10, 20, 30, 50, 100];
 
 export default function FornecedorCadastroPage() {
   const router = useRouter();
@@ -20,15 +21,28 @@ export default function FornecedorCadastroPage() {
     endereco_cidade: "",
     endereco_estado: "",
     prazo_entrega_dias: "",
+    raio_entrega_km: 50,
   });
-  const [regioes, setRegioes] = useState<string[]>([]);
+
+  const [cidadesEntrega, setCidadesEntrega] = useState<string[]>([]);
+  const [novaCidade, setNovaCidade] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const toggleRegiao = (uf: string) => {
-    setRegioes((prev) => (prev.includes(uf) ? prev.filter((r) => r !== uf) : [...prev, uf]));
+  const addCidade = () => {
+    if (!novaCidade.trim()) return;
+    if (cidadesEntrega.includes(novaCidade.trim())) {
+      toast.error("Cidade já adicionada");
+      return;
+    }
+    setCidadesEntrega([...cidadesEntrega, novaCidade.trim()]);
+    setNovaCidade("");
+  };
+
+  const removeCidade = (cidade: string) => {
+    setCidadesEntrega(cidadesEntrega.filter(c => c !== cidade));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +71,8 @@ export default function FornecedorCadastroPage() {
       tipo: form.tipo,
       endereco_cidade: form.endereco_cidade || null,
       endereco_estado: form.endereco_estado ? form.endereco_estado.toUpperCase() : null,
-      regioes_entrega: regioes.length ? regioes : null,
+      raio_entrega_km: form.raio_entrega_km,
+      cidades_entrega: cidadesEntrega,
       prazo_entrega_dias: form.prazo_entrega_dias ? Number(form.prazo_entrega_dias) : null,
       status: "pendente",
     });
@@ -74,8 +89,8 @@ export default function FornecedorCadastroPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 px-6 py-10">
-      <div className="mx-auto w-full max-w-md">
+    <div className="flex min-h-screen flex-col bg-slate-50 px-6 py-10 text-slate-900">
+      <div className="mx-auto w-full max-w-md pb-20">
         <div className="mb-6 flex items-start gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-forest shrink-0">
             <Store size={24} strokeWidth={2.5} />
@@ -86,51 +101,104 @@ export default function FornecedorCadastroPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Razão Social" name="razao_social" value={form.razao_social} onChange={handleChange} placeholder="Nome jurídico da empresa" />
-          <Input label="Nome Fantasia" name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} placeholder="Como o cliente te vê" />
-          <Input label="CNPJ" name="cnpj" value={form.cnpj} onChange={handleChange} placeholder="00.000.000/0001-00" />
-
-          <div>
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo de Negócio</label>
-            <div className="grid grid-cols-3 gap-2">
-              {["farmacia", "distribuidor", "fabricante"].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setForm({ ...form, tipo: t })}
-                  className={`rounded-xl py-3 text-xs font-bold capitalize transition-all ${
-                    form.tipo === t ? "bg-forest text-white shadow-md" : "bg-white border border-slate-100 text-slate-600"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dados da Empresa</p>
+            <Input label="Razão Social" name="razao_social" value={form.razao_social} onChange={handleChange} placeholder="Nome jurídico da empresa" />
+            <Input label="Nome Fantasia" name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} placeholder="Como o cliente te vê" />
+            <Input label="CNPJ" name="cnpj" value={form.cnpj} onChange={handleChange} placeholder="00.000.000/0001-00" />
+            
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo de Negócio</label>
+              <div className="grid grid-cols-3 gap-2">
+                {["farmacia", "distribuidor", "fabricante"].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setForm({ ...form, tipo: t })}
+                    className={`rounded-xl py-3 text-[11px] font-bold capitalize transition-all ${
+                      form.tipo === t ? "bg-forest text-white shadow-md" : "bg-slate-50 border border-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Cidade" name="endereco_cidade" value={form.endereco_cidade} onChange={handleChange} placeholder="Ex: São Paulo" />
-            <Input label="UF" name="endereco_estado" value={form.endereco_estado} onChange={handleChange} placeholder="SP" maxLength={2} />
-          </div>
+          <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Localização e Entrega</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Cidade" name="endereco_cidade" value={form.endereco_cidade} onChange={handleChange} placeholder="Ex: Belo Horizonte" />
+              <Input label="UF" name="endereco_estado" value={form.endereco_estado} onChange={handleChange} placeholder="MG" maxLength={2} />
+            </div>
 
-          <Input label="Prazo médio de entrega (dias)" name="prazo_entrega_dias" type="number" value={form.prazo_entrega_dias} onChange={handleChange} placeholder="Ex: 3" />
+            <Input label="Prazo médio de entrega (dias)" name="prazo_entrega_dias" type="number" value={form.prazo_entrega_dias} onChange={handleChange} placeholder="Ex: 3" />
 
-          <div>
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Regiões de entrega (UFs atendidas)</label>
-            <div className="flex flex-wrap gap-2">
-              {UFS.map((uf) => (
-                <button
-                  key={uf}
+            <div className="h-px bg-slate-50" />
+
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Raio de entrega</label>
+              <div className="flex flex-wrap gap-2">
+                {RAIOS.map((km) => (
+                  <button
+                    key={km}
+                    type="button"
+                    onClick={() => setForm({ ...form, raio_entrega_km: km })}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      form.raio_entrega_km === km ? "bg-forest text-white shadow-md" : "bg-slate-900 text-slate-400"
+                    }`}
+                  >
+                    {km}km
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Cidades adicionais (opcional)</label>
+              <div className="flex gap-2">
+                <input 
+                  placeholder="Ex: Contagem, MG" 
+                  value={novaCidade}
+                  onChange={(e) => setNovaCidade(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCidade();
+                    }
+                  }}
+                  className="block h-12 w-full rounded-2xl border-none bg-slate-50 px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none" 
+                />
+                <button 
                   type="button"
-                  onClick={() => toggleRegiao(uf)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    regioes.includes(uf) ? "bg-forest text-white" : "bg-white border border-slate-100 text-slate-500"
-                  }`}
+                  onClick={addCidade}
+                  className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center active:scale-90 transition-transform"
                 >
-                  {uf}
+                  <Plus size={20} />
                 </button>
-              ))}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <AnimatePresence>
+                  {cidadesEntrega.map((cidade) => (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      key={cidade}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 text-xs font-bold text-slate-600"
+                    >
+                      {cidade}
+                      <button type="button" onClick={() => removeCidade(cidade)} className="text-slate-300 hover:text-red-500 transition-colors">
+                        <X size={14} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
@@ -160,7 +228,7 @@ function Input({ label, ...props }: { label: string } & React.InputHTMLAttribute
       <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">{label}</label>
       <input
         {...props}
-        className="block h-12 w-full rounded-2xl border-none bg-white px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none"
+        className="block h-12 w-full rounded-2xl border-none bg-slate-50 px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none"
       />
     </div>
   );

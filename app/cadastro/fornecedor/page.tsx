@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, ArrowRight, Check, Store, ShieldCheck, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Store, ShieldCheck, MapPin, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PageHeader } from '@/components/PageHeader';
+import { motion, AnimatePresence } from "framer-motion";
+
+const RAIOS = [10, 20, 30, 50, 100];
 
 export default function CadastroFornecedorPage() {
   const router = useRouter();
@@ -23,10 +25,28 @@ export default function CadastroFornecedorPage() {
     tipo: 'farmacia', // farmacia, distribuidor
     endereco_cidade: '',
     endereco_estado: '',
+    raio_entrega_km: 50,
   });
+
+  const [cidadesEntrega, setCidadesEntrega] = useState<string[]>([]);
+  const [novaCidade, setNovaCidade] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const addCidade = () => {
+    if (!novaCidade.trim()) return;
+    if (cidadesEntrega.includes(novaCidade.trim())) {
+      toast.error("Cidade já adicionada");
+      return;
+    }
+    setCidadesEntrega([...cidadesEntrega, novaCidade.trim()]);
+    setNovaCidade("");
+  };
+
+  const removeCidade = (cidade: string) => {
+    setCidadesEntrega(cidadesEntrega.filter(c => c !== cidade));
   };
 
   const nextStep = () => {
@@ -72,6 +92,8 @@ export default function CadastroFornecedorPage() {
           tipo: formData.tipo,
           endereco_cidade: formData.endereco_cidade,
           endereco_estado: formData.endereco_estado,
+          raio_entrega_km: formData.raio_entrega_km,
+          cidades_entrega: cidadesEntrega,
           status: 'pendente' // Needs approval
         });
 
@@ -88,7 +110,7 @@ export default function CadastroFornecedorPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg text-slate-900">
       <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
         <button onClick={() => step > 1 ? setStep(step - 1) : router.push('/login')} className="rounded-full p-2 text-gray-400 hover:bg-gray-50">
           <ArrowLeft className="h-6 w-6" />
@@ -146,13 +168,13 @@ export default function CadastroFornecedorPage() {
                   <MapPin size={24} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Localização e Tipo</h2>
-                  <p className="text-sm text-gray-500">Onde sua empresa está baseada?</p>
+                  <h2 className="text-xl font-bold text-gray-900">Localização e Entrega</h2>
+                  <p className="text-sm text-gray-500">Onde sua empresa está e onde entrega?</p>
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">Tipo de Negócio</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo de Negócio</label>
                 <div className="grid grid-cols-2 gap-2">
                   {['farmacia', 'distribuidor'].map((t) => (
                     <button
@@ -172,8 +194,72 @@ export default function CadastroFornecedorPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Cidade" name="endereco_cidade" value={formData.endereco_cidade} onChange={handleChange} placeholder="Ex: São Paulo" />
-                <Input label="UF" name="endereco_estado" value={formData.endereco_estado} onChange={handleChange} placeholder="SP" maxLength={2} />
+                <Input label="Cidade" name="endereco_cidade" value={formData.endereco_cidade} onChange={handleChange} placeholder="Ex: Belo Horizonte" />
+                <Input label="UF" name="endereco_estado" value={formData.endereco_estado} onChange={handleChange} placeholder="MG" maxLength={2} />
+              </div>
+
+              <div className="h-px bg-slate-100" />
+
+              <div>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Raio de entrega</label>
+                <div className="flex flex-wrap gap-2">
+                  {RAIOS.map((km) => (
+                    <button
+                      key={km}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, raio_entrega_km: km })}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                        formData.raio_entrega_km === km ? "bg-forest text-white shadow-md" : "bg-white border border-slate-100 text-slate-400"
+                      }`}
+                    >
+                      {km}km
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Cidades adicionais (opcional)</label>
+                <div className="flex gap-2">
+                  <input 
+                    placeholder="Ex: Contagem, MG" 
+                    value={novaCidade}
+                    onChange={(e) => setNovaCidade(e.target.value)}
+                    onKeyDown={(e) => {
+                       if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addCidade();
+                       }
+                    }}
+                    className="block h-12 w-full rounded-2xl border-none bg-white px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none" 
+                  />
+                  <button 
+                    type="button"
+                    onClick={addCidade}
+                    className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center active:scale-90 transition-transform"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <AnimatePresence>
+                    {cidadesEntrega.map((cidade) => (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        key={cidade}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-100 text-xs font-bold text-slate-600 shadow-sm"
+                      >
+                        {cidade}
+                        <button type="button" onClick={() => removeCidade(cidade)} className="text-slate-300 hover:text-red-500 transition-colors">
+                          <X size={14} />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div className="bg-blue-50 p-4 rounded-2xl flex gap-3">
