@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { DosesClient } from "./DosesClient";
+import { calcularProximaDose } from "@/lib/utils/dose";
 
 export default async function DosesPage() {
   const supabase = createServerClient();
@@ -9,7 +10,7 @@ export default async function DosesPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('dose_atual_mg')
+    .select('dose_atual_mg, data_inicio_tratamento')
     .eq('id', session.user.id)
     .single();
 
@@ -19,11 +20,17 @@ export default async function DosesPage() {
     .eq('user_id', session.user.id)
     .order('data_aplicacao', { ascending: false });
 
+  const calculoDose = calcularProximaDose(
+    doses?.[0]?.data_aplicacao,
+    profile?.data_inicio_tratamento
+  );
+
   return (
     <DosesClient 
       userId={session.user.id} 
       initialDoses={doses || []} 
-      currentDoseMg={profile?.dose_atual_mg || 2.5} 
+      currentDoseMg={profile?.dose_atual_mg || 2.5}
+      calculoDose={calculoDose}
     />
   );
 }

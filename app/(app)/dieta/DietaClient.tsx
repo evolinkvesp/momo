@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { format, isSameDay, parseISO, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -189,7 +188,7 @@ export function DietaClient({
         )}
 
         {tab === "Plano" && <MeuPlano fase={fase} />}
-        {tab === "Receitas" && <IAChef fase={fase} />}
+        {tab === "Receitas" && <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />}
       </div>
 
       {showForm && (
@@ -314,132 +313,300 @@ function MacroInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function IAChef({ fase }: { fase: FaseMounjaro }) {
-  const [loading, setLoading] = useState(false);
-  const [recipe, setRecipe] = useState<any>(null);
+interface ReceitaIA {
+  id: string;
+  nome: string;
+  tipo: TipoRefeicao;
+  emoji: string;
+  tempo_preparo: number;
+  calorias: number;
+  proteinas: number;
+  carboidratos: number;
+  gorduras: number;
+  dificuldade: string;
+  dica_mounjaro: string;
+  ingredientes: string[];
+  modo_preparo: string[];
+  beneficios: string[];
+}
 
-  async function generate(type: string) {
+const TIPO_COR: Record<TipoRefeicao, string> = {
+  cafe: "#fef3c7",
+  almoco: "#dcfce7",
+  jantar: "#e0f2fe",
+  lanche: "#fce7f3",
+};
+
+const FILTROS: { key: "todas" | TipoRefeicao; label: string }[] = [
+  { key: "todas", label: "Todas" },
+  { key: "cafe", label: "☕ Café" },
+  { key: "almoco", label: "🍗 Almoço" },
+  { key: "jantar", label: "🌙 Jantar" },
+  { key: "lanche", label: "🥜 Lanche" },
+];
+
+const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
+
+function ReceitasIA({
+  userId,
+  fase,
+  doseMg,
+}: {
+  userId: string;
+  fase: FaseMounjaro;
+  doseMg: number;
+}) {
+  const [receitas, setReceitas] = useState<ReceitaIA[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filtro, setFiltro] = useState<"todas" | TipoRefeicao>("todas");
+  const [selecionada, setSelecionada] = useState<ReceitaIA | null>(null);
+
+  async function carregarReceitas(forcar = false) {
     setLoading(true);
-    setRecipe(null);
     try {
-      const res = await fetch("/api/recipe", {
+      // 1. Tenta o cache (gerado há menos de 7 dias) para esta fase.
+      if (!forcar) {
+        const { data: cache } = await supabase
+          .from("receitas_geradas")
+          .select("receitas, gerado_em")
+          .eq("user_id", userId)
+          .eq("fase", fase)
+          .maybeSingle();
+
+        if (
+          cache?.receitas &&
+          cache.gerado_em &&
+          Date.now() - new Date(cache.gerado_em).getTime() < SETE_DIAS_MS
+        ) {
+          setReceitas(cache.receitas as ReceitaIA[]);
+          return;
+        }
+      }
+
+      // 2. Sem cache válido (ou regeneração forçada): gera via IA.
+      const res = await fetch("/api/receitas/gerar", {
         method: "POST",
-        body: JSON.stringify({ mealType: type, phase: fase }),
+        body: JSON.stringify({ fase, dose_mg: doseMg }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setRecipe(data);
-    } catch (err) {
-      toast.error("Erro ao gerar receita. Tente novamente.");
+      setReceitas((data.receitas ?? []) as ReceitaIA[]);
+    } catch {
+      toast.error("Erro ao carregar receitas. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
 
+  useEffect(() => {
+    carregarReceitas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const visiveis = useMemo(
+    () => (filtro === "todas" ? receitas : receitas.filter((r) => r.tipo === filtro)),
+    [receitas, filtro],
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-5 rounded-[24px] shadow-premium">
-        <h3 className="text-sm font-bold text-gray-900 mb-1 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400" /> Chef Inteligente
-        </h3>
-        <p className="text-xs text-gray-500 leading-relaxed">
-          Gere receitas personalizadas para sua fase do tratamento, com foto realista.
-        </p>
-        
-        <div className="grid grid-cols-3 gap-2 mt-5">
-          {["Café", "Almoço", "Jantar"].map((t) => (
-            <button
-              key={t}
-              disabled={loading}
-              onClick={() => generate(t)}
-              className="py-3 rounded-2xl bg-surface text-forest text-[11px] font-bold uppercase tracking-wider hover:bg-forest hover:text-white transition-all disabled:opacity-50"
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-5">
+      {/* Filtros */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+        {FILTROS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFiltro(f.key)}
+            className={`shrink-0 px-4 py-2 rounded-full text-[12px] font-bold whitespace-nowrap transition-all ${
+              filtro === f.key
+                ? "bg-forest text-white shadow-lg shadow-forest/20"
+                : "bg-white text-gray-500 shadow-premium"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
-      {loading && (
-        <div className="bg-white p-10 rounded-[24px] shadow-premium text-center animate-pulse">
-          <LoadingSpinner size="md" />
-          <p className="mt-4 text-sm font-bold text-gray-900">O Chef está cozinhando...</p>
-          <p className="text-[11px] text-gray-400 mt-1">Gerando receita e foto via DALL-E 3</p>
+      {loading ? (
+        <div className="grid grid-cols-2 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-[20px] shadow-premium overflow-hidden">
+              <div className="skeleton h-20 w-full" />
+              <div className="p-3 space-y-2">
+                <div className="skeleton h-3.5 w-4/5 rounded-full" />
+                <div className="skeleton h-3 w-1/2 rounded-full" />
+                <div className="skeleton h-8 w-full rounded-lg" />
+              </div>
+            </div>
+          ))}
         </div>
+      ) : visiveis.length === 0 ? (
+        <EmptyState
+          icon={<Sparkles />}
+          title="Nenhuma receita"
+          description="Toque em “Gerar novas receitas” para criar seu cardápio."
+        />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {visiveis.map((r) => (
+              <ReceitaCard key={r.id} receita={r} onClick={() => setSelecionada(r)} />
+            ))}
+          </div>
+
+          <button
+            onClick={() => carregarReceitas(true)}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-forest text-forest text-sm font-bold active:scale-[0.98] transition-transform disabled:opacity-50"
+          >
+            <Sparkles size={16} /> Gerar novas receitas
+          </button>
+        </>
       )}
 
-      {recipe && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[24px] shadow-premium overflow-hidden border-none"
+      {selecionada && (
+        <ReceitaDrawer receita={selecionada} onClose={() => setSelecionada(null)} />
+      )}
+    </div>
+  );
+}
+
+function ReceitaCard({ receita, onClick }: { receita: ReceitaIA; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-white rounded-[20px] shadow-premium overflow-hidden text-left active:scale-[0.98] transition-transform"
+    >
+      {/* Topo colorido por tipo */}
+      <div
+        className="relative h-20 flex items-center justify-center"
+        style={{ backgroundColor: TIPO_COR[receita.tipo] ?? "#f1f5f9" }}
+      >
+        <span className="text-[36px] leading-none">{receita.emoji}</span>
+        <span className="absolute top-2 right-2 bg-white text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+          ⏱ {receita.tempo_preparo}min
+        </span>
+      </div>
+
+      <div className="p-3 space-y-2">
+        <p className="text-[14px] font-bold text-gray-900 leading-tight line-clamp-2">{receita.nome}</p>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            🔥 {receita.calorias} kcal
+          </span>
+          <span className="bg-forest/10 text-forest text-[10px] font-bold px-2 py-0.5 rounded-full">
+            💪 {receita.proteinas}g
+          </span>
+        </div>
+        {receita.dica_mounjaro && (
+          <p className="bg-forest/10 text-forest text-[10px] font-medium leading-snug rounded-lg px-2 py-1.5 line-clamp-2">
+            💡 {receita.dica_mounjaro}
+          </p>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-6"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md bg-white rounded-t-[32px] sm:rounded-[32px] max-h-[90vh] overflow-y-auto animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header colorido */}
+        <div
+          className="relative h-28 flex items-center justify-center rounded-t-[32px]"
+          style={{ backgroundColor: TIPO_COR[receita.tipo] ?? "#f1f5f9" }}
         >
-          {recipe.imageUrl && (
-            <div className="aspect-square w-full relative">
-              <img 
-                src={recipe.imageUrl} 
-                alt={recipe.nome} 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-4 left-5 right-4">
-                <h4 className="text-xl font-black text-white leading-tight">{recipe.nome}</h4>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    {recipe.tempoPreparo}
+          <span className="text-[48px] leading-none">{receita.emoji}</span>
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 p-2 rounded-full bg-white/70 text-slate-600"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-black text-slate-900 leading-tight">{receita.nome}</h2>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span className="flex items-center gap-1 bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                <Timer size={12} /> {receita.tempo_preparo} min
+              </span>
+              <span className="bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full capitalize">
+                {receita.dificuldade}
+              </span>
+            </div>
+          </div>
+
+          {/* Macros */}
+          <div className="flex justify-between items-center bg-gray-50 rounded-2xl p-4">
+            {[
+              { label: "Kcal", val: receita.calorias },
+              { label: "Prot", val: `${receita.proteinas}g` },
+              { label: "Carb", val: `${receita.carboidratos}g` },
+              { label: "Gord", val: `${receita.gorduras}g` },
+            ].map((m, i, arr) => (
+              <div key={m.label} className={`text-center flex-1 ${i < arr.length - 1 ? "border-r border-gray-200" : ""}`}>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{m.label}</p>
+                <p className="text-sm font-black text-gray-900">{m.val}</p>
+              </div>
+            ))}
+          </div>
+
+          {receita.dica_mounjaro && (
+            <div className="bg-forest/10 rounded-2xl p-4">
+              <p className="text-[10px] font-black text-forest uppercase tracking-[0.2em] mb-1">Dica Mounjaro</p>
+              <p className="text-sm text-forest/90 leading-relaxed font-medium">💡 {receita.dica_mounjaro}</p>
+            </div>
+          )}
+
+          <div>
+            <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Ingredientes</h5>
+            <ul className="space-y-2">
+              {receita.ingredientes.map((ing, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-forest mt-1.5 shrink-0" />
+                  {ing}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Modo de preparo</h5>
+            <div className="space-y-4">
+              {receita.modo_preparo.map((step, i) => (
+                <div key={i} className="flex gap-4">
+                  <span className="w-6 h-6 rounded-lg bg-surface text-forest text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm">
+                    {i + 1}
                   </span>
-                  <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    {recipe.calorias} kcal
-                  </span>
+                  <p className="text-sm text-gray-600 leading-relaxed pt-0.5">{step}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {receita.beneficios?.length > 0 && (
+            <div>
+              <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Benefícios</h5>
+              <div className="flex flex-wrap gap-2">
+                {receita.beneficios.map((b, i) => (
+                  <span key={i} className="flex items-center gap-1 bg-green-50 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                    <Check size={12} /> {b}
+                  </span>
+                ))}
               </div>
             </div>
           )}
-          
-          <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center bg-gray-50 rounded-2xl p-4">
-              <div className="text-center flex-1 border-r border-gray-200">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prot</p>
-                <p className="text-sm font-black text-gray-900">{recipe.macros.proteina}g</p>
-              </div>
-              <div className="text-center flex-1 border-r border-gray-200">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Carb</p>
-                <p className="text-sm font-black text-gray-900">{recipe.macros.carbo}g</p>
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gord</p>
-                <p className="text-sm font-black text-gray-900">{recipe.macros.gordura}g</p>
-              </div>
-            </div>
-
-            <div>
-              <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Ingredientes</h5>
-              <ul className="space-y-2">
-                {recipe.ingredientes.map((ing: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-forest mt-1.5 shrink-0" />
-                    {ing}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h5 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Preparo</h5>
-              <div className="space-y-4">
-                {recipe.preparo.map((step: string, i: number) => (
-                  <div key={i} className="flex gap-4">
-                    <span className="w-6 h-6 rounded-lg bg-surface text-forest text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm">
-                      {i + 1}
-                    </span>
-                    <p className="text-sm text-gray-600 leading-relaxed pt-0.5">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

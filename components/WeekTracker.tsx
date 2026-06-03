@@ -9,13 +9,14 @@ interface WeekTrackerProps {
   nextDoseDate?: Date;
 }
 
-export function WeekTracker({ doseDates }: WeekTrackerProps) {
+export function WeekTracker({ doseDates, nextDoseDate }: WeekTrackerProps) {
   const today = new Date();
   const start = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
   
   const days = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(start, i);
     const hasDose = doseDates.some(d => isSameDay(new Date(d), date));
+    const isNextDoseDay = nextDoseDate ? isSameDay(nextDoseDate, date) : false;
     const isDayToday = isSameDay(date, today);
     const isDayPast = isPast(date) && !isDayToday;
     
@@ -25,6 +26,7 @@ export function WeekTracker({ doseDates }: WeekTrackerProps) {
       hasDose,
       isToday: isDayToday,
       isPast: isDayPast,
+      isNextDoseDay,
     };
   });
 
@@ -37,9 +39,11 @@ export function WeekTracker({ doseDates }: WeekTrackerProps) {
         if (day.hasDose) {
           circleStyle = "bg-white shadow-dose text-forest-light";
           circleContent = <Check className="h-3.5 w-3.5" strokeWidth={3} />;
-        } else if (day.isToday) {
+        } else if (day.isNextDoseDay) {
           circleStyle = "bg-white/20 border-[1.5px] border-white/50";
           circleContent = <div className="h-1.5 w-1.5 rounded-full bg-white" />;
+        } else if (day.isToday) {
+          circleStyle = "bg-white/10 border-[1.5px] border-white/20";
         } else if (day.isPast) {
           circleStyle = "bg-white/5 border-[1.5px] border-white/10";
         } else {
@@ -51,7 +55,7 @@ export function WeekTracker({ doseDates }: WeekTrackerProps) {
             <div className={`h-[34px] w-[34px] rounded-full flex items-center justify-center transition-all ${circleStyle}`}>
               {circleContent}
             </div>
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${day.isToday || day.hasDose ? 'text-white' : 'text-white/45'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${day.isToday || day.hasDose || day.isNextDoseDay ? 'text-white' : 'text-white/45'}`}>
               {day.label}
             </span>
           </div>

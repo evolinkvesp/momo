@@ -2,13 +2,13 @@
 
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { format, differenceInDays, addDays } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Image as ImageIcon, AlertTriangle, CheckCircle2, MapPin, Calendar as CalendarIcon, Clock, X, Droplet } from "lucide-react";
-import { DoseIndicator } from "@/components/DoseIndicator";
+import { Plus, Image as ImageIcon, AlertTriangle, X, Droplet } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageHeader } from "@/components/PageHeader";
+import { getTextoProximaDose, type CalculoDose } from "@/lib/utils/dose";
 
 interface Dose {
   id: string;
@@ -20,7 +20,17 @@ interface Dose {
   foto_url: string | null;
 }
 
-export function DosesClient({ userId, initialDoses, currentDoseMg }: { userId: string, initialDoses: Dose[], currentDoseMg: number }) {
+export function DosesClient({ 
+  userId, 
+  initialDoses, 
+  currentDoseMg,
+  calculoDose 
+}: { 
+  userId: string, 
+  initialDoses: Dose[], 
+  currentDoseMg: number,
+  calculoDose: CalculoDose
+}) {
   const [doses, setDoses] = useState<Dose[]>(initialDoses);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,19 +44,9 @@ export function DosesClient({ userId, initialDoses, currentDoseMg }: { userId: s
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Derived state
+  const textosDose = getTextoProximaDose(calculoDose);
+  
   const lastDose = doses.length > 0 ? doses[0] : null;
-  const nextDoseDate = lastDose ? addDays(new Date(lastDose.data_aplicacao), 7) : new Date();
-  const daysToNextDose = differenceInDays(nextDoseDate, new Date());
-  
-  const nextDoseLabel = daysToNextDose <= 0 
-    ? "Hoje" 
-    : daysToNextDose === 1 
-      ? "Amanhã" 
-      : `Em ${daysToNextDose} dias`;
-  
-  const nextDoseDay = format(nextDoseDate, "eeee", { locale: ptBR });
-
   const suggestedLocation = () => {
     if (!lastDose) return "abdômen esquerdo";
     const isLeft = lastDose.lado_corpo === 'esquerdo';
@@ -133,13 +133,29 @@ export function DosesClient({ userId, initialDoses, currentDoseMg }: { userId: s
         }
       />
 
+      {calculoDose.isAtrasado && (
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3 animate-fade-in">
+          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-900">Atenção!</p>
+            <p className="text-xs text-amber-700 leading-relaxed mt-0.5">
+              Sua última dose foi há {calculoDose.diasAtraso + 7} dias. O recomendado é aplicar a cada 7 dias para manter a eficácia do tratamento.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Hero Card */}
-      <div className="bg-forest rounded-[24px] p-6 text-white shadow-lg shadow-forest/20 relative overflow-hidden">
+      <div className={`rounded-[24px] p-6 text-white shadow-lg relative overflow-hidden transition-colors ${calculoDose.isAtrasado ? 'bg-red-600 shadow-red-200' : 'bg-forest shadow-forest/20'}`}>
         <div className="relative z-10">
-          <p className="text-[12px] font-medium opacity-80 uppercase tracking-wider">Próxima dose</p>
-          <h2 className="text-[20px] font-bold mt-1">
-            {nextDoseLabel} · <span className="capitalize">{nextDoseDay}</span>
+          <p className="text-[12px] font-medium opacity-80 uppercase tracking-wider">
+            {calculoDose.isAtrasado ? 'Dose Atrasada' : 'Próxima dose'}
+          </p>
+          <h2 className="text-[24px] font-bold mt-1">
+            {textosDose.principal} · <span className="capitalize">{format(calculoDose.data, "eeee", { locale: ptBR })}</span>
           </h2>
+          <p className="text-[13px] opacity-70 mt-1">{calculoDose.dataFormatada}</p>
+          
           <button 
             onClick={handleOpenForm}
             className="mt-5 bg-white text-forest px-6 py-2.5 rounded-full text-sm font-bold transition-transform active:scale-95"
