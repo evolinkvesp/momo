@@ -122,21 +122,43 @@ export function DietaClient({
 
       {/* Tabs */}
       <div className="flex p-1 bg-white rounded-full shadow-premium gap-1 overflow-x-auto scrollbar-hide">
-        {(["Hoje", "Plano", "Receitas"] as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 min-w-[70px] py-2.5 rounded-full text-[12px] font-bold transition-all ${
-              tab === t ? "bg-forest text-white shadow-lg shadow-forest/20" : "text-gray-400 hover:bg-gray-50"
-            }`}
-          >
-            {t === "Receitas" ? (
-              <span className="flex items-center justify-center gap-1">
-                <Sparkles size={12} className={tab === t ? "text-amber-300" : ""} /> {t}
-              </span>
-            ) : t}
-          </button>
-        ))}
+        {(["Hoje", "Plano", "Receitas"] as Tab[]).map(t => {
+          const isSoon = t === "Receitas";
+          return (
+            <button
+              key={t}
+              onClick={() => {
+                if (isSoon) {
+                  toast("Em breve! Receitas personalizadas com IA estão chegando 🚀", {
+                    icon: '⏳',
+                    style: {
+                      borderRadius: '10px',
+                      background: '#333',
+                      color: '#fff',
+                      fontSize: '12px'
+                    },
+                  });
+                  return;
+                }
+                setTab(t);
+              }}
+              className={`flex-1 min-w-[70px] py-2.5 rounded-full text-[12px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                tab === t ? "bg-forest text-white shadow-lg shadow-forest/20" : "text-gray-400 hover:bg-gray-50"
+              } ${isSoon ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {t === "Receitas" ? (
+                <span className="flex items-center justify-center gap-1">
+                  <Sparkles size={12} className={tab === t ? "text-amber-300" : ""} /> {t}
+                </span>
+              ) : t}
+              {isSoon && (
+                <span className="bg-slate-100 text-slate-400 text-[8px] font-black px-1.5 py-0.5 rounded-full leading-none uppercase tracking-tighter shrink-0">
+                  Breve
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <div className="page-transition-enter">
@@ -191,15 +213,31 @@ export function DietaClient({
         )}
 
         {tab === "Plano" && <MeuPlano fase={fase} />}
-        {tab === "Receitas" &&
-          (isExpirado ? (
-            <PaywallCard
-              recurso="Receitas Premium"
-              descricao="Assine para gerar receitas personalizadas com IA por fase do tratamento."
-            />
-          ) : (
-            <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />
-          ))}
+        {tab === "Receitas" && (
+          <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 animate-pulse">
+              <Sparkles size={40} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Receitas com IA</h3>
+              <p className="text-sm text-slate-500 max-w-[260px] mx-auto mt-1">
+                Estamos finalizando o nosso motor de inteligência artificial para gerar cardápios perfeitos para sua fase do Mounjaro.
+              </p>
+            </div>
+          </div>
+        )}
+        {/* 
+          TODO: ativar quando pronto
+          {tab === "Receitas" &&
+            (isExpirado ? (
+              <PaywallCard
+                recurso="Receitas Premium"
+                descricao="Assine para gerar receitas personalizadas com IA por fase do tratamento."
+              />
+            ) : (
+              <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />
+            ))}
+        */}
       </div>
 
       {showForm && (
