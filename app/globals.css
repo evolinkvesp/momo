@@ -81,6 +81,29 @@ body:has([data-portal="fornecedor"]) {
   }
 }
 
+/* Custom Range Slider Thumb */
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #1c4d2e, #2d7a4f);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #1c4d2e, #2d7a4f);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .subtle-bounce {
   animation: subtle-bounce 1.2s infinite ease-in-out;
 }

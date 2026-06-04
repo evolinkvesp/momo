@@ -10,7 +10,7 @@ export default async function SaudePage() {
   // Profile to get height, start date, and target weight
   const { data: profile } = await supabase
     .from('profiles')
-    .select('altura_cm, data_inicio_tratamento, peso_meta')
+    .select('altura_cm, data_inicio_tratamento, peso_meta, peso_inicial')
     .eq('id', session.user.id)
     .single();
 
