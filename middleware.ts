@@ -2,6 +2,34 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Rotas que NÃO exigem plano ativo (trial/premium).
+const ROTAS_LIVRES = [
+  '/',
+  '/login',
+  '/cadastro',
+  '/plano',
+  '/api/cakto',
+  '/esqueceu-senha',
+  '/redefinir-senha',
+];
+
+// Verifica se o profile tem acesso liberado (trial válido ou premium ativo).
+function verificarAcesso(p: {
+  plano_ativo: string | null;
+  trial_expira_em: string | null;
+  assinatura_expira_em: string | null;
+} | null): boolean {
+  if (!p) return false;
+  const agora = Date.now();
+  if (p.plano_ativo === 'premium') {
+    return !p.assinatura_expira_em || new Date(p.assinatura_expira_em).getTime() > agora;
+  }
+  if (p.plano_ativo === 'trial') {
+    return !!p.trial_expira_em && new Date(p.trial_expira_em).getTime() > agora;
+  }
+  return false;
+}
+
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
@@ -29,6 +57,24 @@ export async function middleware(req: NextRequest) {
   // Prevent suppliers from accessing patient routes
   if (session && isSupplier && !isFornecedorRoute && !isPublicRoute) {
     return NextResponse.redirect(new URL('/fornecedor', req.url));
+  }
+
+  // Paywall: pacientes (não-fornecedores) precisam de plano ativo. Se o trial
+  // expirou e não há assinatura, redireciona para /plano — exceto nas rotas
+  // livres.
+  if (session && !isSupplier && !isFornecedorRoute) {
+    const onRotaLivre = ROTAS_LIVRES.some(r => req.nextUrl.pathname.startsWith(r));
+    if (!onRotaLivre) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plano_ativo, trial_expira_em, assinatura_expira_em')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!verificarAcesso(profile)) {
+        return NextResponse.redirect(new URL('/plano', req.url));
+      }
+    }
   }
 
   // Supplier Portal Routing Rules

@@ -1,270 +1,346 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
+  User,
+  MapPin,
+  Syringe,
+  Salad,
   Bell,
+  CalendarClock,
   Package,
-  Calendar,
+  FileBarChart,
+  Lightbulb,
+  Download,
+  Trash2,
+  Info,
   FileText,
   ShieldCheck,
+  Star,
   LogOut,
-  MapPin,
-  User,
-  Save,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/lib/supabase";
+import { PageHeader } from "@/components/PageHeader";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { motion, AnimatePresence } from "framer-motion";
-import { pushSupported, getPushStatus, subscribeToPush, unsubscribeFromPush } from "@/lib/push-client";
+import {
+  pushSupported,
+  getPushStatus,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "@/lib/push-client";
+import { exportarDadosCsv } from "@/lib/export-dados";
+import { SectionLabel, Card } from "./ui";
 
-interface Profile {
-  id: string;
+interface Props {
+  userId: string;
+  email: string;
   nome: string | null;
-  cep: string | null;
-  logradouro: string | null;
-  numero: string | null;
-  complemento: string | null;
-  bairro: string | null;
   cidade: string | null;
   estado: string | null;
+  doseMg: number | null;
+  appVersion: string;
 }
 
-export function ConfiguracoesClient({ initialProfile }: { initialProfile: Profile }) {
-  const [profile, setProfile] = useState<Profile>(initialProfile);
-  const [loading, setLoading] = useState(false);
-  const [view, setView] = useState<"menu" | "address" | "profile">("menu");
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  }
-
-  async function updateProfile() {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update(profile)
-        .eq("id", profile.id);
-
-      if (error) throw error;
-      toast.success("Perfil atualizado!");
-      setView("menu");
-    } catch (err) {
-      toast.error("Erro ao atualizar.");
-    } finally {
-      setLoading(false);
-    }
-  }
+export function ConfiguracoesClient({
+  userId,
+  email,
+  nome,
+  cidade,
+  estado,
+  appVersion,
+}: Props) {
+  const router = useRouter();
+  const [signOutOpen, setSignOutOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div className="space-y-6 pb-32">
-      <PageHeader 
-        title={view === "menu" ? "Configurações" : view === "address" ? "Endereço" : "Meu Perfil"} 
-        showBack={view !== "menu"}
-        onBack={() => setView("menu")}
-      />
+      <PageHeader title="Configurações" showBack={false} />
 
-      <AnimatePresence mode="wait">
-        {view === "menu" && (
-          <motion.div 
-            key="menu"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="space-y-4"
-          >
-            {/* Profile Section */}
-            <div className="bg-white rounded-[24px] p-5 shadow-premium">
-              <button 
-                onClick={() => setView("profile")}
-                className="w-full flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center text-forest">
-                  <User size={24} strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="text-sm font-bold text-gray-900">{profile.nome || "Usuário"}</h3>
-                  <p className="text-[11px] font-medium text-gray-400">Editar dados pessoais</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-forest transition-colors" />
-              </button>
-              
-              <div className="h-px bg-gray-50 my-4" />
+      {/* SEÇÃO 1 — MINHA CONTA */}
+      <section>
+        <SectionLabel>Minha Conta</SectionLabel>
+        <Card>
+          <NavItem
+            icon={<User size={20} strokeWidth={2.5} />}
+            title={nome || "Usuário"}
+            subtitle="Dados pessoais e senha"
+            onClick={() => router.push("/configuracoes/usuario")}
+          />
+          <Divider />
+          <NavItem
+            icon={<MapPin size={20} strokeWidth={2.5} />}
+            title="Endereço de Entrega"
+            subtitle={cidade ? `${cidade}${estado ? `/${estado}` : ""}` : "Não configurado"}
+            onClick={() => router.push("/configuracoes/endereco")}
+          />
+          <Divider />
+          <NavItem
+            icon={<Star size={20} strokeWidth={2.5} />}
+            title="Meu Plano"
+            subtitle="Gerenciar assinatura"
+            onClick={() => router.push("/configuracoes/plano")}
+          />
+        </Card>
+      </section>
 
-              <button 
-                onClick={() => setView("address")}
-                className="w-full flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center text-forest">
-                  <MapPin size={24} strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="text-sm font-bold text-gray-900">Endereço de Entrega</h3>
-                  <p className="text-[11px] font-medium text-gray-400">
-                    {profile.cidade ? `${profile.cidade}/${profile.estado}` : "Não configurado"}
-                  </p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-forest transition-colors" />
-              </button>
-            </div>
+      {/* SEÇÃO 2 — MEU TRATAMENTO */}
+      <section>
+        <SectionLabel>Meu Tratamento</SectionLabel>
+        <Card>
+          <NavItem
+            icon={<Syringe size={20} strokeWidth={2.5} />}
+            title="Dados do tratamento"
+            subtitle="Dose, médico e metas de peso"
+            onClick={() => router.push("/configuracoes/tratamento")}
+          />
+          <Divider />
+          <NavItem
+            icon={<Salad size={20} strokeWidth={2.5} />}
+            title="Restrições alimentares"
+            subtitle="Personalize suas receitas"
+            onClick={() => router.push("/configuracoes/restricoes")}
+          />
+        </Card>
+      </section>
 
-            {/* Notifications */}
-            <NotificacoesSection userId={profile.id} />
+      {/* SEÇÃO 3 — NOTIFICAÇÕES */}
+      <section>
+        <SectionLabel>Notificações</SectionLabel>
+        <NotificacoesSection userId={userId} />
+      </section>
 
-            {/* Security */}
-            <div className="bg-white rounded-[24px] p-5 shadow-premium flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-forest" />
-              <p className="text-[11px] font-medium text-gray-500 leading-relaxed">
-                Seus dados são protegidos com criptografia de ponta a ponta.
-              </p>
-            </div>
+      {/* SEÇÃO 4 — PRIVACIDADE E DADOS */}
+      <section>
+        <SectionLabel>Privacidade e Dados</SectionLabel>
+        <Card>
+          <ExportItem userId={userId} />
+          <Divider />
+          <NavItem
+            icon={<Trash2 size={20} strokeWidth={2.5} />}
+            iconClassName="text-red-500"
+            title="Excluir minha conta"
+            titleClassName="text-red-500"
+            subtitle="Apaga permanentemente seus dados"
+            onClick={() => setDeleteOpen(true)}
+            hideChevron
+          />
+        </Card>
+      </section>
 
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center justify-center gap-2 rounded-full py-4 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <LogOut size={18} /> Sair da conta
-            </button>
-          </motion.div>
-        )}
+      {/* SEÇÃO 5 — SOBRE */}
+      <section>
+        <SectionLabel>Sobre</SectionLabel>
+        <Card>
+          <InfoRow
+            icon={<Info size={20} strokeWidth={2.5} />}
+            title="Versão do app"
+            value={`v${appVersion}`}
+          />
+          <Divider />
+          <LinkRow
+            icon={<FileText size={20} strokeWidth={2.5} />}
+            title="Termos de uso"
+            href="#"
+          />
+          <Divider />
+          <LinkRow
+            icon={<ShieldCheck size={20} strokeWidth={2.5} />}
+            title="Política de privacidade"
+            href="#"
+          />
+          <Divider />
+          <LinkRow
+            icon={<Star size={20} strokeWidth={2.5} />}
+            title="Avalie o app"
+            href="#"
+          />
+        </Card>
+      </section>
 
-        {view === "address" && (
-          <motion.div 
-            key="address"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
-          >
-            <div className="bg-white rounded-[24px] p-6 shadow-premium">
-              <div className="grid grid-cols-2 gap-4">
-                <Input 
-                  label="CEP" 
-                  value={profile.cep || ""} 
-                  onChange={v => setProfile({...profile, cep: v})} 
-                  placeholder="00000-000"
-                />
-                <Input 
-                  label="UF" 
-                  value={profile.estado || ""} 
-                  onChange={v => setProfile({...profile, estado: v.toUpperCase()})} 
-                  maxLength={2}
-                />
-                <div className="col-span-2">
-                  <Input 
-                    label="Logradouro" 
-                    value={profile.logradouro || ""} 
-                    onChange={v => setProfile({...profile, logradouro: v})} 
-                    placeholder="Rua, Avenida..."
-                  />
-                </div>
-                <Input 
-                  label="Número" 
-                  value={profile.numero || ""} 
-                  onChange={v => setProfile({...profile, numero: v})} 
-                />
-                <Input 
-                  label="Bairro" 
-                  value={profile.bairro || ""} 
-                  onChange={v => setProfile({...profile, bairro: v})} 
-                />
-                <div className="col-span-2">
-                  <Input 
-                    label="Cidade" 
-                    value={profile.cidade || ""} 
-                    onChange={v => setProfile({...profile, cidade: v})} 
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input 
-                    label="Complemento" 
-                    value={profile.complemento || ""} 
-                    onChange={v => setProfile({...profile, complemento: v})} 
-                    placeholder="Apto, Bloco..."
-                  />
-                </div>
-              </div>
+      {/* SAIR DA CONTA */}
+      <button
+        onClick={() => setSignOutOpen(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-full py-4 text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
+      >
+        <LogOut size={18} /> Sair da conta
+      </button>
 
-              <button 
-                onClick={updateProfile}
-                disabled={loading}
-                className="btn-primary w-full py-4 mt-8 flex items-center justify-center gap-2"
-              >
-                {loading ? <LoadingSpinner size="sm" /> : <><Save size={18} /> Salvar Endereço</>}
-              </button>
-              
-              <button 
-                onClick={() => setView("menu")}
-                className="w-full text-center text-sm font-bold text-gray-400 mt-4 py-2"
-              >
-                Cancelar
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {view === "profile" && (
-          <motion.div 
-            key="profile"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
-          >
-            <div className="bg-white rounded-[24px] p-6 shadow-premium">
-              <Input 
-                label="Nome Completo" 
-                value={profile.nome || ""} 
-                onChange={v => setProfile({...profile, nome: v})} 
-              />
-              
-              <button 
-                onClick={updateProfile}
-                disabled={loading}
-                className="btn-primary w-full py-4 mt-8 flex items-center justify-center gap-2"
-              >
-                {loading ? <LoadingSpinner size="sm" /> : <><Save size={18} /> Salvar Alterações</>}
-              </button>
-
-              <button 
-                onClick={() => setView("menu")}
-                className="w-full text-center text-sm font-bold text-gray-400 mt-4 py-2"
-              >
-                Voltar
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {signOutOpen && <SignOutModal onClose={() => setSignOutOpen(false)} />}
+      {deleteOpen && (
+        <DeleteAccountModal email={email} onClose={() => setDeleteOpen(false)} />
+      )}
     </div>
   );
 }
 
+/* ---------- Menu rows ---------- */
+
+function Divider() {
+  return <div className="mx-4 h-px bg-gray-50" />;
+}
+
+function NavItem({
+  icon,
+  title,
+  subtitle,
+  onClick,
+  iconClassName = "text-forest",
+  titleClassName = "text-gray-900",
+  hideChevron,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  onClick: () => void;
+  iconClassName?: string;
+  titleClassName?: string;
+  hideChevron?: boolean;
+}) {
+  return (
+    <button onClick={onClick} className="group flex w-full items-center gap-4 p-4 text-left">
+      <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-surface ${iconClassName}`}>
+        {icon}
+      </div>
+      <div className="flex-1">
+        <h3 className={`text-sm font-bold ${titleClassName}`}>{title}</h3>
+        {subtitle && <p className="text-[11px] font-medium text-gray-400">{subtitle}</p>}
+      </div>
+      {!hideChevron && (
+        <ChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-forest" />
+      )}
+    </button>
+  );
+}
+
+function InfoRow({
+  icon,
+  title,
+  value,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="flex w-full items-center gap-4 p-4">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-forest">
+        {icon}
+      </div>
+      <h3 className="flex-1 text-sm font-bold text-gray-900">{title}</h3>
+      <span className="text-sm font-semibold text-gray-400">{value}</span>
+    </div>
+  );
+}
+
+function LinkRow({
+  icon,
+  title,
+  href,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  href: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex w-full items-center gap-4 p-4"
+    >
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-forest">
+        {icon}
+      </div>
+      <h3 className="flex-1 text-sm font-bold text-gray-900">{title}</h3>
+      <ChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-forest" />
+    </a>
+  );
+}
+
+/* ---------- Export data ---------- */
+
+function ExportItem({ userId }: { userId: string }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleExport() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await exportarDadosCsv(userId);
+      toast.success("Download iniciado!");
+    } catch {
+      toast.error("Não foi possível exportar os dados.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleExport}
+      disabled={busy}
+      className="group flex w-full items-center gap-4 p-4 text-left"
+    >
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-forest">
+        {busy ? <LoadingSpinner size="sm" /> : <Download size={20} strokeWidth={2.5} />}
+      </div>
+      <div className="flex-1">
+        <h3 className="text-sm font-bold text-gray-900">Exportar meus dados</h3>
+        <p className="text-[11px] font-medium text-gray-400">
+          Baixe um CSV com doses, medições e sintomas
+        </p>
+      </div>
+      <ChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-forest" />
+    </button>
+  );
+}
+
+/* ---------- Notifications ---------- */
+
 interface NotifConfig {
   lembrete_dose: boolean;
+  dia_semana_dose: number | null;
+  horario_dose: string | null;
   alerta_estoque: boolean;
   relatorio_semanal: boolean;
   dicas_dieta: boolean;
 }
 
 const DEFAULT_CONFIG: NotifConfig = {
-  lembrete_dose: true,
-  alerta_estoque: true,
+  lembrete_dose: false,
+  dia_semana_dose: 1,
+  horario_dose: "09:00",
+  alerta_estoque: false,
   relatorio_semanal: false,
-  dicas_dieta: true,
+  dicas_dieta: false,
 };
 
+const DIAS = [
+  { value: "0", label: "Domingo" },
+  { value: "1", label: "Segunda" },
+  { value: "2", label: "Terça" },
+  { value: "3", label: "Quarta" },
+  { value: "4", label: "Quinta" },
+  { value: "5", label: "Sexta" },
+  { value: "6", label: "Sábado" },
+];
+
 function NotificacoesSection({ userId }: { userId: string }) {
+  const supported = pushSupported();
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
-  const supported = pushSupported();
 
   const [config, setConfig] = useState<NotifConfig>(DEFAULT_CONFIG);
   const [configId, setConfigId] = useState<string | null>(null);
+
+  const [estoqueMin, setEstoqueMin] = useState<number>(2);
+  const [alertaId, setAlertaId] = useState<string | null>(null);
+  const [alertaAtivo, setAlertaAtivo] = useState(false);
 
   useEffect(() => {
     getPushStatus().then(setPushOn).catch(() => {});
@@ -278,17 +354,62 @@ function NotificacoesSection({ userId }: { userId: string }) {
       if (data) {
         setConfigId(data.id);
         setConfig({
-          lembrete_dose: data.lembrete_dose ?? true,
-          alerta_estoque: data.alerta_estoque ?? true,
+          lembrete_dose: data.lembrete_dose ?? false,
+          dia_semana_dose: data.dia_semana_dose ?? 1,
+          horario_dose: data.horario_dose ? String(data.horario_dose).slice(0, 5) : "09:00",
+          alerta_estoque: data.alerta_estoque ?? false,
           relatorio_semanal: data.relatorio_semanal ?? false,
-          dicas_dieta: data.dicas_dieta ?? true,
+          dicas_dieta: data.dicas_dieta ?? false,
         });
+      }
+
+      const { data: alerta } = await supabase
+        .from("alertas_estoque")
+        .select("id, quantidade_minima, ativo")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (alerta) {
+        setAlertaId(alerta.id);
+        setEstoqueMin(alerta.quantidade_minima ?? 2);
+        setAlertaAtivo(alerta.ativo ?? false);
       }
     })();
   }, [userId]);
 
+  async function persistConfig(patch: Partial<NotifConfig>) {
+    const next = { ...config, ...patch };
+    setConfig(next);
+    const payload = {
+      lembrete_dose: next.lembrete_dose,
+      dia_semana_dose: next.dia_semana_dose,
+      horario_dose: next.horario_dose,
+      alerta_estoque: next.alerta_estoque,
+      relatorio_semanal: next.relatorio_semanal,
+      dicas_dieta: next.dicas_dieta,
+    };
+    if (configId) {
+      const { error } = await supabase
+        .from("configuracoes_notificacao")
+        .update(payload)
+        .eq("id", configId);
+      if (error) toast.error("Erro ao salvar.");
+    } else {
+      const { data, error } = await supabase
+        .from("configuracoes_notificacao")
+        .insert({ user_id: userId, ...payload })
+        .select("id")
+        .single();
+      if (error) toast.error("Erro ao salvar.");
+      if (data) setConfigId(data.id);
+    }
+  }
+
   async function togglePush() {
     if (pushBusy) return;
+    if (!supported) {
+      toast.error("Notificações não são suportadas neste navegador.");
+      return;
+    }
     setPushBusy(true);
     try {
       if (pushOn) {
@@ -296,56 +417,146 @@ function NotificacoesSection({ userId }: { userId: string }) {
         setPushOn(false);
         toast.success("Notificações desativadas.");
       } else {
+        if (typeof Notification !== "undefined" && Notification.permission === "denied") {
+          toast.error("Ative as notificações nas configurações do navegador.");
+          return;
+        }
         await subscribeToPush(userId);
         setPushOn(true);
         toast.success("Notificações ativadas!");
       }
     } catch (err: any) {
-      toast.error(err?.message || "Não foi possível alterar as notificações.");
+      const msg = String(err?.message || "");
+      if (msg.includes("negada")) {
+        toast.error("Ative as notificações nas configurações do navegador.");
+      } else {
+        toast.error(msg || "Não foi possível alterar as notificações.");
+      }
     } finally {
       setPushBusy(false);
     }
   }
 
-  async function updateConfig(key: keyof NotifConfig, value: boolean) {
-    const next = { ...config, [key]: value };
-    setConfig(next);
-    if (configId) {
-      await supabase.from("configuracoes_notificacao").update({ [key]: value }).eq("id", configId);
+  async function persistAlerta(patch: { quantidade_minima?: number; ativo?: boolean }) {
+    const nextMin = patch.quantidade_minima ?? estoqueMin;
+    const nextAtivo = patch.ativo ?? alertaAtivo;
+    if (patch.quantidade_minima !== undefined) setEstoqueMin(patch.quantidade_minima);
+    if (patch.ativo !== undefined) setAlertaAtivo(patch.ativo);
+
+    if (alertaId) {
+      await supabase
+        .from("alertas_estoque")
+        .update({ quantidade_minima: nextMin, ativo: nextAtivo })
+        .eq("id", alertaId);
     } else {
       const { data } = await supabase
-        .from("configuracoes_notificacao")
-        .insert({ user_id: userId, ...next })
+        .from("alertas_estoque")
+        .insert({ user_id: userId, quantidade_minima: nextMin, ativo: nextAtivo })
         .select("id")
         .single();
-      if (data) setConfigId(data.id);
+      if (data) setAlertaId(data.id);
     }
   }
 
   return (
-    <div className="bg-white rounded-[24px] p-5 shadow-premium">
-      <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 ml-1">Notificações</h3>
-      <div className="space-y-4">
-        <Toggle
-          icon={<Bell size={18} />}
-          title="Push e Alertas"
-          subtitle={supported ? undefined : "Não suportado neste navegador"}
-          enabled={pushOn}
-          busy={pushBusy}
-          disabled={!supported}
-          onToggle={togglePush}
-        />
-        <div className="h-px bg-gray-50" />
-        <Toggle icon={<Calendar size={18} />} title="Lembrete de dose" enabled={config.lembrete_dose} onToggle={() => updateConfig("lembrete_dose", !config.lembrete_dose)} />
-        <Toggle icon={<Package size={18} />} title="Alerta de estoque" enabled={config.alerta_estoque} onToggle={() => updateConfig("alerta_estoque", !config.alerta_estoque)} />
-        <Toggle icon={<FileText size={18} />} title="Relatório semanal" enabled={config.relatorio_semanal} onToggle={() => updateConfig("relatorio_semanal", !config.relatorio_semanal)} />
-        <Toggle icon={<Bell size={18} />} title="Dicas de dieta" enabled={config.dicas_dieta} onToggle={() => updateConfig("dicas_dieta", !config.dicas_dieta)} />
-      </div>
-    </div>
+    <Card className="divide-y divide-gray-50">
+      <ToggleRow
+        icon={<Bell size={20} strokeWidth={2.5} />}
+        title="Push e Alertas"
+        subtitle={supported ? "Notificações no seu dispositivo" : "Não suportado neste navegador"}
+        enabled={pushOn}
+        busy={pushBusy}
+        disabled={!supported}
+        onToggle={togglePush}
+      />
+
+      <ToggleRow
+        icon={<CalendarClock size={20} strokeWidth={2.5} />}
+        title="Lembrete de dose"
+        subtitle="Avisa o dia e horário da aplicação"
+        enabled={config.lembrete_dose}
+        onToggle={() => persistConfig({ lembrete_dose: !config.lembrete_dose })}
+        expand={
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                Dia da semana
+              </label>
+              <select
+                className="input-standard appearance-none bg-gray-50"
+                value={String(config.dia_semana_dose ?? 1)}
+                onChange={(e) => persistConfig({ dia_semana_dose: Number(e.target.value) })}
+              >
+                {DIAS.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                Horário
+              </label>
+              <input
+                type="time"
+                className="input-standard bg-gray-50"
+                value={config.horario_dose ?? "09:00"}
+                onChange={(e) => persistConfig({ horario_dose: e.target.value })}
+              />
+            </div>
+          </div>
+        }
+        expanded={config.lembrete_dose}
+      />
+
+      <ToggleRow
+        icon={<Package size={20} strokeWidth={2.5} />}
+        title="Alerta de estoque"
+        subtitle="Avisa quando as ampolas estão acabando"
+        enabled={alertaAtivo}
+        onToggle={() => persistAlerta({ ativo: !alertaAtivo })}
+        expand={
+          <div className="space-y-1.5">
+            <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              Alertar quando restar
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={1}
+                inputMode="numeric"
+                className="input-standard w-24 bg-gray-50"
+                value={estoqueMin}
+                onChange={(e) => persistAlerta({ quantidade_minima: Number(e.target.value) || 1 })}
+              />
+              <span className="text-sm font-medium text-gray-500">ampola(s)</span>
+            </div>
+          </div>
+        }
+        expanded={alertaAtivo}
+      />
+
+      <ToggleRow
+        icon={<FileBarChart size={20} strokeWidth={2.5} />}
+        title="Relatório semanal"
+        subtitle="Receba um resumo toda segunda-feira"
+        enabled={config.relatorio_semanal}
+        onToggle={() => persistConfig({ relatorio_semanal: !config.relatorio_semanal })}
+      />
+
+      <ToggleRow
+        icon={<Lightbulb size={20} strokeWidth={2.5} />}
+        title="Dicas de dieta"
+        subtitle="Dicas personalizadas para sua fase atual"
+        enabled={config.dicas_dieta}
+        onToggle={() => persistConfig({ dicas_dieta: !config.dicas_dieta })}
+      />
+    </Card>
   );
 }
 
-function Toggle({
+function ToggleRow({
   icon,
   title,
   subtitle,
@@ -353,6 +564,8 @@ function Toggle({
   busy,
   disabled,
   onToggle,
+  expand,
+  expanded,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -361,40 +574,192 @@ function Toggle({
   busy?: boolean;
   disabled?: boolean;
   onToggle: () => void;
+  expand?: React.ReactNode;
+  expanded?: boolean;
 }) {
+  const expandRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className={`flex items-center gap-4 ${disabled ? "opacity-50" : ""}`}>
-      <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
-        {icon}
+    <div className={`p-4 ${disabled ? "opacity-60" : ""}`}>
+      <div className="flex items-center gap-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-forest">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-gray-900">{title}</p>
+          {subtitle && <p className="text-[11px] font-medium text-gray-400">{subtitle}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          disabled={disabled || busy}
+          aria-label={title}
+          aria-pressed={enabled}
+          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+            enabled ? "bg-forest" : "bg-gray-200"
+          } ${disabled || busy ? "cursor-not-allowed" : ""}`}
+        >
+          <span
+            className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+              enabled ? "translate-x-5" : ""
+            }`}
+          />
+        </button>
       </div>
-      <div className="flex-1">
-        <p className="text-sm font-bold text-gray-900">{title}</p>
-        {subtitle && <p className="text-[11px] font-medium text-gray-400">{subtitle}</p>}
-      </div>
-      <button
-        type="button"
-        onClick={onToggle}
-        disabled={disabled || busy}
-        aria-label={title}
-        className={`w-10 h-6 rounded-full relative transition-colors ${enabled ? "bg-forest" : "bg-gray-200"} ${disabled || busy ? "cursor-not-allowed" : ""}`}
-      >
-        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${enabled ? "translate-x-4" : ""}`} />
-      </button>
+
+      {expand && (
+        <div
+          ref={expandRef}
+          style={{
+            maxHeight: expanded ? (expandRef.current?.scrollHeight ?? 300) + 24 : 0,
+          }}
+          className="overflow-hidden transition-all duration-300 ease-in-out"
+        >
+          <div className="pl-[60px] pt-4">{expand}</div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Input({ label, value, onChange, placeholder, maxLength }: { label: string, value: string, onChange: (v: string) => void, placeholder?: string, maxLength?: number }) {
+/* ---------- Modals ---------- */
+
+function SignOutModal({ onClose }: { onClose: () => void }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleSignOut() {
+    setBusy(true);
+    try {
+      await supabase.auth.signOut();
+      // Limpa qualquer estado local persistido.
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {}
+      window.location.href = "/login";
+    } catch {
+      toast.error("Erro ao sair.");
+      setBusy(false);
+    }
+  }
+
   return (
-    <div className="space-y-1.5">
-      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 tracking-widest">{label}</label>
-      <input 
-        className="input-standard bg-gray-50"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        maxLength={maxLength}
-      />
+    <ModalShell onClose={onClose}>
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+        <LogOut size={26} />
+      </div>
+      <h3 className="text-center text-lg font-bold text-gray-900">Tem certeza que quer sair?</h3>
+      <p className="mt-1 text-center text-sm text-gray-500">
+        Você precisará entrar novamente para acessar sua conta.
+      </p>
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={handleSignOut}
+          disabled={busy}
+          className="w-full rounded-full bg-red-500 py-4 text-sm font-bold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+        >
+          {busy ? "Saindo..." : "Sair da conta"}
+        </button>
+        <button
+          onClick={onClose}
+          disabled={busy}
+          className="w-full rounded-full py-3 text-sm font-bold text-gray-500"
+        >
+          Cancelar
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function DeleteAccountModal({ email, onClose }: { email: string; onClose: () => void }) {
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const canDelete = confirm.trim() === "DELETE";
+
+  async function handleDelete() {
+    if (!canDelete || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/conta/excluir", { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || "Erro ao excluir conta.");
+      }
+      await supabase.auth.signOut();
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {}
+      window.location.href = "/login";
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir conta.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ModalShell onClose={busy ? undefined : onClose}>
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+        <AlertTriangle size={26} />
+      </div>
+      <h3 className="text-center text-lg font-bold text-red-600">Excluir minha conta</h3>
+      <p className="mt-2 text-center text-sm font-medium text-red-500">
+        Esta ação é permanente. Todos os seus dados ({email}) — doses, medições,
+        sintomas e pedidos — serão apagados e não poderão ser recuperados.
+      </p>
+
+      <div className="mt-5 space-y-1.5">
+        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+          Digite DELETE para confirmar
+        </label>
+        <input
+          className="input-standard bg-gray-50 text-center font-bold tracking-widest"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="DELETE"
+          autoFocus
+        />
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={handleDelete}
+          disabled={!canDelete || busy}
+          className="w-full rounded-full bg-red-500 py-4 text-sm font-bold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {busy ? "Excluindo..." : "Excluir permanentemente"}
+        </button>
+        <button
+          onClick={onClose}
+          disabled={busy}
+          className="w-full rounded-full py-3 text-sm font-bold text-gray-500"
+        >
+          Cancelar
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function ModalShell({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode;
+  onClose?: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-sm rounded-[28px] bg-white p-6 shadow-2xl animate-fade-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
     </div>
   );
 }

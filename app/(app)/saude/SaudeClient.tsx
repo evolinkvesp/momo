@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { format, differenceInWeeks, differenceInDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, X, Download, Scale, Activity, Trophy, TrendingDown, Star, AlertCircle, Droplets, ChevronDown, ChevronUp, TrendingUp, Target, Minus } from "lucide-react";
+import { Plus, X, Scale, Activity, Trophy, TrendingDown, Star, AlertCircle, Droplets, ChevronDown, ChevronUp, TrendingUp, Target, Minus, Share2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, LineChart, Line } from 'recharts';
 import { PageHeader } from "@/components/PageHeader";
+import { ShareProgressDrawer } from "@/components/ShareProgressDrawer";
+import { AchievementModal, type Achievement } from "@/components/AchievementModal";
 import toast from "react-hot-toast";
 
 interface Medicao {
@@ -49,6 +51,11 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
   const [showSintomaForm, setShowSintomaForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [periodoGrafico, setPeriodoGrafico] = useState<number>(30); // 30, 60, 90, 0 (all)
+
+  // Compartilhamento de progresso + celebração de conquistas
+  const [shareOpen, setShareOpen] = useState(false);
+  const [celebrate, setCelebrate] = useState<Achievement | null>(null);
+  const baselineUnlocked = useRef<Set<string> | null>(null);
 
   // Form Medicao
   const [dataMedicao] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
@@ -134,23 +141,6 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
     } catch (error) { console.error(error); toast.error("Erro ao salvar sintoma."); } finally { setLoading(false); }
   };
 
-  const exportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,Tipo Registro,Data,Peso(kg),IMC,Pressao Sistolica,Pressao Diastolica,Glicemia,Circunferencia(cm),Humor,Energia,Tipo Sintoma,Intensidade,Duracao(h),Observacoes\n";
-    medicoes.forEach(m => {
-      csvContent += ["Medição", format(new Date(m.data_medicao), "dd/MM/yyyy HH:mm"), m.peso_kg || "", m.imc || "", m.pressao_sistolica || "", m.pressao_diastolica || "", m.glicemia || "", m.circunferencia_abdominal_cm || "", m.humor || "", m.energia || "", "", "", "", `"${m.observacoes || ""}"`].join(",") + "\n";
-    });
-    sintomas.forEach(s => {
-      csvContent += ["Sintoma", format(new Date(s.data), "dd/MM/yyyy HH:mm"), "", "", "", "", "", "", "", "", s.tipo || "", s.intensidade || "", s.duracao_horas || "", `"${s.descricao || ""}"`].join(",") + "\n";
-    });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `momo_dados_saude_${format(new Date(), "yyyyMMdd")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const pesoAtual = medicoes[0]?.peso_kg;
   const pesoInicial = profile?.peso_inicial || (medicoes.length > 0 ? medicoes[medicoes.length - 1].peso_kg : null);
   const deltaPeso = pesoAtual && pesoInicial ? (pesoAtual - pesoInicial) : 0;
@@ -214,6 +204,46 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
   const isLost10kg = deltaPeso <= -10;
   const isImcOk = imcAtual > 0 && imcAtual < 30;
 
+  // Catálogo de conquistas (ordem = prioridade de celebração).
+  const ACHIEVEMENTS: { id: string; emoji: string; name: string; unlocked: boolean }[] = [
+    { id: "lost10", emoji: "🎯", name: "10 kg perdidos", unlocked: isLost10kg },
+    { id: "lost5", emoji: "🔥", name: "5 kg perdidos", unlocked: isLost5kg },
+    { id: "weeks10", emoji: "⭐", name: "10 semanas de tratamento", unlocked: isTenWeeks },
+    { id: "month1", emoji: "🏆", name: "1 mês de tratamento", unlocked: isOneMonth },
+    { id: "imcOk", emoji: "💪", name: "IMC abaixo de 30", unlocked: isImcOk },
+    { id: "first", emoji: "⚖️", name: "Primeira pesagem", unlocked: hasFirstWeight },
+  ];
+  const unlockedKey = ACHIEVEMENTS.filter((a) => a.unlocked).map((a) => a.id).join(",");
+
+  // Detecta conquistas recém-desbloqueadas. A primeira renderização apenas
+  // registra a linha de base (não celebra o que o usuário já tinha).
+  useEffect(() => {
+    const current = new Set(ACHIEVEMENTS.filter((a) => a.unlocked).map((a) => a.id));
+    if (baselineUnlocked.current === null) {
+      baselineUnlocked.current = current;
+      return;
+    }
+    const novo = ACHIEVEMENTS.find((a) => a.unlocked && !baselineUnlocked.current!.has(a.id));
+    baselineUnlocked.current = current;
+    if (novo) setCelebrate({ emoji: novo.emoji, name: novo.name });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlockedKey]);
+
+  // Dados para o card de compartilhamento.
+  const serieCompleta = useMemo(
+    () => [...medicoes].filter((m) => m.peso_kg).reverse().map((m) => m.peso_kg),
+    [medicoes],
+  );
+  const shareData = {
+    pesoPerdido: deltaPeso < 0 ? -deltaPeso : 0,
+    semanas: semanasTratamento,
+    imc: imcAtual,
+    pesoInicial: pesoInicial ?? null,
+    pesoAtual: pesoAtual ?? null,
+    mediaSemana: mediaSemana < 0 ? -mediaSemana : 0,
+    serie: serieCompleta,
+  };
+
   const currentIMCRealTime = useMemo(() => {
     const p = parseFloat(peso);
     const h = (profile?.altura_cm || 0) / 100;
@@ -240,9 +270,21 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
 
   return (
     <div className="space-y-6 pb-32">
-      <PageHeader 
-        title="Peso & Saúde" 
-        action={<button onClick={exportCSV} className="text-slate-400"><Download className="h-5 w-5" /></button>}
+      <PageHeader
+        title="Peso & Saúde"
+        action={
+          <button
+            onClick={() => setShareOpen(true)}
+            title="Compartilhar progresso"
+            aria-label="Compartilhar progresso"
+            className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-forest shadow-sm transition-transform active:scale-90"
+          >
+            <Share2 className="h-5 w-5" />
+            <span className="pointer-events-none absolute right-0 top-12 z-10 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+              Compartilhar progresso
+            </span>
+          </button>
+        }
       />
 
       <div className="flex gap-2 p-1 bg-slate-100 rounded-full">
@@ -802,6 +844,19 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
           </div>
         </div>
       )}
+
+      {/* Compartilhamento de progresso */}
+      <ShareProgressDrawer open={shareOpen} onClose={() => setShareOpen(false)} data={shareData} />
+
+      {/* Celebração de conquista desbloqueada */}
+      <AchievementModal
+        achievement={celebrate}
+        onClose={() => setCelebrate(null)}
+        onShare={() => {
+          setCelebrate(null);
+          setShareOpen(true);
+        }}
+      />
     </div>
   );
 }

@@ -19,6 +19,8 @@ import { MacroRing } from "@/components/MacroRing";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageHeader } from "@/components/PageHeader";
+import { PaywallCard } from "@/components/PaywallCard";
+import { usePlano } from "@/hooks/usePlano";
 import toast from "react-hot-toast";
 import {
   PLANOS,
@@ -54,6 +56,7 @@ export function DietaClient({
   const [tab, setTab] = useState<Tab>("Hoje");
   const [refeicoes, setRefeicoes] = useState<Refeicao[]>(initialRefeicoes);
   const [showForm, setShowForm] = useState(false);
+  const { isExpirado } = usePlano();
 
   const fase = faseFromDose(doseMg);
   const plano = PLANOS[fase];
@@ -188,7 +191,15 @@ export function DietaClient({
         )}
 
         {tab === "Plano" && <MeuPlano fase={fase} />}
-        {tab === "Receitas" && <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />}
+        {tab === "Receitas" &&
+          (isExpirado ? (
+            <PaywallCard
+              recurso="Receitas Premium"
+              descricao="Assine para gerar receitas personalizadas com IA por fase do tratamento."
+            />
+          ) : (
+            <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />
+          ))}
       </div>
 
       {showForm && (

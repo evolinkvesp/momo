@@ -1,12 +1,10 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import pkg from "@/package.json";
-import { ConfiguracoesClient } from "./ConfiguracoesClient";
+import { UsuarioClient } from "./UsuarioClient";
 
-// Reads the user's profile + notification config per request.
 export const dynamic = "force-dynamic";
 
-export default async function ConfiguracoesPage() {
+export default async function UsuarioPage() {
   const supabase = createServerClient();
   const {
     data: { session },
@@ -16,19 +14,20 @@ export default async function ConfiguracoesPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, nome, cidade, estado, dose_atual_mg")
+    .select("nome, data_nascimento, sexo, altura_cm")
     .eq("id", session.user.id)
     .single();
 
   return (
-    <ConfiguracoesClient
+    <UsuarioClient
       userId={session.user.id}
       email={session.user.email ?? ""}
-      nome={profile?.nome ?? null}
-      cidade={profile?.cidade ?? null}
-      estado={profile?.estado ?? null}
-      doseMg={profile?.dose_atual_mg ?? null}
-      appVersion={pkg.version}
+      initial={{
+        nome: profile?.nome ?? "",
+        data_nascimento: profile?.data_nascimento ?? "",
+        sexo: profile?.sexo ?? "",
+        altura_cm: profile?.altura_cm != null ? String(profile.altura_cm) : "",
+      }}
     />
   );
 }

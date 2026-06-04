@@ -1,0 +1,53 @@
+"use client";
+
+import { usePlano } from "@/hooks/usePlano";
+
+/**
+ * Thin banner shown at the top of the app while the user is on a trial
+ * (or right after it expired). Turns amber when ≤ 2 days are left and red
+ * once access has expired. Hidden for premium users.
+ */
+export function TrialBanner() {
+  const { isTrial, diasRestantesTrial, isExpirado, loading } = usePlano();
+
+  if (loading) return null;
+  if (!isTrial && !isExpirado) return null;
+
+  const urgente = diasRestantesTrial <= 2;
+
+  return (
+    <div
+      style={{
+        background: isExpirado ? "#ef4444" : urgente ? "#f59e0b" : "#1c4d2e",
+        padding: "10px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 8,
+      }}
+    >
+      <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>
+        {isExpirado
+          ? "⚠️ Seu acesso expirou. Assine para continuar."
+          : urgente
+            ? `⚠️ Trial expira em ${diasRestantesTrial} dia(s)!`
+            : `🌿 Trial gratuito — ${diasRestantesTrial} dias restantes`}
+      </span>
+      <a
+        href="/plano"
+        style={{
+          background: "#fff",
+          color: "#1c4d2e",
+          fontSize: 12,
+          fontWeight: 700,
+          padding: "6px 14px",
+          borderRadius: 999,
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {isExpirado ? "Assinar agora" : "Ver planos"}
+      </a>
+    </div>
+  );
+}

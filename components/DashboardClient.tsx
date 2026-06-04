@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -8,6 +9,7 @@ import Link from "next/link";
 import { WeekTracker } from "./WeekTracker";
 import { DashboardChart } from "./DashboardChart";
 import { NotificationBell } from "./NotificationBell";
+import { ShareProgressDrawer } from "./ShareProgressDrawer";
 import { getTextoProximaDose, type CalculoDose } from "@/lib/utils/dose";
 
 interface DashboardClientProps {
@@ -64,6 +66,24 @@ export function DashboardClient({
 
   const textosDose = getTextoProximaDose(calculoDose);
 
+  // Compartilhamento de conquista a partir do dashboard.
+  const [shareOpen, setShareOpen] = useState(false);
+  const pesoPerdido = Number(weightDelta) > 0 ? Number(weightDelta) : 0;
+  const semanasShare = Math.max(1, weeksCompleted);
+  const alturaM = (profile?.altura_cm || 0) / 100;
+  const imcShare =
+    lastWeight?.peso_kg && alturaM > 0 ? lastWeight.peso_kg / (alturaM * alturaM) : 0;
+  const firstWeight = weights?.[weights.length - 1];
+  const shareData = {
+    pesoPerdido,
+    semanas: semanasShare,
+    imc: imcShare,
+    pesoInicial: firstWeight?.peso_kg ?? profile?.peso_inicial ?? null,
+    pesoAtual: lastWeight?.peso_kg ?? null,
+    mediaSemana: pesoPerdido / semanasShare,
+    serie: [...(weights || [])].reverse().map((w) => w.peso_kg).filter(Boolean),
+  };
+
   return (
     <motion.div 
       variants={container}
@@ -119,7 +139,7 @@ export function DashboardClient({
           iconBg={textosDose.cor === 'red' ? 'bg-red-50' : textosDose.cor === 'green' ? 'bg-green-50' : 'bg-[#e8f5ee]'}
           iconColor={textosDose.cor === 'red' ? 'text-red-600' : textosDose.cor === 'green' ? 'text-green-600' : 'text-[#16a34a]'}
         />
-        <MetricCard 
+        <MetricCard
           variants={item}
           icon={<Scale className="w-4 h-4" />}
           label="Peso atual"
@@ -128,6 +148,16 @@ export function DashboardClient({
           badge={Number(weightDelta) > 0 ? `-${weightDelta}kg total` : undefined}
           iconBg="bg-[#e8f5ee]"
           iconColor="text-[#16a34a]"
+          footer={
+            pesoPerdido >= 1 ? (
+              <button
+                onClick={() => setShareOpen(true)}
+                className="mt-2 self-start rounded-full bg-[#e8f5ee] px-3 py-1 text-[11px] font-bold text-[#1c4d2e] transition-transform active:scale-95"
+              >
+                🎉 Compartilhar conquista
+              </button>
+            ) : undefined
+          }
         />
         <MetricCard 
           variants={item}
@@ -193,20 +223,22 @@ export function DashboardClient({
           label="Semanas"
           value={`${weeksCompleted}`}
         />
-        <MiniStatCard 
+        <MiniStatCard
           variants={item}
           label="Perdido"
           value={`${weightDelta}kg`}
           delta="total"
         />
       </div>
+
+      <ShareProgressDrawer open={shareOpen} onClose={() => setShareOpen(false)} data={shareData} />
     </motion.div>
   );
 }
 
-function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, iconColor, valueColor, variants }: any) {
+function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, iconColor, valueColor, variants, footer }: any) {
   return (
-    <motion.div 
+    <motion.div
       variants={variants}
       className="bg-white rounded-[20px] p-4 shadow-premium flex flex-col justify-between"
     >
@@ -220,12 +252,13 @@ function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, i
           </span>
         )}
       </div>
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col">
         <p className="text-[11px] font-medium text-gray-400">{label}</p>
         <div className="flex flex-col mt-0.5">
           <h4 className={`text-[18px] font-bold tracking-tight line-clamp-1 ${valueColor || 'text-gray-900'}`}>{value}</h4>
           <span className="text-[11px] font-medium text-gray-400">{subValue}</span>
         </div>
+        {footer}
       </div>
     </motion.div>
   );

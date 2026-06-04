@@ -81,7 +81,7 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
         </div>
       </div>
 
-      <div className="bg-white rounded-[24px] p-5 border border-slate-50 shadow-sm space-y-4">
+      <div className="bg-white rounded-[24px] p-5 pb-8 border border-slate-50 shadow-sm space-y-4 h-auto">
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dados Gerais</p>
         <Field label="Nome Fantasia">
           <input name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} className="input-standard" />
@@ -108,7 +108,7 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
       </div>
 
       {/* ÁREA DE ENTREGA */}
-      <div className="bg-white rounded-[24px] p-5 border border-slate-50 shadow-sm space-y-6">
+      <div className="bg-white rounded-[24px] p-5 pb-8 border border-slate-50 shadow-sm space-y-6 h-auto">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-forest" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Área de Entrega</p>

@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, User, Sparkles, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { PaywallCard } from "@/components/PaywallCard";
+import { usePlano } from "@/hooks/usePlano";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFabVisibility } from "@/components/FabVisibilityContext";
 import ReactMarkdown from 'react-markdown';
@@ -22,6 +24,7 @@ type ChatMessage = {
 
 export default function AssistentePage() {
   const { setFabHidden } = useFabVisibility();
+  const { isExpirado } = usePlano();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -98,6 +101,20 @@ export default function AssistentePage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (isExpirado) {
+    return (
+      <div className="flex min-h-[calc(100vh-10rem)] flex-col pb-36">
+        <PageHeader title="Assistente IA" />
+        <div className="mt-6">
+          <PaywallCard
+            recurso="Assistente IA Premium"
+            descricao="Assine para conversar com o assistente sem limite de perguntas."
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
