@@ -32,7 +32,7 @@ export function pushSupported(): boolean {
 /** Whether this device currently has an active push subscription. */
 export async function getPushStatus(): Promise<boolean> {
   if (!pushSupported()) return false;
-  const reg = await navigator.serviceWorker.getRegistration();
+  const reg = await navigator.serviceWorker.getRegistration("/");
   if (!reg) return false;
   const sub = await reg.pushManager.getSubscription();
   return !!sub;
@@ -48,11 +48,11 @@ export async function subscribeToPush(userId: string): Promise<void> {
   const permission = await Notification.requestPermission();
   if (permission !== "granted") throw new Error("Permissão de notificação negada.");
 
-  // Obtém ou registra o service worker
-  let reg = await navigator.serviceWorker.getRegistration("/sw.js");
+  // Obtém ou registra o service worker (escopo raiz "/", não o path do arquivo)
+  let reg = await navigator.serviceWorker.getRegistration("/");
   if (!reg) {
     try {
-      reg = await navigator.serviceWorker.register("/sw.js");
+      reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
     } catch {
       throw new Error("Recarregue a página e tente ativar novamente.");
     }
@@ -71,7 +71,7 @@ export async function subscribeToPush(userId: string): Promise<void> {
       if (!sw) { clearTimeout(timer); resolve(); return; }
       sw.addEventListener("statechange", function onState() {
         const state = (sw as ServiceWorker).state;
-        if (state === "activated" || state === "installed") {
+        if (state === "activated") {
           clearTimeout(timer);
           resolve();
         } else if (state === "redundant") {
@@ -80,7 +80,12 @@ export async function subscribeToPush(userId: string): Promise<void> {
         }
       });
     });
-    reg = (await navigator.serviceWorker.getRegistration("/sw.js")) ?? reg;
+    reg = (await navigator.serviceWorker.getRegistration("/")) ?? reg;
+  }
+
+  // Verificação final antes de tentar inscrever
+  if (!reg?.active) {
+    throw new Error("Recarregue a página e tente ativar novamente.");
   }
 
   let sub = await reg.pushManager.getSubscription();
@@ -105,7 +110,7 @@ export async function subscribeToPush(userId: string): Promise<void> {
 /** Unsubscribe this device and remove its stored subscription. */
 export async function unsubscribeFromPush(): Promise<void> {
   if (!pushSupported()) return;
-  const reg = await navigator.serviceWorker.getRegistration();
+  const reg = await navigator.serviceWorker.getRegistration("/");
   if (!reg) return;
   const sub = await reg.pushManager.getSubscription();
   if (sub) {
