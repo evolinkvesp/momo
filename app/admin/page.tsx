@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase-server";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminDashboardClient } from "@/components/AdminDashboardClient";
 import { format, subDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 export const dynamic = "force-dynamic";
 

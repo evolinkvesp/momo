@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase-server";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminFinanceiroClient } from "@/components/AdminFinanceiroClient";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 

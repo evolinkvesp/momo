@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase-server";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminUsuariosClient } from "@/components/AdminUsuariosClient";
 
 export const dynamic = "force-dynamic";
