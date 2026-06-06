@@ -154,118 +154,161 @@ export default function FornecedorProdutosPage() {
           <div className="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
             <Package className="mx-auto text-slate-300 mb-4" size={48} />
             <p className="text-slate-500 font-medium">Nenhum produto cadastrado.</p>
-            <button onClick={openCreate} className="mt-4 text-sm font-bold text-forest">+ Adicionar produto</button>
+            <button type="button" onClick={openCreate} className="mt-4 text-sm font-bold text-forest hover:underline">+ Adicionar produto</button>
           </div>
         ) : (
           produtos.map((p) => (
-            <div key={p.id} className="bg-white p-5 rounded-[24px] border border-slate-50 shadow-sm flex justify-between items-center">
+            <motion.div 
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={p.id} 
+              className="bg-white p-5 rounded-[24px] border border-slate-50 shadow-sm flex justify-between items-center group hover:border-forest/20 transition-all"
+            >
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center font-black">
-                  {p.dose_mg}
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center font-black">
+                    {p.dose_mg}
+                  </div>
+                  {p.preco_promocional != null && (
+                    <div className="absolute -top-2 -right-2 bg-amber-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase">
+                      Oferta
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">{TIPO_PRODUTO_LABEL[p.tipo_produto]}</p>
-                  <p className="text-xs font-bold text-forest">
-                    {formatBRL(p.preco_promocional ?? p.preco)}
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-slate-900">{TIPO_PRODUTO_LABEL[p.tipo_produto]}</p>
+                    {!p.ativo && <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">Inativo</span>}
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-0.5">
+                    <p className="text-xs font-bold text-forest">
+                      {formatBRL(p.preco_promocional ?? p.preco)}
+                    </p>
                     {p.preco_promocional != null && (
-                      <span className="ml-2 text-[10px] font-medium text-slate-400 line-through">{formatBRL(p.preco)}</span>
+                      <span className="text-[10px] font-medium text-slate-400 line-through">{formatBRL(p.preco)}</span>
                     )}
-                  </p>
+                  </div>
                   <p className="text-[10px] font-medium text-slate-400">
-                    Estoque: {p.estoque_disponivel}{!p.ativo && " · inativo"}
+                    Estoque: <span className={p.estoque_disponivel <= 2 ? "text-amber-500 font-bold" : ""}>{p.estoque_disponivel} unidades</span>
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(p)} className="p-2 text-slate-400 hover:text-slate-600"><Edit2 size={18} /></button>
-                <button onClick={() => setDeleteTarget(p)} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={18} /></button>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => openEdit(p)} className="p-2.5 text-slate-400 hover:text-forest hover:bg-forest/5 rounded-xl transition-all"><Edit2 size={18} /></button>
+                <button type="button" onClick={() => setDeleteTarget(p)} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
       </div>
 
       {/* Modal criar/editar */}
-      {showForm && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-6">
-          <div className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] bg-white p-6 animate-slide-up sm:rounded-[32px]">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-black text-slate-900">{editing ? "Editar produto" : "Novo produto"}</h2>
-              <button onClick={() => setShowForm(false)} className="p-2 text-slate-400"><X size={20} /></button>
-            </div>
+      <AnimatePresence>
+        {showForm && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-6 backdrop-blur-sm">
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] bg-white p-6 sm:rounded-[32px] shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">{editing ? "Editar produto" : "Novo produto"}</h2>
+                  <p className="text-xs text-slate-400">Gerencie a oferta do seu catálogo</p>
+                </div>
+                <button type="button" onClick={() => setShowForm(false)} className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["ampola_avulsa", "caixa"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setForm({ ...form, tipo_produto: t })}
-                      className={`rounded-xl py-3 text-xs font-bold transition-all ${
-                        form.tipo_produto === t ? "bg-forest text-white shadow-md" : "bg-slate-50 text-slate-600"
-                      }`}
-                    >
-                      {TIPO_PRODUTO_LABEL[t]}
-                    </button>
-                  ))}
+              <div className="space-y-5">
+                <div>
+                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Tipo de Produto</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["ampola_avulsa", "caixa"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setForm({ ...form, tipo_produto: t })}
+                        className={`rounded-2xl py-3.5 text-xs font-bold transition-all border ${
+                          form.tipo_produto === t 
+                            ? "bg-forest text-white border-forest shadow-lg shadow-forest/20" 
+                            : "bg-white border-slate-100 text-slate-500 hover:border-slate-200"
+                        }`}
+                      >
+                        {TIPO_PRODUTO_LABEL[t]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Dose (mg)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {DOSES.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setForm({ ...form, dose_mg: String(d) })}
+                        className={`min-w-[48px] px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                          form.dose_mg === String(d) 
+                            ? "bg-slate-900 text-white border-slate-900 shadow-md" 
+                            : "bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200"
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {form.tipo_produto === "caixa" && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                    <Field label="Unidades por caixa">
+                      <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="input-standard" placeholder="Ex: 4" />
+                    </Field>
+                  </motion.div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Preço (R$)">
+                    <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="input-standard" placeholder="0,00" />
+                  </Field>
+                  <Field label="Promoção (R$)">
+                    <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="input-standard" placeholder="opcional" />
+                  </Field>
+                </div>
+
+                <Field label="Estoque disponível">
+                  <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="input-standard" />
+                </Field>
+
+                <label className="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border border-slate-100/50 transition-all hover:bg-slate-100">
+                  <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} className="h-5 w-5 rounded-lg border-slate-300 text-forest focus:ring-forest" />
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Disponível para venda</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Desative para ocultar este item da busca</p>
+                  </div>
+                </label>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg shadow-forest/20 active:scale-[0.98] disabled:opacity-70 transition-all"
+                  >
+                    {saving ? <LoadingSpinner size="sm" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
+                  </button>
                 </div>
               </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Dose (mg)</label>
-                <div className="flex flex-wrap gap-2">
-                  {DOSES.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setForm({ ...form, dose_mg: String(d) })}
-                      className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                        form.dose_mg === String(d) ? "bg-forest text-white" : "bg-slate-50 text-slate-500"
-                      }`}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {form.tipo_produto === "caixa" && (
-                <Field label="Unidades por caixa">
-                  <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="input-standard" placeholder="Ex: 4" />
-                </Field>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Preço (R$)">
-                  <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="input-standard" placeholder="0,00" />
-                </Field>
-                <Field label="Promoção (R$)">
-                  <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="input-standard" placeholder="opcional" />
-                </Field>
-              </div>
-
-              <Field label="Estoque disponível">
-                <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="input-standard" />
-              </Field>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} className="h-5 w-5 rounded border-slate-200 text-forest focus:ring-forest" />
-                <span className="text-sm font-medium text-slate-700">Produto ativo (visível para pacientes)</span>
-              </label>
-
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg active:scale-95 disabled:opacity-70"
-              >
-                {saving ? <LoadingSpinner size="sm" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
-              </button>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <ConfirmDialog
         isOpen={!!deleteTarget}
