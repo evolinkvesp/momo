@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { userId, title, msgBody, url } = body;
+    const { userId, title, body: msgBody, url } = body;
 
     console.log(`[PushSend] Attempting to send to ${userId}: ${title}`);
 
