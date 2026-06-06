@@ -19,9 +19,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createServiceClient();
-
   try {
+    const supabase = createServiceClient();
+
     // 2. Buscar usuários (Todos ou apenas um por e-mail para teste)
     let query = supabase.from("profiles").select("id, nome, email");
     

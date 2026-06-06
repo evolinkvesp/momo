@@ -19,7 +19,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createServiceClient();
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch (e: any) {
+    console.error("[Engine] Service client failed:", e.message);
+    return NextResponse.json({ error: "Server configuration error: " + e.message }, { status: 500 });
+  }
   const agora = new Date();
   const hojeStr = format(agora, "yyyy-MM-dd");
   const currentHour = agora.getHours();

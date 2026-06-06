@@ -12,15 +12,14 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get("secret");
-  const ADMIN_EMAIL = "evolinkbr@gmail.com";
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "ryanasafedesouza@gmail.com";
 
   if (secret !== process.env.N8N_SECRET && secret !== "momo8878") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createServiceClient();
-
   try {
+    const supabase = createServiceClient();
     // 1. Busca o ID do seu usuário pelo email
     const { data: profile, error: pError } = await supabase
       .from("profiles")
