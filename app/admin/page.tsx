@@ -1,36 +1,45 @@
 import { redirect } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminDashboardClient } from "@/components/AdminDashboardClient";
-import { format, subDays } from "date-fns";
+import { 
+  format, 
+  subDays, 
+  startOfMonth, 
+  endOfMonth, 
+  subMonths, 
+  isSameMonth, 
+  parseISO,
+  differenceInDays,
+  startOfToday
+} from "date-fns";
 
 export const dynamic = "force-dynamic";
 
 const ADMIN_EMAIL = "evolinkbr@gmail.com";
 
-function buildGrowthData(records: { created_at: string }[], days = 30) {
+// --- Helpers ---
+
+function buildMonthlyChartData(records: any[], dateField: string, valueField?: string) {
   const map = new Map<string, number>();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = format(subDays(new Date(), i), "dd/MM");
+  // Last 6 months
+  for (let i = 5; i >= 0; i--) {
+    const d = format(subMonths(new Date(), i), "MMM", { locale: require('date-fns/locale').ptBR });
     map.set(d, 0);
   }
+
   for (const r of records) {
-    const d = format(new Date(r.created_at), "dd/MM");
-    if (map.has(d)) map.set(d, (map.get(d) || 0) + 1);
+    const d = format(parseISO(r[dateField]), "MMM", { locale: require('date-fns/locale').ptBR });
+    if (map.has(d)) {
+      const val = valueField ? parseFloat(r[valueField] || 0) : 1;
+      map.set(d, (map.get(d) || 0) + val);
+    }
   }
   return Array.from(map.entries()).map(([date, value]) => ({ date, value }));
 }
 
-function buildRevenueData(records: { criado_em: string }[], days = 30) {
-  const map = new Map<string, number>();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = format(subDays(new Date(), i), "dd/MM");
-    map.set(d, 0);
-  }
-  for (const r of records) {
-    const d = format(new Date(r.criado_em), "dd/MM");
-    if (map.has(d)) map.set(d, parseFloat(((map.get(d) || 0) + 29.9).toFixed(2)));
-  }
-  return Array.from(map.entries()).map(([date, value]) => ({ date, value }));
+function calculateChurn(activeStart: number, canceledDuring: number) {
+  if (activeStart === 0) return 0;
+  return (canceledDuring / activeStart) * 100;
 }
 
 export default async function AdminDashboardPage() {
@@ -39,68 +48,145 @@ export default async function AdminDashboardPage() {
   if (!session || session.user.email !== ADMIN_EMAIL) redirect("/login");
 
   const admin = createServiceClient();
-  const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-  const sevenDaysAgo = subDays(new Date(), 7).toISOString();
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const startCurrentMonth = startOfMonth(now);
+  const endCurrentMonth = endOfMonth(now);
+  const startLastMonth = startOfMonth(subMonths(now, 1));
+  const endLastMonth = endOfMonth(subMonths(now, 1));
+  const thirtyDaysAgo = subDays(now, 30);
+  const fifteenDaysAgo = subDays(now, 15);
+  const sevenDaysAgo = subDays(now, 7);
+  const today = startOfToday();
 
+  // --- Fetch All Real Data ---
   const [
-    { count: activeUsers },
-    { count: premiumCount },
-    { count: newUsersWeek },
-    { count: pendingSuppliers },
-    { count: todayOrders },
-    { data: recentProfiles },
-    { data: recentAssinaturas },
-    { data: recentFornecedores },
-    { data: recentPedidos },
+    { data: allProfiles },
+    { data: allAssinaturas },
+    { data: allMedicoes },
+    { data: allDoses },
+    { data: recentOrders },
+    { data: activeFornecedores },
+    { data: allSubscriptions }, // from push_subscriptions for usage metrics
   ] = await Promise.all([
-    admin.from("profiles").select("id", { count: "exact", head: true }).in("plano_ativo", ["premium", "trial"]),
-    admin.from("profiles").select("id", { count: "exact", head: true }).eq("plano_ativo", "premium"),
-    admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", sevenDaysAgo),
-    admin.from("fornecedores").select("id", { count: "exact", head: true }).eq("status", "pendente"),
-    admin.from("pedidos").select("id", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-    admin.from("profiles").select("created_at").gte("created_at", thirtyDaysAgo).order("created_at", { ascending: true }),
-    admin.from("assinaturas").select("criado_em").eq("status", "ativa").gte("criado_em", thirtyDaysAgo),
-    admin.from("fornecedores").select("id, nome_fantasia, razao_social, status, created_at").order("created_at", { ascending: false }).limit(6),
-    admin.from("pedidos").select("id, codigo, status, created_at").order("created_at", { ascending: false }).limit(6),
+    admin.from("profiles").select("id, created_at, plano_ativo, trial_expira_em, assinatura_expira_em, nome, email"),
+    admin.from("assinaturas").select("valor, status, criado_em, user_id, proximo_vencimento"),
+    admin.from("medicoes_saude").select("user_id, data_medicao"),
+    admin.from("doses").select("user_id, data_aplicacao"),
+    admin.from("pedidos").select("id, codigo, status, created_at").order("created_at", { ascending: false }).limit(5),
+    admin.from("fornecedores").select("id, nome_fantasia, status, created_at"),
+    admin.from("push_subscriptions").select("user_id, created_at"),
   ]);
 
-  const growthData = buildGrowthData(recentProfiles || []);
-  const revenueData = buildRevenueData(recentAssinaturas || []);
+  const profiles = allProfiles || [];
+  const assinaturas = allAssinaturas || [];
+  const medicoes = allMedicoes || [];
+  const doses = allDoses || [];
 
-  const activity: { tipo: string; titulo: string; subtitulo: string; data: string }[] = [];
-  for (const f of (recentFornecedores || [])) {
-    activity.push({
-      tipo: "fornecedor",
-      titulo: f.status === "pendente" ? "Fornecedor pendente" : "Novo fornecedor",
-      subtitulo: f.nome_fantasia || f.razao_social,
-      data: f.created_at,
-    });
-  }
-  for (const p of (recentPedidos || [])) {
-    activity.push({
-      tipo: "pedido",
-      titulo: `Pedido ${p.status}`,
-      subtitulo: p.codigo,
-      data: p.created_at,
-    });
-  }
-  activity.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+  // --- 1. Core Metrics ---
+  
+  // MRR (Active Premium Subscriptions)
+  const activePremium = assinaturas.filter(s => s.status === 'ativa');
+  const mrr = activePremium.reduce((acc, s) => acc + (Number(s.valor) || 0), 0);
+  
+  // Growth & Churn
+  const newThisMonth = profiles.filter(p => parseISO(p.created_at) >= startCurrentMonth).length;
+  const newLastMonth = profiles.filter(p => {
+    const d = parseISO(p.created_at);
+    return d >= startLastMonth && d <= endLastMonth;
+  }).length;
+
+  const canceledThisMonth = assinaturas.filter(s => 
+    (s.status === 'cancelada' || s.status === 'expirada') && 
+    s.criado_em && parseISO(s.criado_em) >= startCurrentMonth
+  ).length;
+
+  const activeStartOfMonth = profiles.filter(p => 
+    parseISO(p.created_at) < startCurrentMonth && 
+    (p.plano_ativo === 'premium' || p.plano_ativo === 'trial')
+  ).length;
+
+  const churnRate = calculateChurn(activeStartOfMonth, canceledThisMonth);
+
+  // Conversion (Trial -> Premium)
+  const totalTrials = profiles.filter(p => p.plano_ativo === 'trial' || p.plano_ativo === 'premium' || p.plano_ativo === 'expirado').length;
+  const totalConverted = profiles.filter(p => p.plano_ativo === 'premium').length;
+  const conversionRate = totalTrials > 0 ? (totalConverted / totalTrials) * 100 : 0;
+
+  const ticketMedio = activePremium.length > 0 ? mrr / activePremium.length : 0;
+
+  // --- 2. Usage Metrics (Based on activity logs: medicoes/doses) ---
+  const activeUsers30d = new Set([
+    ...medicoes.filter(m => parseISO(m.data_medicao) >= thirtyDaysAgo).map(m => m.user_id),
+    ...doses.filter(d => parseISO(d.data_aplicacao) >= thirtyDaysAgo).map(d => d.user_id)
+  ]).size;
+
+  const activeUsers7d = new Set([
+    ...medicoes.filter(m => parseISO(m.data_medicao) >= sevenDaysAgo).map(m => m.user_id),
+    ...doses.filter(d => parseISO(d.data_aplicacao) >= sevenDaysAgo).map(d => d.user_id)
+  ]).size;
+
+  const activeUsersToday = new Set([
+    ...medicoes.filter(m => parseISO(m.data_medicao) >= today).map(m => m.user_id),
+    ...doses.filter(d => parseISO(d.data_aplicacao) >= today).map(d => d.user_id)
+  ]).size;
+
+  // --- 3. Chart Data ---
+  const revenueChart = buildMonthlyChartData(activePremium, "criado_em", "valor");
+  const growthChart = buildMonthlyChartData(profiles, "created_at");
+
+  // Plan Distribution
+  const planDist = [
+    { name: "Premium", value: profiles.filter(p => p.plano_ativo === 'premium').length },
+    { name: "Trial", value: profiles.filter(p => p.plano_ativo === 'trial').length },
+    { name: "Expirado/Free", value: profiles.filter(p => p.plano_ativo === 'free' || p.plano_ativo === 'expirado').length },
+  ];
+
+  // --- 4. Alertas Inteligentes ---
+  const alerts: any[] = [];
+  
+  // Prox Renovacao (next 5 days)
+  const fiveDaysFromNow = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+  const proxRenovacao = activePremium.filter(s => s.proximo_vencimento && new Date(s.proximo_vencimento) <= fiveDaysFromNow).length;
+  if (proxRenovacao > 0) alerts.push({ type: 'warning', text: `${proxRenovacao} assinaturas vencem nos próximos 5 dias` });
+
+  // Inativos > 15 dias
+  const activeRecent = new Set([
+    ...medicoes.filter(m => parseISO(m.data_medicao) >= fifteenDaysAgo).map(m => m.user_id),
+    ...doses.filter(d => parseISO(d.data_aplicacao) >= fifteenDaysAgo).map(d => d.user_id)
+  ]);
+  const inactiveUsers = profiles.filter(p => (p.plano_ativo === 'premium' || p.plano_ativo === 'trial') && !activeRecent.has(p.id)).length;
+  if (inactiveUsers > 0) alerts.push({ type: 'info', text: `${inactiveUsers} usuários premium/trial inativos há +15 dias` });
+
+  // Inadimplentes (Pendente status in assinaturas)
+  const pendentes = assinaturas.filter(s => s.status === 'pendente').length;
+  if (pendentes > 0) alerts.push({ type: 'danger', text: `${pendentes} pagamentos pendentes (Pix gerado)` });
 
   return (
     <AdminDashboardClient
       metrics={{
-        activeUsers: activeUsers || 0,
-        premiumCount: premiumCount || 0,
-        mrr: (premiumCount || 0) * 29.9,
-        pendingSuppliers: pendingSuppliers || 0,
-        todayOrders: todayOrders || 0,
-        newUsersWeek: newUsersWeek || 0,
+        mrr,
+        activeCustomers: activePremium.length,
+        newThisMonth,
+        canceledThisMonth,
+        churnRate,
+        conversionRate,
+        ticketMedio,
+        activeUsers30d,
+        activeUsers7d,
+        activeUsersToday,
       }}
-      growthData={growthData}
-      revenueData={revenueData}
-      recentActivity={activity.slice(0, 10)}
+      revenueChart={revenueChart}
+      growthChart={growthChart}
+      planDistribution={planDist}
+      recentCustomers={profiles.slice(0, 5).map(p => ({
+        nome: p.nome || 'Sem nome',
+        email: p.email,
+        plano: p.plano_ativo,
+        valor: assinaturas.find(s => s.user_id === p.id)?.valor || 0,
+        status: p.plano_ativo === 'premium' ? 'ativo' : p.plano_ativo,
+        data: p.created_at
+      }))}
+      alerts={alerts}
     />
   );
 }
