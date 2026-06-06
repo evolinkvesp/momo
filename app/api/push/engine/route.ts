@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase-server";
-import { addMinutes, subMinutes, isBefore, isAfter, format, parseISO } from "date-fns";
+import { addMinutes, subMinutes, format } from "date-fns";
 
 export const runtime = "nodejs";
 
 /**
  * GET /api/push/engine
  * 
- * Lógica central de disparos (Cron Job).
- * 1. Verifica doses agendadas para hoje.
- * 2. Verifica estoque baixo.
- * 3. Dispara notificações via local /api/push/send.
+ * Central Trigger Engine (Run by n8n or Cron).
+ * 1. Daily Check-in (Everyone)
+ * 2. Dose Reminders (All including free/expired)
+ * 3. Low Stock Alerts
  */
 export async function GET(req: Request) {
-  // Proteção por token (URL ou Header Bearer)
   const { searchParams } = new URL(req.url);
   const querySecret = searchParams.get("secret");
   const authHeader = req.headers.get("Authorization");
@@ -21,42 +20,46 @@ export async function GET(req: Request) {
   
   const masterSecret = process.env.N8N_SECRET || process.env.CAKTO_WEBHOOK_SECRET;
 
-  if (
-    querySecret !== masterSecret && 
-    bearerSecret !== masterSecret && 
-    querySecret !== "cron-debug"
-  ) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  if (querySecret !== masterSecret && bearerSecret !== masterSecret && querySecret !== "cron-debug") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const supabase = createServiceClient();
   const agora = new Date();
+  const currentHour = agora.getHours();
+  const currentMinute = agora.getMinutes();
   const logs: any[] = [];
 
   try {
-    // --- LÓGICA 1: LEMBRETES DE DOSE ---
-    // Buscar usuários com lembrete_dose ativo
+    // --- SCENARIO 1: DAILY CHECK-IN (EVERYONE) ---
+    // Triggered once a day for everyone (e.g., at 09:00 AM)
+    if (currentHour === 9 && currentMinute === 0) {
+      const { data: allUsers } = await supabase.from("profiles").select("id, nome");
+      for (const u of allUsers || []) {
+        await triggerPush(
+          u.id, 
+          `Bom dia, ${u.nome?.split(' ')[0] || 'amigo'}! ☀️`, 
+          "Como está seu progresso hoje? Não esqueça de registrar seu peso e refeições.", 
+          "/"
+        );
+        logs.push({ user: u.id, type: 'daily_broadcast' });
+      }
+    }
+
+    // --- SCENARIO 2: DOSE REMINDERS (ALL USERS) ---
+    // Includes those with lembrete_dose active, regardless of plan.
     const { data: configs } = await supabase
       .from("configuracoes_notificacao")
       .select("user_id, dia_semana_dose, horario_dose")
       .eq("lembrete_dose", true);
 
     for (const conf of configs || []) {
-      const diaAtual = agora.getDay(); // 0-6
+      const diaAtual = agora.getDay();
       if (conf.dia_semana_dose === diaAtual && conf.horario_dose) {
-        // Montar a data da dose hoje
         const [h, m] = conf.horario_dose.split(':');
         const dataDose = new Date(agora);
         dataDose.setHours(parseInt(h), parseInt(m), 0, 0);
 
-        // Kind 'pre': 5 min antes
-        const dataPre = subMinutes(dataDose, 5);
-        // Kind 'due': no horário
-        const dataDue = dataDose;
-        // Kind 'post': 10 min depois (se não registrou)
-        const dataPost = addMinutes(dataDose, 10);
-
-        // Verificar se já registrou dose hoje
         const { data: doseHoje } = await supabase
           .from("doses")
           .select("id")
@@ -65,39 +68,43 @@ export async function GET(req: Request) {
           .maybeSingle();
 
         if (!doseHoje) {
-          // Lógica de Janela (excutar a cada 1 min via Cron)
           const diffMinutes = Math.floor((agora.getTime() - dataDose.getTime()) / 60000);
-
+          
           let title = "";
           let body = "";
 
-          if (diffMinutes === -5) {
-            title = "💉 Quase na hora!";
-            body = "Sua dose de Mounjaro é em 5 minutos. Prepare seu material!";
-          } else if (diffMinutes === 0) {
-            title = "⏰ Hora da aplicação!";
-            body = "Está na hora de registrar sua dose semanal. Não esqueça!";
-          } else if (diffMinutes === 10 || diffMinutes === 30) {
-            title = "⚠️ Lembrete de dose";
-            body = "Você ainda não registrou sua dose de hoje. Vamos manter a consistência?";
+          // Check plan status for custom messaging
+          const { data: profile } = await supabase.from("profiles").select("plano_ativo").eq("id", conf.user_id).single();
+          const isFree = profile?.plano_ativo === 'free' || profile?.plano_ativo === 'expirado';
+
+          if (diffMinutes === 0) {
+            title = "⏰ Hora da sua dose!";
+            body = isFree 
+              ? "Está na hora de sua dose semanal. Mantenha seu tratamento em dia!" 
+              : "Hora de aplicar o Mounjaro! Registre no Momo para acompanhar sua evolução.";
+          } else if (diffMinutes === 30) {
+            title = "⚠️ Lembrete de Dose";
+            body = "Você ainda não registrou sua aplicação. A constância é o segredo do resultado!";
           }
 
           if (title) {
             await triggerPush(conf.user_id, title, body, "/doses");
-            logs.push({ user: conf.user_id, type: 'dose', diff: diffMinutes });
+            logs.push({ user: conf.user_id, type: 'dose_reminder', diff: diffMinutes });
           }
         }
       }
     }
 
-    // --- LÓGICA 2: ALERTA DE ESTOQUE ---
+    // --- SCENARIO 3: LOW STOCK (PREMIUM/TRIAL ONLY) ---
     const { data: alertasAtivos } = await supabase
       .from("configuracoes_notificacao")
       .select("user_id")
       .eq("alerta_estoque", true);
 
     for (const a of alertasAtivos || []) {
-      // Calcular estoque atual (igual no dashboard)
+      const { data: p } = await supabase.from("profiles").select("plano_ativo").eq("id", a.user_id).single();
+      if (p?.plano_ativo !== 'premium' && p?.plano_ativo !== 'trial') continue;
+
       const [{ data: ampolas }, { count: dosesUsadas }] = await Promise.all([
         supabase.from("estoque_ampolas").select("quantidade").eq("user_id", a.user_id),
         supabase.from("doses").select("id", { count: 'exact', head: true }).eq("user_id", a.user_id)
@@ -106,24 +113,12 @@ export async function GET(req: Request) {
       const totalComprado = ampolas?.reduce((acc, curr) => acc + (curr.quantidade || 0), 0) || 0;
       const estoqueRestante = totalComprado - (dosesUsadas || 0);
 
-      // Buscar config de limite do usuário
-      const { data: configAlerta } = await supabase
-        .from("alertas_estoque")
-        .select("quantidade_minima")
-        .eq("user_id", a.user_id)
-        .maybeSingle();
-
+      const { data: configAlerta } = await supabase.from("alertas_estoque").select("quantidade_minima").eq("user_id", a.user_id).maybeSingle();
       const limite = configAlerta?.quantidade_minima || 2;
 
-      if (estoqueRestante <= limite && estoqueRestante > 0) {
-        // Enviar apenas 1x por semana ou qdo mudar
-        await triggerPush(
-          a.user_id, 
-          "📦 Estoque Baixo", 
-          `Você tem apenas ${estoqueRestante} ampolas restantes. Que tal repor agora?`,
-          "/estoque"
-        );
-        logs.push({ user: a.user_id, type: 'estoque', qté: estoqueRestante });
+      if (estoqueRestante <= limite && estoqueRestante > 0 && currentMinute === 0 && currentHour === 14) {
+        await triggerPush(a.user_id, "📦 Estoque Baixo", `Você tem apenas ${estoqueRestante} ampolas. Garanta sua reposição!`, "/estoque");
+        logs.push({ user: a.user_id, type: 'stock_alert' });
       }
     }
 
@@ -134,8 +129,7 @@ export async function GET(req: Request) {
 }
 
 async function triggerPush(userId: string, title: string, body: string, url: string) {
-  // Chama a rota interna de envio
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momo-rust-nu.vercel.app";
   try {
     await fetch(`${baseUrl}/api/push/send`, {
       method: 'POST',
@@ -143,6 +137,6 @@ async function triggerPush(userId: string, title: string, body: string, url: str
       body: JSON.stringify({ userId, title, body, url })
     });
   } catch (e) {
-    console.error("Erro ao disparar push:", e);
+    console.error("Error triggering push:", e);
   }
 }

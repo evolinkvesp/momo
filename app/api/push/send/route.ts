@@ -48,6 +48,16 @@ export async function POST(request: Request) {
 
   const payload = JSON.stringify({ title, body, url: url ?? "/" });
 
+  // 1. Record in-app notification first (history)
+  await supabase.from("notifications").insert({
+    user_id: userId,
+    title,
+    body,
+    url: url ?? "/",
+    read: false
+  });
+
+  // 2. Dispatch Push to all registered devices
   const results = await Promise.allSettled(
     subs.map((s) =>
       webpush.sendNotification(
