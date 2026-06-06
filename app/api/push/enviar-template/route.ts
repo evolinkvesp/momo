@@ -7,17 +7,19 @@ export const runtime = "nodejs";
  * POST /api/push/enviar-template
  * 
  * Dispara uma notificação baseada em um template pré-definido.
- * Body: { userId, template, params: [] }
+ * Body: { userId, template, category, params: [] }
  */
 export async function POST(req: Request) {
-  const { userId, template, params = [] } = await req.json().catch(() => ({}));
+  const { userId, template, category, params = [] } = await req.json().catch(() => ({}));
 
   if (!userId || !template) {
     return NextResponse.json({ error: "userId and template are required" }, { status: 400 });
   }
 
   // 1. Validar template
-  const templateFn = (NOTIFICACOES as any)[template];
+  const categoryMap = category ? (NOTIFICACOES as any)[category] : null;
+  const templateFn = categoryMap ? categoryMap[template] : (NOTIFICACOES as any)[template];
+
   if (!templateFn || typeof templateFn !== 'function') {
     return NextResponse.json({ error: "Invalid template key" }, { status: 400 });
   }

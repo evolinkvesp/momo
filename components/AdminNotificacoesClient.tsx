@@ -1,159 +1,235 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Bell, Send, Clock, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Bell, 
+  Send, 
+  Clock, 
+  CheckCircle, 
+  Syringe, 
+  Scale, 
+  Package, 
+  Salad, 
+  Heart, 
+  Smartphone,
+  Zap,
+  Info,
+  ChevronRight,
+  AlertTriangle
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { NOTIFICACOES, TIMING_NOTIFICACOES } from "@/lib/notificacoes-templates";
 
 type Historico = { id: string; titulo: string; mensagem: string; segmento: string; total_enviado: number; criado_em: string };
 
-const SEGMENTOS = [
-  { key: "ativos",          label: "Todos os usuários ativos (trial + premium)" },
-  { key: "premium",         label: "Só usuários premium" },
-  { key: "trial",           label: "Só usuários em trial" },
-  { key: "trial_expirando", label: "Trial expirando em 2 dias" },
-  { key: "sem_dose_10d",    label: "Sem dose nos últimos 10 dias" },
-  { key: "sem_peso_7d",     label: "Sem peso registrado nos últimos 7 dias" },
+const CATEGORIAS = [
+  { key: "DOSES", label: "Doses", icon: Syringe, color: "text-blue-400" },
+  { key: "PROGRESSO", label: "Progresso", icon: Scale, color: "text-purple-400" },
+  { key: "ESTOQUE", label: "Estoque", icon: Package, color: "text-amber-400" },
+  { key: "DIETA", label: "Dieta", icon: Salad, color: "text-green-400" },
+  { key: "ENGAJAMENTO", label: "Engajamento", icon: Heart, color: "text-pink-400" },
+  { key: "SAUDE", label: "Saúde", icon: Heart, color: "text-red-400" },
 ];
-
-const URL_OPCOES = [
-  { value: "/", label: "Início" }, { value: "/doses", label: "Doses" },
-  { value: "/plano", label: "Plano" }, { value: "/estoque", label: "Estoque" }, { value: "/saude", label: "Saúde" },
-];
-
-const SEGMENTO_LABEL: Record<string, string> = { ativos: "Todos ativos", premium: "Premium", trial: "Trial", trial_expirando: "Trial expirando", sem_dose_10d: "Sem dose 10d", sem_peso_7d: "Sem peso 7d" };
 
 export function AdminNotificacoesClient({ historico: initialHistorico }: { historico: Historico[] }) {
+  const [activeTab, setActiveTab] = useState("DOSES");
   const [historico, setHistorico] = useState(initialHistorico);
-  const [form, setForm] = useState({ titulo: "", mensagem: "", url: "/", segmento: "ativos" });
-  const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ enviado: number; totalUsuarios: number } | null>(null);
+  const [sending, setSending] = useState<string | null>(null);
 
-  const tituloOk = form.titulo.length > 0 && form.titulo.length <= 50;
-  const mensagemOk = form.mensagem.length > 0 && form.mensagem.length <= 150;
-
-  async function handleEnviar() {
-    if (!tituloOk || !mensagemOk) return;
-    setSending(true);
-    setResult(null);
+  async function handleDisparar(templateKey: string, category: string) {
+    setSending(templateKey);
     try {
-      const res = await fetch("/api/admin/notificacoes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const fullKey = `${category}.${templateKey}`;
+      // Chama a nova API de broadcast para disparar para todos usando o template
+      const res = await fetch("/api/push/broadcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          template: templateKey,
+          category: category,
+          secret: "momo8878"
+        })
+      });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setResult({ enviado: data.enviado, totalUsuarios: data.totalUsuarios });
-      toast.success(`Enviado para ${data.enviado} dispositivos`);
-      setHistorico((prev) => [{ id: Date.now().toString(), titulo: form.titulo, mensagem: form.mensagem, segmento: form.segmento, total_enviado: data.enviado, criado_em: new Date().toISOString() }, ...prev]);
-      setForm({ titulo: "", mensagem: "", url: "/", segmento: "ativos" });
+
+      toast.success(`Disparo em massa concluído para ${data.successfullySent} usuários!`);
+      
+      // Adicionar ao histórico local (fictício para UI)
+      const mockH: Historico = {
+        id: Math.random().toString(),
+        titulo: templateKey,
+        mensagem: "Template Automático",
+        segmento: "Todos",
+        total_enviado: data.successfullySent,
+        criado_em: new Date().toISOString()
+      };
+      setHistorico([mockH, ...historico]);
     } catch (e: any) {
-      toast.error(e.message || "Erro ao enviar");
+      toast.error(e.message || "Erro ao disparar");
     } finally {
-      setSending(false);
+      setSending(null);
     }
   }
 
+  const currentTemplates = (NOTIFICACOES as any)[activeTab];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-20">
       <div>
-        <h1 className="text-[24px] font-black text-white tracking-tight">Notificações</h1>
-        <p className="text-[rgba(255,255,255,0.35)] text-[13px] mt-0.5">Envie push notifications em massa</p>
+        <h1 className="text-[28px] font-black text-white tracking-tight leading-none">Centro de Notificações</h1>
+        <p className="text-[rgba(255,255,255,0.35)] text-[14px] mt-2 font-medium">Gerencie templates e automações de push</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="a-card-lg p-5 space-y-4">
-            <h3 className="text-[14px] font-bold text-white">Nova notificação</h3>
+      {/* Tabs das Categorias */}
+      <div className="flex p-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] rounded-[20px] gap-1 overflow-x-auto no-scrollbar">
+        {CATEGORIAS.map((cat) => (
+          <button
+            key={cat.key}
+            onClick={() => setActiveTab(cat.key)}
+            className={`flex items-center gap-2 px-5 py-3 rounded-[16px] text-[13px] font-bold transition-all whitespace-nowrap ${
+              activeTab === cat.key 
+              ? "bg-white text-black shadow-lg" 
+              : "text-white/40 hover:text-white/60 hover:bg-white/5"
+            }`}
+          >
+            <cat.icon size={16} className={activeTab === cat.key ? "text-slate-900" : cat.color} />
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-bold text-[rgba(255,255,255,0.4)] uppercase tracking-wide">Título</label>
-                <span className={`text-[10px] font-bold ${form.titulo.length > 50 ? "text-[#ef4444]" : "text-[rgba(255,255,255,0.28)]"}`}>{form.titulo.length}/50</span>
-              </div>
-              <input type="text" value={form.titulo} onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value.slice(0, 50) }))} placeholder="Ex: 📅 Não esqueça sua dose!" className="a-input" />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Lista de Templates */}
+        <div className="lg:col-span-8 space-y-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              {Object.keys(currentTemplates).map((key) => {
+                const templateFn = currentTemplates[key];
+                const preview = templateFn("Usuário", 5, "🏆"); // Mock params para preview
+                const timing = (TIMING_NOTIFICACOES as any)[`${activeTab}.${key}`];
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-bold text-[rgba(255,255,255,0.4)] uppercase tracking-wide">Mensagem</label>
-                <span className={`text-[10px] font-bold ${form.mensagem.length > 150 ? "text-[#ef4444]" : "text-[rgba(255,255,255,0.28)]"}`}>{form.mensagem.length}/150</span>
-              </div>
-              <textarea value={form.mensagem} onChange={(e) => setForm((f) => ({ ...f, mensagem: e.target.value.slice(0, 150) }))} placeholder="Ex: Sua dose de hoje ainda não foi registrada..." className="a-input resize-none h-20" />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-[rgba(255,255,255,0.4)] uppercase tracking-wide mb-1.5 block">URL de destino</label>
-              <select value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} className="a-input">
-                {URL_OPCOES.map((o) => <option key={o.value} value={o.value} style={{ background: "#1a1a1a" }}>{o.label} ({o.value})</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-[rgba(255,255,255,0.4)] uppercase tracking-wide mb-2 block">Destinatários</label>
-              <div className="space-y-2">
-                {SEGMENTOS.map((s) => (
-                  <label key={s.key} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${form.segmento === s.key ? "bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)]" : "bg-[rgba(255,255,255,0.03)] border border-transparent hover:border-[rgba(255,255,255,0.07)]"}`}>
-                    <input type="radio" name="segmento" value={s.key} checked={form.segmento === s.key} onChange={() => setForm((f) => ({ ...f, segmento: s.key }))} className="accent-[#ef4444]" />
-                    <span className="text-[12px] text-[rgba(255,255,255,0.65)]">{s.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={handleEnviar} disabled={sending || !tituloOk || !mensagemOk} className="a-btn-red w-full flex items-center justify-center gap-2">
-              {sending ? <><Clock size={15} className="animate-spin" />Enviando...</> : <><Send size={15} />Enviar notificação</>}
-            </button>
-
-            {result && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 bg-[rgba(74,222,128,0.08)] border border-[rgba(74,222,128,0.2)] rounded-xl p-3">
-                <CheckCircle size={15} className="text-[#4ade80] shrink-0" />
-                <p className="text-[12px] text-[#4ade80]">Enviado para <strong>{result.enviado}</strong> dispositivos de {result.totalUsuarios} usuário{result.totalUsuarios !== 1 ? "s" : ""}</p>
-              </motion.div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="a-card p-5">
-            <h3 className="text-[12px] font-bold text-[rgba(255,255,255,0.3)] uppercase tracking-wide mb-3">Preview</h3>
-            <div className="bg-[rgba(255,255,255,0.04)] rounded-2xl p-4 border border-[rgba(255,255,255,0.07)]">
-              <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-xl bg-[rgba(239,68,68,0.15)] flex items-center justify-center shrink-0">
-                  <Bell size={16} className="text-[#ef4444]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-white truncate">{form.titulo || "Título da notificação"}</p>
-                  <p className="text-[11px] text-[rgba(255,255,255,0.45)] mt-0.5 line-clamp-2">{form.mensagem || "Corpo da mensagem..."}</p>
-                  <p className="text-[10px] text-[rgba(255,255,255,0.25)] mt-1.5">Momo · Agora • {form.url}</p>
-                </div>
-              </div>
-            </div>
-            <p className="text-[11px] text-[rgba(255,255,255,0.25)] mt-2 text-center">Segmento: <strong className="text-[rgba(255,255,255,0.5)]">{SEGMENTO_LABEL[form.segmento]}</strong></p>
-          </div>
-
-          <div className="a-card p-5">
-            <h3 className="text-[12px] font-bold text-[rgba(255,255,255,0.3)] uppercase tracking-wide mb-3">Histórico de envios</h3>
-            {historico.length === 0 ? (
-              <p className="text-[rgba(255,255,255,0.2)] text-[12px] text-center py-6">Nenhum envio registrado</p>
-            ) : (
-              <div className="space-y-2">
-                {historico.map((h) => (
-                  <div key={h.id} className="bg-[rgba(255,255,255,0.03)] rounded-xl p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-semibold text-white truncate">{h.titulo}</p>
-                        <span className="a-badge-gray mt-0.5 inline-block">{SEGMENTO_LABEL[h.segmento] || h.segmento}</span>
+                return (
+                  <div key={key} className="a-card p-5 flex flex-col justify-between group">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 group-hover:text-white transition-colors">
+                          <Bell size={16} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                            <Smartphone size={10} /> Push
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-[12px] font-bold text-[#4ade80]">{h.total_enviado}</p>
-                        <p className="text-[9px] text-[rgba(255,255,255,0.25)]">enviados</p>
+
+                      {/* iPhone Style Preview */}
+                      <div className="bg-[#1a1a1a] rounded-2xl p-4 mb-4 border border-white/5 shadow-inner">
+                        <div className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-[#22c55e] flex items-center justify-center text-white shrink-0 shadow-lg">
+                            <span className="text-[10px] font-black">M</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-bold text-white leading-tight">{preview.title}</p>
+                            <p className="text-[11px] text-white/50 mt-1 leading-snug line-clamp-2">{preview.body}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Descrição</p>
+                      <p className="text-[11px] text-white/40 mb-4">{preview.desc || "Template de engajamento personalizado."}</p>
+
+                      <div className="space-y-2 mb-6">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase">
+                          <Clock size={12} />
+                          Horário: <span className="text-white/60">{timing?.hora ? `${timing.hora}:00` : "Dinâmico"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase">
+                          <Zap size={12} />
+                          Gatilho: <span className="text-white/60">{timing?.condicao || "Ação do usuário"}</span>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-[10px] text-[rgba(255,255,255,0.2)] mt-1.5">{format(new Date(h.criado_em), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+
+                    <div className="flex gap-2 pt-4 border-t border-white/5">
+                      <button 
+                        onClick={() => handleDisparar(key, activeTab)}
+                        disabled={!!sending}
+                        className="flex-1 h-10 rounded-xl bg-white text-black text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                      >
+                        {sending === key ? <Clock size={14} className="animate-spin" /> : <Send size={14} />}
+                        Disparar agora
+                      </button>
+                      <button className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+                        <Info size={14} />
+                      </button>
+                    </div>
                   </div>
-                ))}
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Sidebar: Automação e Histórico */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Status n8n */}
+          <div className="a-card p-6 border-l-4 border-l-green-500">
+            <h4 className="text-[14px] font-bold text-white flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              Motor de Automação
+            </h4>
+            <p className="text-[11px] text-white/30 mt-1 mb-4">Sincronizado com n8n (momo-rust-nu)</p>
+            
+            <div className="space-y-3">
+              <label className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[11px] font-bold text-white/60 uppercase">Envio Automático</span>
+                <div className="h-5 w-10 bg-green-500 rounded-full relative">
+                  <div className="absolute right-1 top-1 h-3 w-3 bg-white rounded-full" />
+                </div>
+              </label>
+              <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-3">
+                <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-amber-500/70 font-medium leading-relaxed">
+                  As notificações agendadas são disparadas conforme o fuso horário (America/Sao_Paulo).
+                </p>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Histórico Recente */}
+          <div className="a-card p-0 overflow-hidden">
+            <div className="p-5 border-b border-white/5 bg-white/[0.01]">
+               <h4 className="text-[12px] font-bold text-white/60 uppercase tracking-widest">Logs de Disparo</h4>
+            </div>
+            <div className="divide-y divide-white/[0.02]">
+              {historico.length === 0 ? (
+                <div className="p-10 text-center text-white/20 text-[11px] font-medium">Nenhum log disponível</div>
+              ) : (
+                historico.map((h) => (
+                  <div key={h.id} className="p-4 hover:bg-white/[0.01] transition-colors">
+                    <div className="flex justify-between items-start mb-1">
+                      <p className="text-[12px] font-bold text-white truncate max-w-[150px]">{h.titulo}</p>
+                      <span className="text-[10px] font-black text-green-500">{h.total_enviado} envios</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-[10px] text-white/30 uppercase font-bold tracking-tighter">{h.segmento}</p>
+                      <p className="text-[10px] text-white/20 font-mono">{format(new Date(h.criado_em), "HH:mm dd/MM")}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
