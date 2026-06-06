@@ -24,7 +24,7 @@ import {
 } from "@/lib/fornecedores";
 import { format, addMinutes, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { m, AnimatePresence  } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -164,7 +164,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
                   <div className="flex flex-col items-center">
                     <div className="relative">
                       {status === 'active' && (
-                        <m.div 
+                        <motion.div 
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                           className="absolute inset-0 bg-[#1c4d2e]/10 rounded-full"
@@ -199,13 +199,13 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
                       )}
                     </div>
                     {status === 'active' && step.key === 'a_caminho' && (
-                      <m.p 
+                      <motion.p 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="text-[11px] font-bold text-[#16a34a] mt-1"
                       >
                         {eta ? `Previsão: ~${eta}` : "Chegando em breve"}
-                      </m.p>
+                      </motion.p>
                     )}
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
       {/* Confirm Receipt Section */}
       <AnimatePresence>
         {p.status === 'enviado' && (
-          <m.div 
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="px-6 mt-6"
@@ -253,7 +253,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
                 {loading ? "Processando..." : "Confirmar recebimento"}
               </button>
             </div>
-          </m.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -357,14 +357,14 @@ function RatingModal({ pedido, onClose }: { pedido: any; onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center px-6">
-      <m.div 
+      <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <m.div 
+      <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
@@ -429,7 +429,7 @@ function RatingModal({ pedido, onClose }: { pedido: any; onClose: () => void }) 
             {enviando ? "Enviando..." : "Enviar avaliação"}
           </button>
         </div>
-      </m.div>
+      </motion.div>
     </div>
   );
 }

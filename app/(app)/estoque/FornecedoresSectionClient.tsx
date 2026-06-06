@@ -18,7 +18,7 @@ import {
   formatBRL,
   TIPO_FORNECEDOR_LABEL,
 } from "@/lib/fornecedores";
-import { m, AnimatePresence  } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 
 export function FornecedoresSectionClient({ 
   fornecedores, 
@@ -100,7 +100,7 @@ export function FornecedoresSectionClient({
       <div className="space-y-4 pb-12">
         <AnimatePresence mode="popLayout">
           {filteredFornecedores.length === 0 ? (
-            <m.div 
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-16 bg-white rounded-[24px] border border-dashed border-slate-200"
@@ -110,10 +110,10 @@ export function FornecedoresSectionClient({
               <p className="text-xs text-slate-400 mt-1">
                 {cidade ? `Na região de ${cidade}` : "Ajuste seus filtros ou busca"}
               </p>
-            </m.div>
+            </motion.div>
           ) : (
             filteredFornecedores.map((f, i) => (
-              <m.div
+              <motion.div
                 layout
                 key={f.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -196,7 +196,7 @@ export function FornecedoresSectionClient({
                     </div>
                   </div>
                 </Link>
-              </m.div>
+              </motion.div>
             ))
           )}
         </AnimatePresence>

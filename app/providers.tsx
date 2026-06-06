@@ -1,7 +1,6 @@
 "use client";
 
 import { Toaster } from "react-hot-toast";
-import { LazyMotion, domAnimation } from "framer-motion";
 
 /**
  * Client-side providers shared across the whole app (toast notifications, and
@@ -9,7 +8,7 @@ import { LazyMotion, domAnimation } from "framer-motion";
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <LazyMotion features={domAnimation}>
+    <>
       {children}
       <Toaster
         position="top-right"
@@ -25,6 +24,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           },
         }}
       />
-    </LazyMotion>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { m  } from 'framer-motion';
+import { motion } from "framer-motion";
 import { 
   ShoppingBag, 
   ClipboardList, 
@@ -98,7 +98,7 @@ export function SupplierDashboardClient({
       </div>
 
       {/* Hero Billing Card */}
-      <m.div 
+      <motion.div 
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="f-card-lg p-5 relative overflow-hidden"
@@ -117,7 +117,7 @@ export function SupplierDashboardClient({
             +24% vs. mês anterior
           </div>
         </div>
-      </m.div>
+      </motion.div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-4">
@@ -127,7 +127,7 @@ export function SupplierDashboardClient({
           { label: "Produtos ativos", value: stats.produtos, icon: Package, color: "text-[#fbbf24]", bg: "bg-[#fbbf24]/10" },
           { label: "Avaliação", value: "4.9", icon: Star, color: "text-[#4ade80]", bg: "bg-[#4ade80]/10" },
         ].map((item, i) => (
-          <m.div 
+          <motion.div 
             key={item.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -142,12 +142,12 @@ export function SupplierDashboardClient({
               <p className="text-[22px] font-bold text-white tracking-[-0.5px]">{item.value}</p>
               <span className="text-[10px] font-bold text-[#4ade80] flex items-center">+5%</span>
             </div>
-          </m.div>
+          </motion.div>
         ))}
       </div>
 
       {/* Sales Chart */}
-      <m.div 
+      <motion.div 
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -209,7 +209,7 @@ export function SupplierDashboardClient({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </m.div>
+      </motion.div>
 
       {/* Recent Orders */}
       <div className="space-y-4">
@@ -233,7 +233,7 @@ export function SupplierDashboardClient({
                                  p.status === 'pendente' ? '#fbbf24' : '#4ade80';
 
               return (
-                <m.div
+                <motion.div
                   key={p.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -258,7 +258,7 @@ export function SupplierDashboardClient({
                       {status?.label || p.status}
                     </span>
                   </div>
-                </m.div>
+                </motion.div>
               );
             })
           )}

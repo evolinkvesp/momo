@@ -7,9 +7,6 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      maxWidth: {
-        'screen': '100vw',
-      },
       fontFamily: {
         sans: ["var(--font-dm-sans)", "DM Sans", "system-ui", "sans-serif"],
       },

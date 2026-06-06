@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Home,
   Syringe,
@@ -18,7 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { m, AnimatePresence  } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Item {
   label: string;
@@ -33,7 +33,6 @@ function isActive(pathname: string, href: string) {
 
 export function BottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [role, setRole] = useState<'paciente' | 'fornecedor'>('paciente');
   const [pendingOrders, setPendingOrders] = useState(0);
@@ -99,14 +98,14 @@ export function BottomNav() {
       <AnimatePresence>
         {sheetOpen && (
           <div className="fixed inset-0 z-[100] flex items-end justify-center">
-            <m.div
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
               onClick={() => setSheetOpen(false)}
             />
-            <m.div 
+            <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -127,7 +126,6 @@ export function BottomNav() {
                     <Link
                       key={s.href}
                       href={s.href}
-                      onMouseEnter={() => router.prefetch(s.href)}
                       onClick={() => setSheetOpen(false)}
                       className={`flex flex-col items-center gap-2 rounded-[24px] p-4 text-center transition-all ${
                         active ? "bg-surface" : "hover:bg-gray-50"
@@ -143,7 +141,7 @@ export function BottomNav() {
                   );
                 })}
               </div>
-            </m.div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -157,20 +155,19 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                onMouseEnter={() => router.prefetch(item.href)}
                 className={`flex items-center gap-2 rounded-full transition-all duration-300 ${
                   active ? "bg-[#1c4d2e] px-4 py-2 shadow-lg shadow-[#1c4d2e]/20" : "p-3 hover:bg-white/5"
                 }`}
               >
                 <Icon className={`h-5 w-5 shrink-0 ${active ? "text-white" : "text-white/40"}`} strokeWidth={2.5} />
                 {active && (
-                  <m.span 
+                  <motion.span 
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-[11px] font-bold text-white whitespace-nowrap"
                   >
                     {item.label}
-                  </m.span>
+                  </motion.span>
                 )}
               </Link>
             );
@@ -184,13 +181,13 @@ export function BottomNav() {
           >
             <MoreHorizontal className={`h-5 w-5 shrink-0 ${maisActive ? "text-white" : "text-white/40"}`} strokeWidth={2.5} />
             {maisActive && (
-              <m.span 
+              <motion.span 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-[11px] font-bold text-white whitespace-nowrap"
               >
                 Mais
-              </m.span>
+              </motion.span>
             )}
           </button>
         </div>

@@ -8,7 +8,6 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
   variable: "--font-dm-sans",
   display: "swap",
-  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -41,7 +40,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={dmSans.variable}>
-      <body className={`${dmSans.className} font-sans bg-[#f2f2f7] w-full max-w-full overflow-x-hidden`} style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }} suppressHydrationWarning>
+      <body className={`${dmSans.className} font-sans bg-[#f2f2f7]`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
