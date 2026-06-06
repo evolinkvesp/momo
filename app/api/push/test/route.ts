@@ -1,35 +1,33 @@
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createRouteClient } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
 
 /**
- * GET /api/push/test
+ * GET /api/push/test?secret=...
  * 
- * Envia uma notificação de teste IMEDIATA para o admin.
- * Use isso no n8n para testar se a entrega está funcionando.
+ * Envia uma notificação de teste IMEDIATA para o usuário logado.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get("secret");
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "ryanasafedesouza@gmail.com";
 
   if (secret !== process.env.N8N_SECRET && secret !== "momo8878") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const supabase = createServiceClient();
-    // 1. Busca o ID do seu usuário pelo email
-    const { data: profile, error: pError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", ADMIN_EMAIL)
-      .single();
+  const supabase = createRouteClient();
 
-    if (pError || !profile) {
-      return NextResponse.json({ error: "Admin user not found" }, { status: 404 });
+  try {
+    // 1. Pega o ID do usuário logado na sessão
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      return NextResponse.json({ error: "Você precisa estar logado no app (neste navegador) para testar esta rota." }, { status: 401 });
     }
+
+    const userId = session.user.id;
+    const userEmail = session.user.email;
 
     // 2. Chama a rota oficial de disparo
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momo-rust-nu.vercel.app";
@@ -38,9 +36,9 @@ export async function GET(req: Request) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        userId: profile.id, 
+        userId, 
         title: "🔔 Teste de Conexão", 
-        body: "Se você recebeu isso, sua integração com o n8n está 100%!",
+        body: `Olá ${userEmail}, sua integração com o n8n está 100%!`,
         url: "/" 
       })
     });
@@ -50,7 +48,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ 
       ok: true, 
       message: "Comando de teste enviado!",
-      recipient: ADMIN_EMAIL,
+      recipient: userEmail,
       pushResponse: pushData
     });
 
