@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { m, Variants } from "framer-motion";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
