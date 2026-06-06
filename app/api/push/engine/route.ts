@@ -140,7 +140,7 @@ export async function GET(req: Request) {
 }
 
 async function send(userId: string, payload: any) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momo-rust-nu.vercel.app";
+  const baseUrl = "https://momo-rust-nu.vercel.app";
   try {
     await fetch(`${baseUrl}/api/push/send`, {
       method: 'POST',

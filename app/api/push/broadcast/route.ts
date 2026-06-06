@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, sent: 0, message: "No users found" });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momo-rust-nu.vercel.app";
+    const baseUrl = "https://momo-rust-nu.vercel.app";
     const results = [];
 
     // 3. Loop de envio
