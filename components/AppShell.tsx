@@ -6,6 +6,7 @@ import { Fab } from "./Fab";
 import { FabVisibilityProvider, useFabVisibility } from "./FabVisibilityContext";
 import { TrialBanner } from "./TrialBanner";
 import { PageTransition } from "./PageTransition";
+import { PullToRefresh } from "./PullToRefresh";
 
 /**
  * Application shell. Mobile-first: a centered content column with an expanding
@@ -19,9 +20,11 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     <div className="app-container min-h-screen bg-bg">
       {/* Trial / acesso expirado: aparece acima de todo o conteúdo. */}
       <TrialBanner />
-      <main className="mx-auto w-full max-w-md px-6 pb-32 pt-6">
-        <PageTransition key={pathname}>{children}</PageTransition>
-      </main>
+      <PullToRefresh>
+        <main className="mx-auto w-full max-w-md px-6 pb-32 pt-6">
+          <PageTransition key={pathname}>{children}</PageTransition>
+        </main>
+      </PullToRefresh>
       {!fabHidden && <Fab />}
       <BottomNav />
     </div>
