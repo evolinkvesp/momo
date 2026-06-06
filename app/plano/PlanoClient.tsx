@@ -17,7 +17,7 @@ const BENEFICIOS = [
   "Registro ilimitado de doses",
   "Acompanhamento de peso e saúde completo",
   "Assistente IA sem limite de perguntas",
-  "Receitas personalizadas por fase do tratamento",
+  "Dieta personalizada por fase do tratamento (em breve 🚀)",
   "Marketplace de fornecedores em BH",
   "Notificações push personalizadas",
   "Exportar seus dados em CSV",

@@ -7,7 +7,6 @@ import {
   Home,
   Syringe,
   HeartPulse,
-  Salad,
   MoreHorizontal,
   PackageOpen,
   Bot,
@@ -75,7 +74,6 @@ export function BottomNav() {
     { label: "Home", href: "/", icon: Home },
     { label: "Doses", href: "/doses", icon: Syringe },
     { label: "Saúde", href: "/saude", icon: HeartPulse },
-    { label: "Dieta", href: "/dieta", icon: Salad },
   ] : [
     { label: "Home", href: "/", icon: Home },
     { label: "Pedidos", href: "/fornecedor/pedidos", icon: ShoppingBag },
