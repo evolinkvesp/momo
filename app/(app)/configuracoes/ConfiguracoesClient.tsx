@@ -21,6 +21,7 @@ import {
   LogOut,
   ChevronRight,
   AlertTriangle,
+  LayoutDashboard,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
@@ -161,6 +162,22 @@ export function ConfiguracoesClient({
           />
         </Card>
       </section>
+
+      {/* SEÇÃO ADMIN — visível apenas para o dono */}
+      {email === "evolinkbr@gmail.com" && (
+        <section>
+          <SectionLabel>Admin</SectionLabel>
+          <Card>
+            <NavItem
+              icon={<LayoutDashboard size={20} strokeWidth={2.5} />}
+              iconClassName="text-red-500"
+              title="Painel Administrativo"
+              subtitle="Usuários, fornecedores, financeiro"
+              onClick={() => router.push("/admin")}
+            />
+          </Card>
+        </section>
+      )}
 
       {/* SAIR DA CONTA */}
       <button
