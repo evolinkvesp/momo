@@ -14,6 +14,8 @@ import dynamic from "next/dynamic";
 import { SkeletonChart } from "@/components/ui/Skeleton";
 import { usePlano } from "@/hooks/usePlano";
 import { BlurPaywall } from "./BlurPaywall";
+import { getPushStatus, pushSupported, subscribeToPush } from "@/lib/push-client";
+import toast from "react-hot-toast";
 
 const DashboardChart = dynamic(() => import("./DashboardChart").then(m => m.DashboardChart), {
   loading: () => <SkeletonChart height={200} />,
@@ -74,6 +76,27 @@ export function DashboardClient({
 
   const { isExpirado } = usePlano();
   const textosDose = getTextoProximaDose(calculoDose);
+  const [showPushBanner, setShowPushBanner] = useState(false);
+
+  useEffect(() => {
+    if (pushSupported()) {
+      getPushStatus().then(enabled => {
+        if (!enabled && Notification.permission !== "denied") {
+          setShowPushBanner(true);
+        }
+      });
+    }
+  }, []);
+
+  const handleEnablePush = async () => {
+    try {
+      await subscribeToPush(userId);
+      setShowPushBanner(false);
+      toast.success("Notificações ativadas!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao ativar notificações");
+    }
+  };
 
   // Compartilhamento de conquista a partir do dashboard.
   const [shareOpen, setShareOpen] = useState(false);
@@ -117,6 +140,38 @@ export function DashboardClient({
           </div>
         </div>
       </m.div>
+
+      {/* Push Notification Banner */}
+      {showPushBanner && (
+        <m.div 
+          variants={item}
+          className="bg-amber-50 border border-amber-100 p-4 rounded-3xl flex items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <Zap size={20} fill="currentColor" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-900">Ativar Notificações</p>
+              <p className="text-[11px] text-amber-700 leading-tight mt-0.5">Receba lembretes importantes do seu tratamento.</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowPushBanner(false)}
+              className="px-3 py-2 text-[11px] font-bold text-amber-800/50 hover:text-amber-800"
+            >
+              Depois
+            </button>
+            <button 
+              onClick={handleEnablePush}
+              className="px-4 py-2 bg-amber-500 text-white text-[11px] font-bold rounded-xl shadow-md active:scale-95 transition-all"
+            >
+              Ativar
+            </button>
+          </div>
+        </m.div>
+      )}
 
       {/* Hero Section with Week Tracker */}
       <m.div 
