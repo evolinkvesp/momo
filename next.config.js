@@ -5,13 +5,12 @@ const withPWA = require("next-pwa")({
   skipWaiting: true,
   importScripts: ["/push-sw.js"],
   disable: process.env.NODE_ENV === "development",
-  // Exclude Next.js internal files that return 404 on Vercel, preventing
-  // Workbox bad-precaching-response errors that block SW installation.
-  buildExcludes: [
-    /app-build-manifest\.json$/,
-    /middleware-manifest\.json$/,
-    /react-loadable-manifest\.json$/,
-  ],
+  // Exclude ALL webpack-emitted assets from the precache manifest.
+  // Next.js 14 App Router emits several manifest JSON files (app-build-manifest,
+  // middleware-manifest, etc.) that are not served as static files on Vercel CDN
+  // and return 404 — causing Workbox to abort SW installation entirely.
+  // Offline support is still provided by runtimeCaching (cache-on-first-use).
+  buildExcludes: [/.*/],
 });
 
 const nextConfig = {
