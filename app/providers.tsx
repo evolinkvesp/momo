@@ -1,7 +1,7 @@
 "use client";
 
 import { Toaster } from "react-hot-toast";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domMax } from "framer-motion";
 
 /**
  * Client-side providers shared across the whole app (toast notifications, and
@@ -9,7 +9,7 @@ import { LazyMotion, domAnimation } from "framer-motion";
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={domMax}>
       {children}
       <Toaster
         position="top-right"

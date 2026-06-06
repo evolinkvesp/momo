@@ -46,7 +46,7 @@ export function BottomNav() {
         .from('fornecedores')
         .select('id')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (fornecedor) {
         setRole('fornecedor');
