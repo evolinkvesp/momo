@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Plus, Package, Edit2, Trash2, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
