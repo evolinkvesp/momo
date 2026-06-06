@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const idsComPeso = Array.from(new Set((comPeso || []).map((d) => d.user_id)));
     query = query.in("plano_ativo", ["premium", "trial"]);
     if (idsComPeso.length > 0) query = query.not("id", "in", `(${idsComPeso.join(",")})`);
-  }
+  } else if (segmento === "todos") {
     query = query.in("plano_ativo", ["premium", "trial"]);
   }
 
@@ -66,7 +66,9 @@ export async function POST(req: Request) {
 
   const stale: string[] = [];
   results.forEach((r, i) => {
-    if (r.status === "rejected" && [404, 410].includes((r.reason as any)?.statusCode ?? 0)) stale.push(subs[i].id);
+    if (r.status === "rejected" && [404, 410].includes((r.reason as any)?.statusCode ?? 0)) {
+      stale.push(subs[i].id);
+    }
   });
   if (stale.length > 0) await admin.from("push_subscriptions").delete().in("id", stale);
 
