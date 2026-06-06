@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { m, Variants } from "framer-motion";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar, Droplet, Package, Scale } from "lucide-react";
+import { Calendar, Droplet, Package, Scale, Zap } from "lucide-react";
 import Link from "next/link";
 import { WeekTracker } from "./WeekTracker";
 import { NotificationBell } from "./NotificationBell";
