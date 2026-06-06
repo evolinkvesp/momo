@@ -1,16 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { motion, Variants } from "framer-motion";
+import { m, Variants } from "framer-motion";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar, Droplet, Package, Scale } from "lucide-react";
 import Link from "next/link";
 import { WeekTracker } from "./WeekTracker";
-import { DashboardChart } from "./DashboardChart";
 import { NotificationBell } from "./NotificationBell";
 import { ShareProgressDrawer } from "./ShareProgressDrawer";
 import { getTextoProximaDose, type CalculoDose } from "@/lib/utils/dose";
+import dynamic from "next/dynamic";
+import { SkeletonChart } from "@/components/ui/Skeleton";
+
+const DashboardChart = dynamic(() => import("./DashboardChart").then(m => m.DashboardChart), {
+  loading: () => <SkeletonChart height={200} />,
+  ssr: false,
+});
 
 interface DashboardClientProps {
   userId: string;
@@ -85,14 +91,14 @@ export function DashboardClient({
   };
 
   return (
-    <motion.div 
+    <m.div 
       variants={container}
       initial="hidden"
       animate="show"
       className="space-y-6 pb-32"
     >
       {/* Top row */}
-      <motion.div variants={item} className="flex justify-between items-center">
+      <m.div variants={item} className="flex justify-between items-center">
         <div>
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
@@ -107,10 +113,10 @@ export function DashboardClient({
             {initials}
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Hero Section with Week Tracker */}
-      <motion.div 
+      <m.div 
         variants={item}
         className="bg-gradient-to-br from-[#1c4d2e] to-[#2d7a4f] rounded-[24px] p-6 text-white shadow-lg"
       >
@@ -118,7 +124,7 @@ export function DashboardClient({
           Semana {weeksCompleted + 1} de tratamento
         </p>
         <WeekTracker doseDates={doses?.map(d => d.data_aplicacao) || []} nextDoseDate={calculoDose.data} />
-      </motion.div>
+      </m.div>
 
       {/* Metric Grid 2x2 */}
       <div className="grid grid-cols-2 gap-4">
@@ -182,7 +188,7 @@ export function DashboardClient({
       </div>
 
       {/* Last Dose Card */}
-      <motion.div 
+      <m.div 
         variants={item}
         className="bg-gradient-to-br from-[#1c4d2e] to-[#2d7a4f] rounded-[20px] p-4 flex justify-between items-center shadow-premium"
       >
@@ -196,10 +202,10 @@ export function DashboardClient({
         <Link href="/doses" className="bg-white/15 border border-white/20 px-4 py-2 rounded-full text-white text-xs font-bold hover:bg-white/25 transition-all">
           + Registrar
         </Link>
-      </motion.div>
+      </m.div>
 
       {/* Weight Evolution */}
-      <motion.div 
+      <m.div 
         variants={item}
         className="bg-white rounded-[20px] p-5 shadow-premium"
       >
@@ -208,7 +214,7 @@ export function DashboardClient({
           <Link href="/saude" className="text-[11px] font-bold text-[#16a34a] hover:underline">Ver tudo</Link>
         </div>
         <DashboardChart data={weights} />
-      </motion.div>
+      </m.div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-3">
@@ -232,13 +238,13 @@ export function DashboardClient({
       </div>
 
       <ShareProgressDrawer open={shareOpen} onClose={() => setShareOpen(false)} data={shareData} />
-    </motion.div>
+    </m.div>
   );
 }
 
 function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, iconColor, valueColor, variants, footer }: any) {
   return (
-    <motion.div
+    <m.div
       variants={variants}
       className="bg-white rounded-[20px] p-4 shadow-premium flex flex-col justify-between"
     >
@@ -260,19 +266,19 @@ function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, i
         </div>
         {footer}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
 function MiniStatCard({ label, value, delta, variants }: any) {
   return (
-    <motion.div 
+    <m.div 
       variants={variants}
       className="bg-white rounded-[16px] p-3 shadow-premium"
     >
       <p className="text-[10px] font-medium text-gray-400">{label}</p>
       <h5 className="text-[17px] font-bold text-gray-900 mt-1 tracking-tight">{value}</h5>
       {delta && <p className="text-[10px] font-bold text-[#16a34a] mt-0.5">{delta}</p>}
-    </motion.div>
+    </m.div>
   );
 }

@@ -5,9 +5,15 @@ import { Bot, Send, User, Sparkles, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { PaywallCard } from "@/components/PaywallCard";
 import { usePlano } from "@/hooks/usePlano";
-import { motion, AnimatePresence } from "framer-motion";
-import { useFabVisibility } from "@/components/FabVisibilityContext";
-import ReactMarkdown from 'react-markdown';
+import { m, AnimatePresence  } from 'framer-motion';
+import { useFabVisibility } from "@/components/FabVisibilityContext"; 
+import dynamic from "next/dynamic";
+import { SkeletonText } from "@/components/ui/Skeleton";
+
+const ReactMarkdown = dynamic(() => import("react-markdown"), {
+  loading: () => <SkeletonText lines={3} />,
+  ssr: false,
+});
 
 const suggestions = [
   "Quais proteínas comer na janta?",
@@ -132,7 +138,7 @@ export default function AssistentePage() {
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-5 scroll-smooth">
           <AnimatePresence initial={false}>
             {messages.map((message) => (
-              <motion.div
+              <m.div
                 key={message.id}
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -180,7 +186,7 @@ export default function AssistentePage() {
                     <p className="text-sm leading-relaxed">{message.content}</p>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
 

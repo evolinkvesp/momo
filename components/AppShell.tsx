@@ -1,9 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { BottomNav } from "./BottomNav";
 import { Fab } from "./Fab";
 import { FabVisibilityProvider, useFabVisibility } from "./FabVisibilityContext";
 import { TrialBanner } from "./TrialBanner";
+import { PageTransition } from "./PageTransition";
 
 /**
  * Application shell. Mobile-first: a centered content column with an expanding
@@ -11,13 +13,14 @@ import { TrialBanner } from "./TrialBanner";
  */
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const { fabHidden } = useFabVisibility();
+  const pathname = usePathname();
 
   return (
     <div className="app-container min-h-screen bg-bg">
       {/* Trial / acesso expirado: aparece acima de todo o conteúdo. */}
       <TrialBanner />
       <main className="mx-auto w-full max-w-md px-6 pb-32 pt-6">
-        <div>{children}</div>
+        <PageTransition key={pathname}>{children}</PageTransition>
       </main>
       {!fabHidden && <Fab />}
       <BottomNav />
