@@ -42,6 +42,15 @@ export async function middleware(req: NextRequest) {
   const isFornecedorRoute = req.nextUrl.pathname.startsWith('/fornecedor');
   const isSupplier = session?.user?.user_metadata?.is_fornecedor === true;
 
+  // Admin routes: acesso restrito ao email do dono
+  const ADMIN_EMAIL = 'evolinkbr@gmail.com';
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session || session.user.email !== ADMIN_EMAIL) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+    return res;
+  }
+
   if (!session && !isPublicRoute) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = '/login';

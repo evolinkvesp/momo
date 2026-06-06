@@ -73,6 +73,25 @@ export function DashboardClient({
     .toUpperCase() || 'U';
 
   const { isExpirado } = usePlano();
+  const textosDose = getTextoProximaDose(calculoDose);
+
+  // Compartilhamento de conquista a partir do dashboard.
+  const [shareOpen, setShareOpen] = useState(false);
+  const pesoPerdido = Number(weightDelta) > 0 ? Number(weightDelta) : 0;
+  const semanasShare = Math.max(1, weeksCompleted);
+  const alturaM = (profile?.altura_cm || 0) / 100;
+  const imcShare =
+    lastWeight?.peso_kg && alturaM > 0 ? lastWeight.peso_kg / (alturaM * alturaM) : 0;
+  const firstWeight = weights?.[weights.length - 1];
+  const shareData = {
+    pesoPerdido,
+    semanas: semanasShare,
+    imc: imcShare,
+    pesoInicial: firstWeight?.peso_kg ?? profile?.peso_inicial ?? null,
+    pesoAtual: lastWeight?.peso_kg ?? null,
+    mediaSemana: pesoPerdido / semanasShare,
+    serie: [...(weights || [])].reverse().map((w) => w.peso_kg).filter(Boolean),
+  };
 
   return (
     <m.div 
