@@ -4,20 +4,61 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Mail, Lock, Eye, EyeOff, Droplets } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Droplets, MailCheck } from 'lucide-react';
+
+const getFriendlyLoginError = (error: { code?: string; message?: string; status?: number }) => {
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message?.toLowerCase() ?? "";
+
+  if (code === "email_not_confirmed" || message.includes("email not confirmed")) {
+    return {
+      message: "Seu e-mail ainda não foi confirmado. Confirme a caixa de entrada e tente novamente.",
+      needsConfirmation: true,
+    };
+  }
+
+  if (
+    code === "invalid_credentials" ||
+    message.includes("invalid login credentials") ||
+    message.includes("login credentials") ||
+    error.status === 400
+  ) {
+    return {
+      message: "E-mail ou senha incorretos. Confira os dados e tente novamente.",
+      needsConfirmation: false,
+    };
+  }
+
+  if (error.status === 429) {
+    return {
+      message: "Muitas tentativas em pouco tempo. Aguarde alguns instantes e tente novamente.",
+      needsConfirmation: false,
+    };
+  }
+
+  return {
+    message: error.message ?? "Não foi possível entrar. Tente novamente em instantes.",
+    needsConfirmation: false,
+  };
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const router = useRouter();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setNeedsConfirmation(false);
+    setConfirmationSent(false);
     
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -25,12 +66,40 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
+      const friendlyError = getFriendlyLoginError(error);
+      setError(friendlyError.message);
+      setNeedsConfirmation(friendlyError.needsConfirmation);
       setLoading(false);
     } else {
       router.push('/');
       router.refresh();
     }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      setError("Digite seu e-mail para reenviar a confirmação.");
+      return;
+    }
+
+    setResendingConfirmation(true);
+    setError(null);
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setConfirmationSent(true);
+    }
+
+    setResendingConfirmation(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -90,6 +159,12 @@ export default function LoginPage() {
               </div>
             )}
 
+            {confirmationSent && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 animate-fade-up">
+                Enviamos um novo link de confirmação para o seu e-mail.
+              </div>
+            )}
+
             {/* Email Input */}
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
@@ -144,6 +219,18 @@ export default function LoginPage() {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
+
+            {needsConfirmation && (
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={resendingConfirmation}
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-forest/20 bg-forest/5 text-sm font-bold text-forest transition-all hover:bg-forest/10 disabled:opacity-70"
+              >
+                <MailCheck className="h-4 w-4" />
+                {resendingConfirmation ? 'Reenviando confirmação...' : 'Reenviar e-mail de confirmação'}
+              </button>
+            )}
           </form>
 
           <div className="mt-8">

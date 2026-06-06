@@ -5,10 +5,19 @@ const withPWA = require("next-pwa")({
   skipWaiting: true,
   importScripts: ["/push-sw.js"],
   disable: process.env.NODE_ENV === "development",
-  reloadOnOnline: true,
-  // Next.js 14 App Router fixes
-  buildExcludes: [/app-build-manifest\.json$/, /middleware-manifest\.json$/],
-  publicExcludes: ["!push-sw.js"],
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/wlnlmmvlhjazqifyetse\.supabase\.co\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'supabase-api',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 // 24 hours
+        }
+      }
+    }
+  ]
 });
 
 const nextConfig = {

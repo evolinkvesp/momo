@@ -9,21 +9,6 @@ import { LazyMotion, domMax } from "framer-motion";
  * a good place to add context providers later).
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      process.env.NODE_ENV === "production"
-    ) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then((reg) => console.log("[SW] Active at:", reg.scope))
-          .catch((err) => console.error("[SW] Registration error:", err));
-      });
-    }
-  }, []);
-
   return (
     <LazyMotion features={domMax}>
       {children}
