@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
   const isSupplier = session?.user?.user_metadata?.is_fornecedor === true;
 
   // Admin routes: restricted to owner email only
-  const ADMIN_EMAIL = 'evolinkbr@gmail.com';
+  const ADMIN_EMAIL = 'ryan@gmail.com';
   if (req.nextUrl.pathname.startsWith('/admin')) {
     if (!session || session.user.email !== ADMIN_EMAIL) {
       return NextResponse.redirect(new URL('/login', req.url));

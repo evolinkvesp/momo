@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createRouteClient, createServiceClient } from "@/lib/supabase-server";
 import webpush from "web-push";
 
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 export async function POST(req: Request) {
   const supabase = createRouteClient();

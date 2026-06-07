@@ -3,7 +3,7 @@ import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminUsuariosClient } from "@/components/AdminUsuariosClient";
 
 export const dynamic = "force-dynamic";
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 export default async function AdminUsuariosPage() {
   const supabase = createServerClient();

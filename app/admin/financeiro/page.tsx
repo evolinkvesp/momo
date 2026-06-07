@@ -4,7 +4,7 @@ import { AdminFinanceiroClient } from "@/components/AdminFinanceiroClient";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 
 export const dynamic = "force-dynamic";
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 export default async function AdminFinanceiroPage() {
   const supabase = createServerClient();

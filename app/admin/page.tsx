@@ -15,7 +15,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 // --- Helpers ---
 

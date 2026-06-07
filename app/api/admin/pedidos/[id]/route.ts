@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createRouteClient, createServiceClient } from "@/lib/supabase-server";
 
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const supabase = createRouteClient();

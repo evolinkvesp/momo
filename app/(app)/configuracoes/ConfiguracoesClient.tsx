@@ -164,7 +164,7 @@ export function ConfiguracoesClient({
       </section>
 
       {/* SEÇÃO ADMIN — visível apenas para o dono */}
-      {email === "evolinkbr@gmail.com" && (
+      {email === "ryan@gmail.com" && (
         <section>
           <SectionLabel>Admin</SectionLabel>
           <Card>

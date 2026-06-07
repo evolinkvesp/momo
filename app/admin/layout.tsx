@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_EMAIL = "evolinkbr@gmail.com";
+const ADMIN_EMAIL = "ryan@gmail.com";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerClient();

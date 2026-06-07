@@ -71,7 +71,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
             </div>
             <div className="overflow-hidden">
               <p className="text-[12px] font-bold text-white">Admin</p>
-              <p className="text-[10px] text-[rgba(255,255,255,0.28)] truncate">evolinkbr@gmail.com</p>
+              <p className="text-[10px] text-[rgba(255,255,255,0.28)] truncate">ryan@gmail.com</p>
             </div>
           </div>
         </div>
