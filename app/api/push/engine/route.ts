@@ -139,6 +139,54 @@ export async function GET(req: Request) {
         await send(userId, NOTIFICACOES.DIETA.HIDRATACAO(nome));
         logs.push({ userId, type: 'HIDRATACAO' });
       }
+
+      // --- SCENARIO: ENGAJAMENTO (Check every hour at :45) ---
+      if (currentMinute === 45) {
+        const createdAt = parseISO(profile.created_at);
+        const hoursSinceSignup = (agora.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+        // 1. BEM VINDO (1 hora após cadastro)
+        if (hoursSinceSignup >= 1 && hoursSinceSignup < 2) {
+          const { count } = await supabase.from("notifications").select("id", { count: 'exact', head: true }).eq("user_id", userId).eq("title", NOTIFICACOES.ENGAJAMENTO.BEM_VINDO(nome).title);
+          if (count === 0) {
+            await send(userId, NOTIFICACOES.ENGAJAMENTO.BEM_VINDO(nome));
+            logs.push({ userId, type: 'BEM_VINDO' });
+          }
+        }
+
+        // 2. INATIVIDADE (3 e 7 dias)
+        // Check last dose or weight log
+        const [{ data: lastD }, { data: lastW }] = await Promise.all([
+          supabase.from("doses").select("criado_em").eq("user_id", userId).order("criado_em", { ascending: false }).limit(1).maybeSingle(),
+          supabase.from("medicoes_saude").select("data_medicao").eq("user_id", userId).order("data_medicao", { ascending: false }).limit(1).maybeSingle()
+        ]);
+        
+        const lastActivity = lastD ? parseISO(lastD.criado_em) : lastW ? parseISO(lastW.data_medicao) : createdAt;
+        const daysInactive = (agora.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (daysInactive >= 7) {
+          const { count } = await supabase.from("notifications").select("id", { count: 'exact', head: true }).eq("user_id", userId).eq("tag", "reativacao-7d");
+          if (count === 0) {
+            await send(userId, { ...NOTIFICACOES.ENGAJAMENTO.INATIVO_7DIAS(nome), tag: 'reativacao-7d' });
+            logs.push({ userId, type: 'INATIVO_7D' });
+          }
+        } else if (daysInactive >= 3) {
+          const { count } = await supabase.from("notifications").select("id", { count: 'exact', head: true }).eq("user_id", userId).eq("tag", "reativacao");
+          if (count === 0) {
+            await send(userId, { ...NOTIFICACOES.ENGAJAMENTO.INATIVO_3DIAS(nome), tag: 'reativacao' });
+            logs.push({ userId, type: 'INATIVO_3D' });
+          }
+        }
+
+        // 3. PRIMEIRO MÊS
+        if (hoursSinceSignup >= 720 && hoursSinceSignup < 744) { // Entre 30 e 31 dias
+          const { count } = await supabase.from("notifications").select("id", { count: 'exact', head: true }).eq("user_id", userId).eq("tag", "primeiro-mes");
+          if (count === 0) {
+            await send(userId, { ...NOTIFICACOES.ENGAJAMENTO.PRIMEIRO_MES(nome), tag: 'primeiro-mes' });
+            logs.push({ userId, type: 'PRIMEIRO_MES' });
+          }
+        }
+      }
     }
 
     return NextResponse.json({ ok: true, processed: logs.length, logs });

@@ -5,14 +5,32 @@ import { NOTIFICACOES } from "@/lib/notificacoes-templates";
 export const runtime = "nodejs";
 
 /**
- * POST /api/push/broadcast
+ * GET or POST /api/push/broadcast
  * 
  * Envia uma notificação para TODOS os usuários do sistema ou um específico.
- * Body: { title?, body?, url?, template?, category?, secret, email? }
+ * Pode ser chamado via GET (n8n friendly) ou POST.
+ * Parâmetros (via URL ou Body): { secret, template?, category?, email?, title?, body?, url? }
  */
+export async function GET(req: Request) {
+  return handleBroadcast(req);
+}
+
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  const { title, body: msgBody, url = "/", template, category, secret, email } = body;
+  return handleBroadcast(req);
+}
+
+async function handleBroadcast(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+
+  // Prioridade para URL (n8n), depois Body
+  const secret = searchParams.get("secret") || body.secret;
+  const template = searchParams.get("template") || body.template || "INATIVO_3DIAS";
+  const category = searchParams.get("category") || body.category || "ENGAJAMENTO";
+  const email = searchParams.get("email") || body.email;
+  const title = searchParams.get("title") || body.title;
+  const msgBody = searchParams.get("body") || body.body;
+  const url = searchParams.get("url") || body.url || "/";
 
   // 1. Validação de Segurança
   if (secret !== process.env.N8N_SECRET && secret !== "momo8878") {
@@ -30,7 +48,7 @@ export async function POST(req: Request) {
     if (uError) throw uError;
     if (!users || users.length === 0) return NextResponse.json({ ok: true, sent: 0, message: "No users found" });
 
-    const baseUrl = "https://momo-rust-nu.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momo-rust-nu.vercel.app";
     const results = [];
 
     // 3. Loop de envio
@@ -39,12 +57,13 @@ export async function POST(req: Request) {
       let finalBody = msgBody;
       let finalUrl = url;
 
-      if (template && category) {
+      // Se não passou título/corpo manual, tenta o template
+      if (!finalTitle || !finalBody) {
         const categoryMap = (NOTIFICACOES as any)[category];
         const templateFn = categoryMap ? categoryMap[template] : null;
 
         if (typeof templateFn === 'function') {
-          const payload = templateFn(user.nome || "amigo", 5, "🏆"); // Parâmetros padrão para teste
+          const payload = templateFn(user.nome || "amigo", 5, "🏆"); 
           finalTitle = payload.title;
           finalBody = payload.body;
           finalUrl = payload.url;
@@ -60,7 +79,7 @@ export async function POST(req: Request) {
           body: JSON.stringify({ 
             userId: user.id, 
             title: finalTitle, 
-            msgBody: finalBody, // Note: changed from body to msgBody to match send/route.ts refactor
+            body: finalBody, 
             url: finalUrl 
           })
         });
@@ -72,9 +91,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       ok: true, 
+      templateUsed: `${category}.${template}`,
       totalUsers: users.length,
-      successfullySent: results.filter(r => r.ok).length,
-      results: email ? results : undefined // Only show details for single email test
+      successfullySent: results.filter(r => r.ok).length
     });
 
   } catch (err: any) {
