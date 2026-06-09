@@ -13,12 +13,14 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
 export function Card({
   children,
   className = "",
+  style,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
-    <div className={`card overflow-hidden ${className}`}>
+    <div className={`card overflow-hidden ${className}`} style={style}>
       {children}
     </div>
   );
@@ -26,6 +28,24 @@ export function Card({
 
 export function Divider() {
   return <div className="mx-4 h-px" style={{ background: "var(--color-surface-border)" }} />;
+}
+
+export function SaveButton({
+  children,
+  onClick,
+  busy,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  busy?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <SubmitButton onClick={onClick} busy={busy} disabled={disabled}>
+      {children}
+    </SubmitButton>
+  );
 }
 
 export function Field({
