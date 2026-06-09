@@ -66,7 +66,16 @@ async function waitForActiveRegistration(
       } else if (this.state === "redundant") {
         clearTimeout(timer);
         sw!.removeEventListener("statechange", onStateChange);
-        reject(new Error("Service Worker entrou em estado redundante."));
+        // SW was superseded by a newer version — pick up the replacement
+        navigator.serviceWorker.getRegistration("/").then((newReg) => {
+          if (newReg?.active) {
+            resolve(newReg);
+          } else if (newReg) {
+            waitForActiveRegistration(newReg, 8000).then(resolve).catch(reject);
+          } else {
+            reject(new Error("Service Worker substituído. Recarregue a página."));
+          }
+        }).catch(() => reject(new Error("Service Worker substituído. Recarregue a página.")));
       }
     }
 
