@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building2, MapPin, Star, Package, Phone, Mail, ExternalLink, Check, X, AlertTriangle, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
