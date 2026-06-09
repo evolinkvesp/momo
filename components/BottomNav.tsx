@@ -189,10 +189,11 @@ export function BottomNav() {
       </AnimatePresence>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 pointer-events-none"
+        className="fixed bottom-0 left-0 right-0 px-4 pt-3 pointer-events-none"
         style={{
           paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-          background: "var(--color-bg)",
+          background: "linear-gradient(to top, var(--color-bg) 80%, transparent)",
+          zIndex: "var(--z-nav)",
         }}
       >
         <div

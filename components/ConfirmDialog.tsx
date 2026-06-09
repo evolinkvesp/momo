@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -21,44 +22,50 @@ export function ConfirmDialog({
   cancelText = 'Cancelar',
   isDestructive = true
 }: ConfirmDialogProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
-        <div className="fixed inset-0 z-[100] bg-gray-500 bg-opacity-75 transition-opacity" onClick={onCancel} />
+  if (!isOpen || !mounted) return null;
 
-        <div className="relative z-[101] transform overflow-hidden rounded-lg bg-surface text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-          <div className="bg-surface px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-            <div className="sm:flex sm:items-start">
-              <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                <h3 className="text-base font-semibold leading-6 text-text">{title}</h3>
-                <div className="mt-2">
-                  <p className="text-sm text-muted">{message}</p>
-                </div>
+  return createPortal(
+    <div className="fixed inset-0 flex items-center justify-center p-4 text-center sm:p-0" style={{ zIndex: "var(--z-modal)" }}>
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+        onClick={onCancel} 
+        style={{ zIndex: "var(--z-overlay)" }}
+      />
+
+      <div className="relative transform overflow-hidden rounded-[28px] bg-surface text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-surface-border animate-fab-pop" style={{ zIndex: "var(--z-modal)" }}>
+        <div className="bg-surface px-6 pb-6 pt-7">
+          <div className="sm:flex sm:items-start">
+            <div className="text-center sm:text-left w-full">
+              <h3 className="text-xl font-black leading-6 text-text tracking-tight">{title}</h3>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-muted leading-relaxed">{message}</p>
               </div>
             </div>
           </div>
-          <div className="bg-surface-mid px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-            <button
-              type="button"
-              className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${
-                isDestructive ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'
-              }`}
-              onClick={onConfirm}
-            >
-              {confirmText}
-            </button>
-            <button
-              type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-surface px-3 py-2 text-sm font-semibold text-text shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-surface-mid sm:mt-0 sm:w-auto"
-              onClick={onCancel}
-            >
-              {cancelText}
-            </button>
-          </div>
+        </div>
+        <div className="bg-surface-mid px-6 py-4 flex flex-col sm:flex-row-reverse gap-3">
+          <button
+            type="button"
+            className={`h-12 flex-1 rounded-2xl px-4 py-2 text-sm font-bold text-white shadow-ember active:scale-95 transition-all ${
+              isDestructive ? 'bg-danger' : 'bg-success'
+            }`}
+            onClick={onConfirm}
+          >
+            {confirmText}
+          </button>
+          <button
+            type="button"
+            className="h-12 flex-1 rounded-2xl bg-surface px-4 py-2 text-sm font-bold text-text border border-surface-border active:scale-95 transition-all"
+            onClick={onCancel}
+          >
+            {cancelText}
+          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

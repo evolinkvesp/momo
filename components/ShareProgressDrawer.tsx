@@ -158,10 +158,10 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-end justify-center">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 flex items-end justify-center" style={{ zIndex: "var(--z-modal)" }}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} style={{ zIndex: "var(--z-overlay)" }} />
 
-      <div className="relative z-[121] flex max-h-[94vh] w-full max-w-md flex-col overflow-hidden rounded-t-[28px] shadow-xl animate-slide-up" style={{ background: "var(--color-surface-mid)" }}>
+      <div className="relative flex max-h-[94vh] w-full max-w-md flex-col overflow-hidden rounded-t-[28px] shadow-2xl animate-slide-up" style={{ background: "var(--color-surface-mid)", zIndex: "var(--z-modal)" }}>
         {/* Header */}
         <div className="flex-shrink-0 pt-3">
           <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--color-surface-border)" }} />

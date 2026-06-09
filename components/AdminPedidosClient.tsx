@@ -123,20 +123,43 @@ export function AdminPedidosClient({ pedidos: initial }: { pedidos: Pedido[] }) 
 
       <AnimatePresence>
         {mediacao && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-[rgba(0,0,0,0.7)]" onClick={() => setMediacao(null)}>
-            <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="a-card-lg p-6 w-full max-w-md space-y-4">
-              <h3 className="text-[17px] font-bold text-white">Mediar pedido {mediacao.codigo}</h3>
-              <textarea value={mensagemMediacao} onChange={(e) => setMensagemMediacao(e.target.value)} placeholder="Descreva a decisão ou instrução de mediação..." className="a-input resize-none h-28" />
-              <div className="flex gap-3">
-                <button onClick={() => setMediacao(null)} className="a-btn-ghost flex-1">Cancelar</button>
-                <button onClick={async () => { if (!mensagemMediacao.trim()) return; await handleAction(mediacao.id, "cancelar", mensagemMediacao); toast.success("Mediação registrada"); setMediacao(null); setMensagemMediacao(""); }} disabled={!mensagemMediacao.trim()} className="a-btn-blue flex-1">
-                  Registrar mediação
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+          <MediacaoModal 
+            pedido={mediacao} 
+            mensagem={mensagemMediacao}
+            setMensagem={setMensagemMediacao}
+            onClose={() => setMediacao(null)}
+            onConfirm={async () => { 
+              if (!mensagemMediacao.trim()) return; 
+              await handleAction(mediacao.id, "cancelar", mensagemMediacao); 
+              setMediacao(null); 
+              setMensagemMediacao(""); 
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function MediacaoModal({ pedido, mensagem, setMensagem, onClose, onConfirm }: any) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 flex items-end md:items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ zIndex: "var(--z-modal)" }}>
+      <div className="absolute inset-0" onClick={onClose} />
+      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative a-card-lg p-6 w-full max-w-md space-y-4">
+        <h3 className="text-xl font-black text-white">Mediar pedido {pedido.codigo}</h3>
+        <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} placeholder="Descreva a decisão ou instrução de mediação..." className="a-input resize-none h-28" />
+        <div className="flex gap-3">
+          <button onClick={onClose} className="a-btn-ghost flex-1">Cancelar</button>
+          <button onClick={onConfirm} disabled={!mensagem.trim()} className="a-btn-blue flex-1">
+            Registrar mediação
+          </button>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
   );
 }

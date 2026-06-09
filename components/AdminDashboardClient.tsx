@@ -1,23 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  ArrowUpRight, 
-  UserPlus, 
-  UserMinus, 
-  Percent, 
-  Target,
-  AlertCircle,
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
+  UserPlus,
+  UserMinus,
+  AlertTriangle,
   Activity,
-  Calendar,
-  Layers,
-  ArrowRight,
   ChevronRight,
   ShieldCheck,
-  Zap
+  Zap,
+  Percent,
+  Clock,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -30,7 +26,8 @@ function formatBRL(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 }
 
-const COLORS = ["#22c55e", "#3b82f6", "#eab308", "#f43f5e", "#8b5cf6"];
+// Crimson red palette for charts
+const RED_SHADES = ["#e11d48", "#f43f5e", "#9f1239", "rgba(225,29,72,0.45)", "rgba(225,29,72,0.25)"];
 
 interface Metrics {
   mrr: number;
@@ -51,20 +48,22 @@ interface AdminDashboardClientProps {
   growthChart: { date: string; value: number }[];
   planDistribution: { name: string; value: number }[];
   recentCustomers: any[];
-  alerts: { type: 'warning' | 'info' | 'danger'; text: string }[];
+  alerts: { type: "warning" | "info" | "danger"; text: string }[];
 }
 
 const container = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } },
 };
 
-const item = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } }
+const ALERT_STYLES = {
+  danger:  { border: "rgba(225,29,72,0.25)",  bg: "rgba(225,29,72,0.06)",  color: "#f43f5e",  iconBg: "rgba(225,29,72,0.12)" },
+  warning: { border: "rgba(251,191,36,0.22)",  bg: "rgba(251,191,36,0.05)", color: "#fbbf24",  iconBg: "rgba(251,191,36,0.10)" },
+  info:    { border: "rgba(96,165,250,0.20)",  bg: "rgba(96,165,250,0.05)", color: "#60a5fa",  iconBg: "rgba(96,165,250,0.10)" },
 };
 
 export function AdminDashboardClient({
@@ -75,140 +74,264 @@ export function AdminDashboardClient({
   recentCustomers,
   alerts,
 }: AdminDashboardClientProps) {
-  
-  const cards = [
-    { label: "MRR", value: formatBRL(metrics.mrr), sub: "Receita Recorrente", icon: DollarSign, color: "#22c55e" },
-    { label: "Clientes Ativos", value: metrics.activeCustomers, sub: "Assinaturas Premium", icon: Users, color: "#3b82f6" },
-    { label: "Novos (Mês)", value: metrics.newThisMonth, sub: "Cadastros recentes", icon: UserPlus, color: "#8b5cf6" },
-    { label: "Churn Rate", value: `${metrics.churnRate.toFixed(1)}%`, sub: "Cancelamentos", icon: UserMinus, color: "#f43f5e" },
+
+  const kpiCards = [
+    {
+      label: "MRR",
+      value: formatBRL(metrics.mrr),
+      sub: "Receita recorrente mensal",
+      icon: DollarSign,
+      trend: "+12%",
+      trendUp: true,
+    },
+    {
+      label: "Assinantes Ativos",
+      value: metrics.activeCustomers,
+      sub: "Planos premium ativos",
+      icon: Users,
+      trend: `+${metrics.newThisMonth} este mês`,
+      trendUp: true,
+    },
+    {
+      label: "Conversão",
+      value: `${metrics.conversionRate.toFixed(1)}%`,
+      sub: "Trial → Premium",
+      icon: Percent,
+      trend: "acumulado",
+      trendUp: metrics.conversionRate > 20,
+    },
+    {
+      label: "Churn Rate",
+      value: `${metrics.churnRate.toFixed(1)}%`,
+      sub: "Cancelamentos no mês",
+      icon: UserMinus,
+      trend: metrics.canceledThisMonth === 0 ? "Nenhum cancelamento" : `${metrics.canceledThisMonth} cancelados`,
+      trendUp: false,
+    },
   ];
 
   return (
-    <motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="space-y-8 pb-20"
-    >
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-24">
+
+      {/* ── Header ── */}
+      <motion.div variants={item} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-green-500/80 uppercase tracking-[0.2em]">Sistema Operacional</span>
+          <div className="flex items-center gap-2.5 mb-2">
+            <span
+              className="h-2 w-2 rounded-full a-pulse"
+              style={{ background: "#e11d48", boxShadow: "0 0 8px rgba(225,29,72,0.8)" }}
+            />
+            <span
+              className="text-[9px] font-black uppercase tracking-[0.3em]"
+              style={{ color: "rgba(225,29,72,0.7)" }}
+            >
+              Sistema Operacional
+            </span>
           </div>
-          <h1 className="text-[32px] font-black text-white tracking-tight leading-none a-text-gradient">Admin Dashboard</h1>
+          <h1
+            className="text-[36px] font-black leading-none tracking-[-0.04em] a-text-gradient"
+            style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+          >
+            Command Center
+          </h1>
+          <p className="mt-1.5 text-[13px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+            {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+          </p>
         </div>
+
         <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-[10px] font-bold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">Sincronização</p>
-            <p className="text-[12px] text-white/70 font-mono">{format(new Date(), "HH:mm:ss")}</p>
+          <div
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <Clock size={13} style={{ color: "rgba(255,255,255,0.25)" }} />
+            <span className="text-[12px] font-mono font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>
+              {format(new Date(), "HH:mm")}
+            </span>
           </div>
-          <button className="h-10 px-4 rounded-xl bg-surface text-black text-xs font-bold flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-white/5">
-            <Zap size={14} fill="black" />
-            Exportar Dados
+          <button
+            className="flex h-10 items-center gap-2 px-4 rounded-xl text-white text-[12px] font-bold transition-all hover:opacity-80 active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, #e11d48, #9f1239)",
+              boxShadow: "0 4px 20px rgba(225,29,72,0.30)",
+            }}
+          >
+            <Zap size={13} fill="white" />
+            Exportar
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Alertas Inteligentes */}
+      {/* ── Alerts ── */}
       {alerts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {alerts.map((alert, i) => (
-            <motion.div 
-              key={i}
-              variants={item}
-              className={`flex items-center gap-4 p-4 rounded-2xl border a-glass ${
-                alert.type === 'danger' ? 'border-red-500/20 text-red-400' :
-                alert.type === 'warning' ? 'border-amber-500/20 text-amber-400' :
-                'border-blue-500/20 text-blue-400'
-              }`}
-            >
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                alert.type === 'danger' ? 'bg-red-500/10' :
-                alert.type === 'warning' ? 'bg-amber-500/10' :
-                'bg-blue-500/10'
-              }`}>
-                <AlertCircle size={16} />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-wider leading-relaxed">{alert.text}</span>
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {alerts.map((alert, i) => {
+            const s = ALERT_STYLES[alert.type];
+            return (
+              <motion.div
+                key={i}
+                variants={item}
+                className="flex items-center gap-4 p-4 rounded-2xl"
+                style={{ background: s.bg, border: `1px solid ${s.border}` }}
+              >
+                <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0" style={{ background: s.iconBg }}>
+                  <AlertTriangle size={15} style={{ color: s.color }} />
+                </div>
+                <span className="text-[11px] font-bold leading-relaxed" style={{ color: s.color }}>
+                  {alert.text}
+                </span>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
-      {/* Main Stats */}
+      {/* ── KPI Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((card, i) => (
-          <motion.div key={card.label} variants={item} className="a-card p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
-              <card.icon size={80} />
+        {kpiCards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            variants={item}
+            className="a-card-red p-6 relative overflow-hidden group"
+            style={{ transition: "box-shadow 0.2s" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 32px rgba(225,29,72,0.12)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
+          >
+            {/* Ghost icon */}
+            <div className="absolute -right-3 -bottom-3 opacity-[0.025] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
+              <card.icon size={96} />
             </div>
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: `${card.color}15`, border: `1px solid ${card.color}25` }}>
-                <card.icon size={20} style={{ color: card.color }} strokeWidth={2.5} />
+
+            <div className="flex items-center justify-between mb-5">
+              <div
+                className="h-9 w-9 rounded-xl flex items-center justify-center"
+                style={{ background: "rgba(225,29,72,0.10)", border: "1px solid rgba(225,29,72,0.20)" }}
+              >
+                <card.icon size={17} style={{ color: "#e11d48" }} strokeWidth={2.5} />
               </div>
+              <span
+                className="text-[10px] font-black uppercase tracking-widest"
+                style={{ color: card.trendUp ? "rgba(74,222,128,0.7)" : "rgba(225,29,72,0.6)" }}
+              >
+                {card.trend}
+              </span>
             </div>
-            <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest">{card.label}</p>
-            <p className="text-[28px] font-black text-white tracking-tighter mt-1">{card.value}</p>
-            <p className="text-[12px] font-medium text-white/40 mt-2">{card.sub}</p>
+
+            <p className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.25)" }}>
+              {card.label}
+            </p>
+            <p
+              className="text-[30px] font-black tracking-[-0.04em] mt-1 text-white leading-none"
+              style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+            >
+              {card.value}
+            </p>
+            <p className="text-[11px] mt-2" style={{ color: "rgba(255,255,255,0.30)" }}>
+              {card.sub}
+            </p>
           </motion.div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Revenue Area Chart */}
-        <motion.div variants={item} className="lg:col-span-8 a-card p-8">
-          <div className="flex justify-between items-end mb-10">
-            <div>
-              <h4 className="text-[16px] font-bold text-white tracking-tight">Performance Financeira</h4>
-              <p className="text-[13px] text-white/30 mt-1">Faturamento bruto mensal consolidado</p>
+      {/* ── Ticket Médio + Usuários Ativos — mini row ── */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: "Ticket Médio", value: formatBRL(metrics.ticketMedio), icon: TrendingUp },
+          { label: "Ativos 7d",    value: metrics.activeUsers7d,           icon: Activity },
+          { label: "Ativos Hoje",  value: metrics.activeUsersToday,        icon: Zap },
+        ].map((mini) => (
+          <motion.div
+            key={mini.label}
+            variants={item}
+            className="a-card p-5 flex items-center gap-4"
+          >
+            <div
+              className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+            >
+              <mini.icon size={16} style={{ color: "rgba(255,255,255,0.35)" }} />
             </div>
-            <div className="flex gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface/5 border border-white/10">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-[10px] font-bold text-white/60 uppercase">Real</span>
-              </div>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.22)" }}>
+                {mini.label}
+              </p>
+              <p className="text-[20px] font-black text-white leading-tight tracking-tight">{mini.value}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── Charts Row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        {/* Revenue Area Chart */}
+        <motion.div variants={item} className="lg:col-span-8 a-card p-7">
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+                Financeiro
+              </p>
+              <h4
+                className="text-[18px] font-black text-white tracking-tight mt-1"
+                style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+              >
+                Performance de Receita
+              </h4>
+              <p className="text-[12px] mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                Faturamento bruto mensal consolidado
+              </p>
+            </div>
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+              style={{ background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.18)" }}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: "#e11d48" }} />
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(225,29,72,0.8)" }}>
+                Real
+              </span>
             </div>
           </div>
-          
-          <div className="h-[300px] w-full">
+
+          <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueChart}>
                 <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  <linearGradient id="crimsonGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor="#e11d48" stopOpacity={0.30} />
+                    <stop offset="100%" stopColor="#e11d48" stopOpacity={0.00} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" strokeDasharray="4 4" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600 }} 
-                  dy={15} 
+                <XAxis
+                  dataKey="date"
+                  axisLine={false} tickLine={false}
+                  tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 10, fontWeight: 700 }}
+                  dy={14}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600 }} 
-                  tickFormatter={(v) => `R$${v}`} 
+                <YAxis
+                  axisLine={false} tickLine={false}
+                  tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 10, fontWeight: 700 }}
+                  tickFormatter={(v) => `R$${v}`}
                 />
-                <Tooltip 
-                  cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
-                  contentStyle={{ backgroundColor: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: '12px' }}
-                  itemStyle={{ color: "#22c55e", fontSize: '12px', fontWeight: '800' }}
-                  labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 'bold' }}
+                <Tooltip
+                  cursor={{ stroke: "rgba(225,29,72,0.2)", strokeWidth: 2 }}
+                  contentStyle={{
+                    backgroundColor: "#0f0f0f",
+                    border: "1px solid rgba(225,29,72,0.20)",
+                    borderRadius: "14px",
+                    padding: "12px 16px",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+                  }}
+                  itemStyle={{ color: "#f43f5e", fontSize: "12px", fontWeight: "800" }}
+                  labelStyle={{ color: "rgba(255,255,255,0.35)", fontSize: "10px", textTransform: "uppercase", marginBottom: "4px", fontWeight: "bold" }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#22c55e" 
-                  strokeWidth={4} 
-                  fill="url(#revenueGradient)" 
-                  activeDot={{ r: 8, fill: "#22c55e", stroke: "#000", strokeWidth: 4 }} 
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#e11d48"
+                  strokeWidth={3}
+                  fill="url(#crimsonGradient)"
+                  activeDot={{ r: 7, fill: "#e11d48", stroke: "#080808", strokeWidth: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -216,139 +339,214 @@ export function AdminDashboardClient({
         </motion.div>
 
         {/* Plan Distribution Donut */}
-        <motion.div variants={item} className="lg:col-span-4 a-card p-8 flex flex-col justify-between">
-          <div>
-            <h4 className="text-[16px] font-bold text-white tracking-tight">Market Share</h4>
-            <p className="text-[13px] text-white/30 mt-1">Distribuição por plano</p>
+        <motion.div variants={item} className="lg:col-span-4 a-card p-7 flex flex-col">
+          <div className="mb-6">
+            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+              Distribuição
+            </p>
+            <h4
+              className="text-[18px] font-black text-white tracking-tight mt-1"
+              style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+            >
+              Planos
+            </h4>
           </div>
-          
-          <div className="h-[220px] my-6 relative flex items-center justify-center">
-            <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Total</span>
-              <span className="text-[32px] font-black text-white leading-none mt-1">
+
+          <div className="relative flex-1 flex items-center justify-center" style={{ minHeight: 200 }}>
+            <div className="absolute flex flex-col items-center justify-center text-center pointer-events-none">
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
+                Total
+              </span>
+              <span
+                className="text-[38px] font-black text-white leading-none mt-1"
+                style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+              >
                 {planDistribution.reduce((acc, curr) => acc + curr.value, 0)}
               </span>
             </div>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={planDistribution}
-                  innerRadius={70}
-                  outerRadius={95}
-                  paddingAngle={8}
+                  innerRadius={68} outerRadius={90}
+                  paddingAngle={6}
                   dataKey="value"
                   stroke="none"
                   animationBegin={200}
-                  animationDuration={1200}
+                  animationDuration={1000}
                 >
-                  {planDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {planDistribution.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={RED_SHADES[index % RED_SHADES.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#111", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#0f0f0f",
+                    border: "1px solid rgba(225,29,72,0.20)",
+                    borderRadius: "12px",
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 mt-4">
             {planDistribution.map((p, i) => (
-              <div key={p.name} className="flex items-center justify-between p-3 rounded-xl bg-surface/[0.02] border border-white/[0.04]">
-                <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  <span className="text-[12px] font-bold text-white/60">{p.name}</span>
+              <div
+                key={p.name}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: RED_SHADES[i % RED_SHADES.length] }} />
+                  <span className="text-[12px] font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
+                    {p.name}
+                  </span>
                 </div>
-                <span className="text-[13px] font-black text-white">{p.value}</span>
+                <span className="text-[14px] font-black text-white">{p.value}</span>
               </div>
             ))}
           </div>
         </motion.div>
       </div>
 
-      {/* Engagement & Users */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Active Users Stats */}
-        <motion.div variants={item} className="a-card p-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20">
-              <Activity size={20} strokeWidth={2.5} />
+      {/* ── Engagement + Customers ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Engagement BarChart */}
+        <motion.div variants={item} className="a-card p-7">
+          <div className="flex items-center gap-3 mb-7">
+            <div
+              className="h-9 w-9 rounded-xl flex items-center justify-center"
+              style={{ background: "rgba(225,29,72,0.10)", border: "1px solid rgba(225,29,72,0.20)" }}
+            >
+              <Activity size={17} style={{ color: "#e11d48" }} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-[16px] font-bold text-white tracking-tight">Engajamento</h4>
-              <p className="text-[13px] text-white/30">Usuários retidos (Doses/Peso)</p>
+              <h4 className="text-[15px] font-black text-white tracking-tight">Engajamento</h4>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.25)" }}>Usuários ativos (doses + peso)</p>
             </div>
           </div>
 
-          <div className="flex gap-4 mb-10">
-             {[
-               { label: "Hoje", val: metrics.activeUsersToday, color: "bg-blue-500" },
-               { label: "7 Dias", val: metrics.activeUsers7d, color: "bg-purple-500" },
-               { label: "30 Dias", val: metrics.activeUsers30d, color: "bg-green-500" }
-             ].map(eng => (
-               <div key={eng.label} className="flex-1 p-5 rounded-2xl bg-surface/[0.02] border border-white/[0.05] text-center">
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-2">{eng.label}</p>
-                  <p className="text-[24px] font-black text-white tracking-tighter leading-none">{eng.val}</p>
-                  <div className={`h-1 w-8 ${eng.color} rounded-full mx-auto mt-4 opacity-40`} />
-               </div>
-             ))}
+          <div className="grid grid-cols-3 gap-3 mb-7">
+            {[
+              { label: "Hoje",   val: metrics.activeUsersToday, dim: "rgba(225,29,72,0.9)" },
+              { label: "7 dias", val: metrics.activeUsers7d,    dim: "rgba(225,29,72,0.65)" },
+              { label: "30 dias",val: metrics.activeUsers30d,   dim: "rgba(225,29,72,0.40)" },
+            ].map((eng) => (
+              <div
+                key={eng.label}
+                className="flex flex-col items-center justify-center py-4 rounded-2xl text-center"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+              >
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: "rgba(255,255,255,0.20)" }}>
+                  {eng.label}
+                </p>
+                <p className="text-[26px] font-black text-white tracking-tight leading-none">{eng.val}</p>
+                <div className="h-0.5 w-6 rounded-full mt-3" style={{ background: eng.dim }} />
+              </div>
+            ))}
           </div>
 
-          <div className="h-[140px] w-full mt-4">
-             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={growthChart}>
-                   <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-                   <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 10 }} dy={10} />
-                   <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={25} />
-                </BarChart>
-             </ResponsiveContainer>
+          <div className="h-[130px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={growthChart} barCategoryGap="35%">
+                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.025)" strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date" axisLine={false} tickLine={false}
+                  tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 10, fontWeight: 700 }}
+                  dy={10}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(225,29,72,0.05)" }}
+                  contentStyle={{
+                    backgroundColor: "#0f0f0f",
+                    border: "1px solid rgba(225,29,72,0.20)",
+                    borderRadius: "12px",
+                    padding: "10px 14px",
+                  }}
+                  itemStyle={{ color: "#f43f5e", fontSize: "12px", fontWeight: "800" }}
+                  labelStyle={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}
+                />
+                <Bar dataKey="value" radius={[5, 5, 0, 0]} barSize={20}>
+                  {growthChart.map((_, index) => (
+                    <Cell
+                      key={`bar-${index}`}
+                      fill={index === growthChart.length - 1 ? "#e11d48" : "rgba(225,29,72,0.30)"}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </motion.div>
 
-        {/* Recent Customers List */}
-        <motion.div variants={item} className="a-card p-0 overflow-hidden flex flex-col">
-          <div className="p-8 border-b border-white/[0.05] flex justify-between items-center bg-surface/[0.01]">
-            <h4 className="text-[16px] font-bold text-white tracking-tight">Últimos Assinantes</h4>
-            <button className="text-[11px] font-bold text-white/40 hover:text-white transition-colors flex items-center gap-1 uppercase tracking-widest">
-              Ver lista
-              <ChevronRight size={14} />
+        {/* Recent Customers */}
+        <motion.div variants={item} className="a-card overflow-hidden flex flex-col">
+          <div
+            className="px-7 py-5 flex justify-between items-center"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+          >
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+                Assinantes
+              </p>
+              <h4 className="text-[15px] font-black text-white tracking-tight mt-0.5">Últimos Registros</h4>
+            </div>
+            <button className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.25)" }}>
+              Ver todos <ChevronRight size={12} />
             </button>
           </div>
-          
-          <div className="divide-y divide-white/[0.03]">
+
+          <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
             {recentCustomers.map((customer, i) => (
-              <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface/[0.02] transition-colors cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center font-bold text-white/60 text-xs">
-                    {customer.nome.substring(0, 1)}
+              <div
+                key={i}
+                className="px-7 py-4 flex items-center justify-between cursor-pointer group transition-colors"
+                style={{ "--hover-bg": "rgba(255,255,255,0.015)" } as React.CSSProperties}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.015)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-black shrink-0"
+                    style={{ background: "rgba(225,29,72,0.10)", color: "#e11d48", border: "1px solid rgba(225,29,72,0.18)" }}
+                  >
+                    {customer.nome.substring(0, 1).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-[13px] font-bold text-white group-hover:text-green-400 transition-colors">{customer.nome}</p>
-                    <p className="text-[11px] text-white/30 font-medium">{customer.email}</p>
+                    <p className="text-[13px] font-bold text-white leading-tight group-hover:text-[#f43f5e] transition-colors">
+                      {customer.nome}
+                    </p>
+                    <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      {customer.email}
+                    </p>
                   </div>
                 </div>
-                
                 <div className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
-                      customer.status === 'ativo' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'
-                    }`}>
-                      {customer.status}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-white/20 mt-1.5 font-bold uppercase tracking-tighter">
-                    {format(new Date(customer.data), "dd 'de' MMM", { locale: ptBR })}
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
+                    style={
+                      customer.status === "ativo" || customer.status === "premium"
+                        ? { background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.18)", color: "#4ade80" }
+                        : { background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.18)", color: "#fbbf24" }
+                    }
+                  >
+                    {customer.status}
+                  </span>
+                  <p className="text-[10px] mt-1.5 font-bold" style={{ color: "rgba(255,255,255,0.18)" }}>
+                    {format(new Date(customer.data), "dd MMM", { locale: ptBR })}
                   </p>
                 </div>
               </div>
             ))}
           </div>
-          
-          <div className="p-4 bg-surface/[0.02] mt-auto">
-             <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
-                <ShieldCheck size={12} />
-                Transações Seguras via Cakto
-             </div>
+
+          <div className="px-7 py-4 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+            <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.15)" }}>
+              <ShieldCheck size={11} />
+              Transações processadas via Cakto
+            </div>
           </div>
         </motion.div>
       </div>

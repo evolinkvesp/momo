@@ -21,6 +21,7 @@ import { MacroRing } from "@/components/MacroRing";
 import { EmptyState } from "@/components/EmptyState";
 import { usePlano } from "@/hooks/usePlano";
 import { BlurPaywall } from "@/components/BlurPaywall";
+import { createPortal } from "react-dom";
 import {
   PLANOS,
   faseFromDose,
@@ -311,7 +312,10 @@ function RegistrarRefeicaoIA({
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -366,9 +370,16 @@ function RegistrarRefeicaoIA({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-bg rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center p-4" style={{ zIndex: "var(--z-modal)" }}>
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onClose}
+        style={{ zIndex: "var(--z-overlay)" }}
+      />
+      <div className="relative w-full max-w-md bg-bg rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-300" style={{ zIndex: "var(--z-modal)" }}>
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-black text-text">Registrar Refeição</h2>
@@ -433,7 +444,8 @@ function RegistrarRefeicaoIA({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -514,9 +526,19 @@ function ReceitasIA({ userId, fase }: { userId: string; fase: FaseMounjaro }) {
 }
 
 function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-bg rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 flex flex-col max-h-[90vh]">
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center p-4" style={{ zIndex: "var(--z-modal)" }}>
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+        onClick={onClose}
+        style={{ zIndex: "var(--z-overlay)" }}
+      />
+      <div className="relative w-full max-w-md bg-bg rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 flex flex-col max-h-[90vh]" style={{ zIndex: "var(--z-modal)" }}>
         <div className="relative p-6 bg-surface-mid text-center">
           <button onClick={onClose} className="absolute right-6 top-6 p-2 text-dim"><ChevronDown size={24} /></button>
           <div className="h-20 w-20 rounded-3xl bg-ember/10 flex items-center justify-center text-4xl mx-auto mb-4">{receita.emoji}</div>
@@ -560,6 +582,7 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

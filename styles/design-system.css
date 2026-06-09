@@ -23,6 +23,16 @@
   --radius-xl: 28px;
   --radius-pill: 999px;
 
+  /* Z-Index (Global Layers) */
+  --z-base: 0;
+  --z-above: 10;
+  --z-header: 50;
+  --z-nav: 100;
+  --z-fab: 200;
+  --z-overlay: 900;
+  --z-modal: 1000;
+  --z-toast: 2000;
+
   /* LIGHT THEME (Default) */
   --color-bg: #ffffff;
   --color-surface: #f8fafc;

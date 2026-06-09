@@ -194,21 +194,44 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
 
       <AnimatePresence>
         {rejectModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-[rgba(0,0,0,0.7)]" onClick={() => setRejectModal(null)}>
-            <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="a-card-lg p-6 w-full max-w-md space-y-4">
-              <div>
-                <h3 className="text-[17px] font-bold text-white">Reprovar {rejectModal.nome}</h3>
-                <p className="text-[13px] text-[rgba(255,255,255,0.4)] mt-0.5">Informe o motivo da reprovação.</p>
-              </div>
-              <textarea value={rejectMotivo} onChange={(e) => setRejectMotivo(e.target.value)} placeholder="Ex: CNPJ inválido, documentação incompleta..." className="a-input resize-none h-28" />
-              <div className="flex gap-3">
-                <button onClick={() => setRejectModal(null)} className="a-btn-ghost flex-1">Cancelar</button>
-                <button onClick={async () => { if (!rejectMotivo.trim()) return; await handleAction(rejectModal.id, "rejeitar", rejectMotivo); setRejectModal(null); setRejectMotivo(""); }} disabled={!rejectMotivo.trim()} className="a-btn-red flex-1">Confirmar reprovação</button>
-              </div>
-            </motion.div>
-          </motion.div>
+          <RejectModal 
+            fornecedor={rejectModal}
+            motivo={rejectMotivo}
+            setMotivo={setRejectMotivo}
+            onClose={() => setRejectModal(null)}
+            onConfirm={async () => { 
+              if (!rejectMotivo.trim()) return; 
+              await handleAction(rejectModal.id, "rejeitar", rejectMotivo); 
+              setRejectModal(null); 
+              setRejectMotivo(""); 
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function RejectModal({ fornecedor, motivo, setMotivo, onClose, onConfirm }: any) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 flex items-end md:items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ zIndex: "var(--z-modal)" }}>
+      <div className="absolute inset-0" onClick={onClose} />
+      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative a-card-lg p-6 w-full max-w-md space-y-4">
+        <div>
+          <h3 className="text-xl font-black text-white">Reprovar {fornecedor.nome}</h3>
+          <p className="text-sm text-[rgba(255,255,255,0.4)] mt-0.5">Informe o motivo da reprovação.</p>
+        </div>
+        <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex: CNPJ inválido, documentação incompleta..." className="a-input resize-none h-28" />
+        <div className="flex gap-3">
+          <button onClick={onClose} className="a-btn-ghost flex-1">Cancelar</button>
+          <button onClick={onConfirm} disabled={!motivo.trim()} className="a-btn-red flex-1">Confirmar reprovação</button>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
   );
 }

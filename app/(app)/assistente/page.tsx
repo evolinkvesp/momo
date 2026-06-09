@@ -9,11 +9,7 @@ import { useFabVisibility } from "@/components/FabVisibilityContext";
 import dynamic from "next/dynamic";
 import { SkeletonText } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
-
-const ReactMarkdown = dynamic(() => import("react-markdown"), {
-  loading: () => <SkeletonText lines={3} />,
-  ssr: false,
-});
+import ReactMarkdown from "react-markdown";
 
 const suggestions = [
   "Quais proteínas comer na janta?",
@@ -106,32 +102,34 @@ export default function AssistentePage() {
   }
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100svh - 96px)" }}>
-      {/* Header estilo WhatsApp */}
-      <ChatHeader onBack={() => router.back()} />
-
-      {/* Aviso médico */}
-      <div
-        className="mx-0 mb-3 flex gap-2.5 rounded-2xl px-3.5 py-2.5"
-        style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.18)" }}
-      >
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-        <p className="text-[11px] font-semibold leading-tight text-warning opacity-90">
-          Respostas geradas por IA — siga sempre as orientações do seu médico.
-        </p>
+    <div className="flex flex-col relative" style={{ height: "calc(100svh - 110px)" }}>
+      {/* Header estilo WhatsApp - fixo no topo da área do chat */}
+      <div className="sticky top-0 z-[40] bg-bg/95 backdrop-blur-md pb-2">
+        <ChatHeader onBack={() => router.back()} />
+        
+        {/* Aviso médico */}
+        <div
+          className="mx-0 flex gap-2.5 rounded-2xl px-3.5 py-2"
+          style={{ background: "var(--color-ember-glow)", border: "1px solid rgba(245,158,11,0.15)" }}
+        >
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
+          <p className="text-[10px] font-semibold leading-tight text-warning opacity-90">
+            Respostas geradas por IA — siga sempre seu médico.
+          </p>
+        </div>
       </div>
 
       {/* Área de mensagens */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto scroll-smooth"
+        className="flex-1 overflow-y-auto scroll-smooth pt-4 pb-40"
         style={{
           backgroundImage:
             "radial-gradient(circle, var(--color-surface-border) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }}
       >
-        <div className="space-y-2 px-1 py-3 pb-4">
+        <div className="space-y-2 px-1">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
               <m.div
@@ -144,10 +142,9 @@ export default function AssistentePage() {
                 {/* Avatar IA */}
                 {msg.role === "assistant" && (
                   <div
-                    className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-ember"
                     style={{
                       background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
-                      boxShadow: "var(--shadow-ember)",
                     }}
                   >
                     <Bot size={13} strokeWidth={2.5} color="white" />
@@ -156,14 +153,13 @@ export default function AssistentePage() {
 
                 {/* Bolha */}
                 <div
-                  className="relative max-w-[80%] px-4 py-3 shadow-card"
+                  className={`relative max-w-[85%] px-4 py-3 shadow-card ${msg.role === "user" ? "text-white" : "text-text"}`}
                   style={
                     msg.role === "user"
                       ? {
                           background: "linear-gradient(135deg, var(--color-ember) 0%, var(--color-ember-dim) 100%)",
                           borderRadius: "20px 20px 5px 20px",
                           boxShadow: "var(--shadow-ember)",
-                          color: "white",
                         }
                       : {
                           background: "var(--color-surface)",
@@ -173,39 +169,17 @@ export default function AssistentePage() {
                   }
                 >
                   {msg.role === "assistant" ? (
-                    <ReactMarkdown
-                      components={{
-                        h1: ({ children }) => (
-                          <p style={{ fontWeight: 700, fontSize: 15, color: "var(--color-text)", marginBottom: 4 }}>{children}</p>
-                        ),
-                        h2: ({ children }) => (
-                          <p style={{ fontWeight: 700, fontSize: 14, color: "var(--color-text)", marginBottom: 4 }}>{children}</p>
-                        ),
-                        h3: ({ children }) => (
-                          <p style={{ fontWeight: 600, fontSize: 13, color: "var(--color-text-muted)", marginBottom: 4 }}>{children}</p>
-                        ),
-                        p: ({ children }) => (
-                          <p style={{ fontSize: 14, color: "var(--color-text)", lineHeight: 1.65, marginBottom: 6 }}>{children}</p>
-                        ),
-                        strong: ({ children }) => (
-                          <strong style={{ fontWeight: 700, color: "var(--color-text)" }}>{children}</strong>
-                        ),
-                        ul: ({ children }) => (
-                          <ul style={{ paddingLeft: 0, margin: "6px 0", listStyle: "none" }}>{children}</ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol style={{ paddingLeft: 0, margin: "6px 0", listStyle: "none" }}>{children}</ol>
-                        ),
-                        li: ({ children }) => (
-                          <li style={{ display: "flex", gap: 8, marginBottom: 6, fontSize: 14, color: "var(--color-text)" }}>
-                            <span style={{ color: "var(--color-ember)", flexShrink: 0, marginTop: 2 }}>•</span>
-                            <span>{children}</span>
-                          </li>
-                        ),
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+                    <div className="markdown-chat">
+                      <ReactMarkdown
+                        components={{
+                          h1: ({ children }) => <p className="font-bold text-[15px] mb-1">{children}</p>,
+                          p: ({ children }) => <p className="text-[14px] leading-relaxed mb-1">{children}</p>,
+                          li: ({ children }) => <li className="flex gap-2 text-[14px] mb-1"><span className="text-ember">•</span>{children}</li>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
                   ) : (
                     <p className="text-[14px] font-medium leading-relaxed">{msg.content}</p>
                   )}
@@ -222,10 +196,9 @@ export default function AssistentePage() {
               className="flex items-end gap-2"
             >
               <div
-                className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-ember"
                 style={{
                   background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
-                  boxShadow: "var(--shadow-ember)",
                 }}
               >
                 <Bot size={13} strokeWidth={2.5} color="white" />
@@ -255,12 +228,12 @@ export default function AssistentePage() {
 
       {/* Input fixo */}
       <div
-        className="fixed bottom-[70px] left-0 right-0 z-[45]"
+        className="fixed bottom-[80px] left-0 right-0"
         style={{
-          background: "var(--color-bg)",
-          borderTop: "1px solid var(--color-surface-border)",
-          paddingTop: 10,
-          paddingBottom: 12,
+          background: "linear-gradient(to top, var(--color-bg) 95%, transparent)",
+          paddingTop: 20,
+          paddingBottom: 4,
+          zIndex: "var(--z-nav)",
         }}
       >
         <div className="mx-auto w-full max-w-md px-4">
@@ -272,10 +245,9 @@ export default function AssistentePage() {
                   key={s}
                   type="button"
                   onClick={() => setInput(s)}
-                  className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-95"
+                  className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-95 border border-ember/20"
                   style={{
                     background: "var(--color-ember-glow)",
-                    border: "1px solid rgba(255,101,0,0.22)",
                     color: "var(--color-ember)",
                   }}
                 >
@@ -290,23 +262,20 @@ export default function AssistentePage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite uma mensagem..."
-              className="h-12 flex-1 rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ember/20 shadow-sm"
+              className="h-12 flex-1 rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ember/20 shadow-sm border border-surface-border"
               style={{
                 background: "var(--color-surface)",
-                border: "1.5px solid var(--color-surface-border)",
                 color: "var(--color-text)",
               }}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white transition-all active:scale-95 disabled:opacity-40"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white transition-all active:scale-95 disabled:opacity-40 shadow-ember border border-surface-border"
               style={{
                 background: input.trim()
                   ? "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))"
                   : "var(--color-surface-mid)",
-                boxShadow: input.trim() ? "var(--shadow-ember)" : "none",
-                border: "1.5px solid var(--color-surface-border)",
               }}
             >
               <Send
@@ -325,7 +294,7 @@ export default function AssistentePage() {
 function ChatHeader({ onBack }: { onBack: () => void }) {
   return (
     <div
-      className="mb-3 flex items-center gap-3 rounded-[24px] px-4 py-3.5"
+      className="mb-2 flex items-center gap-3 rounded-[24px] px-4 py-3"
       style={{
         background: "linear-gradient(135deg, #1a0800 0%, #2d1200 60%, #1a0800 100%)",
         boxShadow: "0 4px 20px rgba(255,101,0,0.18)",
@@ -355,7 +324,7 @@ function ChatHeader({ onBack }: { onBack: () => void }) {
       <div className="flex-1">
         <p className="text-[15px] font-bold leading-tight text-white">Assistente Momo</p>
         <p className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.45)" }}>
-          Nutrição · Bem-estar · Mounjaro
+          IA Nutricional
         </p>
       </div>
 
