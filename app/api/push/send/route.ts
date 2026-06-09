@@ -15,9 +15,8 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { userId, title, body: msgBody, url } = body;
-    // Standardize 'body' for the internal payload
-    const finalBody = msgBody || body.body || "";
+    const { userId, title, body: msgBody, url, tag } = body;
+    const finalBody = msgBody ?? "";
 
     console.log(`[PushSend] Attempting to send to ${userId}: ${title}`);
 
@@ -66,7 +65,8 @@ export async function POST(request: Request) {
       title,
       body: finalBody,
       url: url ?? "/",
-      read: false
+      tag: tag ?? null,
+      read: false,
     });
 
     console.log(`[PushSend] Sending to ${subs.length} endpoints...`);

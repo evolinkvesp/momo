@@ -1,101 +1,104 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Plus, Package, Edit2, Trash2, X, ChevronDown } from "lucide-react";
+import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { TIPO_PRODUTO_LABEL, formatBRL } from "@/lib/fornecedores";
-import toast from "react-hot-toast";
 
 const DOSES = [2.5, 5, 7.5, 10, 12.5, 15];
-
-type Produto = {
-  id: string;
-  fornecedor_id: string;
-  tipo_produto: "ampola_avulsa" | "caixa";
-  dose_mg: number;
-  unidades_por_caixa: number | null;
-  preco: number;
-  preco_promocional: number | null;
-  estoque_disponivel: number;
-  ativo: boolean;
+const TIPO_PRODUTO_LABEL: Record<string, string> = {
+  ampola_avulsa: "Ampola Avulsa",
+  caixa: "Caixa Fechada",
 };
 
-const emptyForm = {
-  tipo_produto: "ampola_avulsa" as "ampola_avulsa" | "caixa",
-  dose_mg: "5",
-  unidades_por_caixa: "",
-  preco: "",
-  preco_promocional: "",
-  estoque_disponivel: "0",
-  ativo: true,
-};
+const formatBRL = (v: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
-export default function FornecedorProdutosPage() {
-  const [produtos, setProdutos] = useState<Produto[]>([]);
+export default function MeusProdutosPage() {
+  const [produtos, setProdutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fornecedorId, setFornecedorId] = useState<string | null>(null);
 
+  // Form state
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<Produto | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [editing, setEditing] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Produto | null>(null);
+  const [form, setForm] = useState({
+    tipo_produto: "ampola_avulsa",
+    dose_mg: "2.5",
+    unidades_por_caixa: "1",
+    preco: "",
+    preco_promocional: "",
+    estoque_disponivel: "10",
+    ativo: true,
+  });
+
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   async function loadData() {
+    setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
+
     const { data: fornecedor } = await supabase
       .from("fornecedores")
       .select("id")
       .eq("user_id", session.user.id)
       .single();
+
     if (fornecedor) {
       setFornecedorId(fornecedor.id);
-      const { data } = await supabase
+      const { data: prods } = await supabase
         .from("fornecedor_produtos")
         .select("*")
         .eq("fornecedor_id", fornecedor.id)
         .order("dose_mg", { ascending: true });
-      setProdutos((data as Produto[]) || []);
+
+      setProdutos(prods || []);
     }
     setLoading(false);
   }
 
   function openCreate() {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({
+      tipo_produto: "ampola_avulsa",
+      dose_mg: "2.5",
+      unidades_por_caixa: "1",
+      preco: "",
+      preco_promocional: "",
+      estoque_disponivel: "10",
+      ativo: true,
+    });
     setShowForm(true);
   }
 
-  function openEdit(p: Produto) {
-    setEditing(p);
+  function openEdit(prod: any) {
+    setEditing(prod);
     setForm({
-      tipo_produto: p.tipo_produto,
-      dose_mg: String(p.dose_mg),
-      unidades_por_caixa: p.unidades_por_caixa?.toString() || "",
-      preco: String(p.preco),
-      preco_promocional: p.preco_promocional?.toString() || "",
-      estoque_disponivel: String(p.estoque_disponivel ?? 0),
-      ativo: p.ativo,
+      tipo_produto: prod.tipo_produto,
+      dose_mg: String(prod.dose_mg),
+      unidades_por_caixa: String(prod.unidades_por_caixa || 1),
+      preco: String(prod.preco),
+      preco_promocional: prod.preco_promocional ? String(prod.preco_promocional) : "",
+      estoque_disponivel: String(prod.estoque_disponivel),
+      ativo: prod.ativo,
     });
     setShowForm(true);
   }
 
   async function handleSave() {
     if (!fornecedorId) return;
-    if (!form.preco || Number(form.preco) <= 0) {
-      toast.error("Informe um preço válido.");
-      return;
-    }
-    if (form.tipo_produto === "caixa" && !form.unidades_por_caixa) {
-      toast.error("Informe as unidades por caixa.");
+    if (!form.preco) {
+      toast.error("Preço é obrigatório.");
       return;
     }
     setSaving(true);
@@ -243,126 +246,16 @@ export default function FornecedorProdutosPage() {
         )}
       </div>
 
-      {/* Create/Edit Modal */}
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6 backdrop-blur-sm bg-black/80">
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl bg-surface border border-surface-border"
-            >
-              <div className="w-10 h-1 rounded-full mx-auto mb-6 sm:hidden bg-surface-border" />
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-black text-text">{editing ? "Editar produto" : "Novo produto"}</h2>
-                  <p className="text-xs text-muted">Gerencie a oferta do seu catálogo</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="h-10 w-10 flex items-center justify-center rounded-full transition-colors bg-surface-mid text-text-dim"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-5">
-                {/* Tipo de produto */}
-                <div>
-                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">Tipo de Produto</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(["ampola_avulsa", "caixa"] as const).map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setForm({ ...form, tipo_produto: t })}
-                        className="rounded-2xl py-3.5 text-xs font-bold transition-all"
-                        style={
-                          form.tipo_produto === t
-                            ? { background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", color: "white", boxShadow: "var(--shadow-ember)" }
-                            : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)", color: "var(--color-text-muted)" }
-                        }
-                      >
-                        {TIPO_PRODUTO_LABEL[t]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dose */}
-                <div>
-                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">Dose (mg)</label>
-                  <div className="flex flex-wrap gap-2">
-                    {DOSES.map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => setForm({ ...form, dose_mg: String(d) })}
-                        className="min-w-[48px] px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
-                        style={
-                          form.dose_mg === String(d)
-                            ? { background: "var(--color-ember)", color: "white", boxShadow: "var(--shadow-ember)" }
-                            : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)", color: "var(--color-text-muted)" }
-                        }
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {form.tipo_produto === "caixa" && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
-                    <DarkField label="Unidades por caixa">
-                      <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="Ex: 4" />
-                    </DarkField>
-                  </motion.div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <DarkField label="Preço (R$)">
-                    <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="0,00" />
-                  </DarkField>
-                  <DarkField label="Promoção (R$)">
-                    <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="opcional" />
-                  </DarkField>
-                </div>
-
-                <DarkField label="Estoque disponível">
-                  <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" />
-                </DarkField>
-
-                <label className="flex items-center gap-3 cursor-pointer p-4 rounded-2xl transition-all bg-surface-mid border border-surface-border">
-                  <div
-                    className="h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
-                    onClick={() => setForm({ ...form, ativo: !form.ativo })}
-                    style={form.ativo ? { background: "var(--color-ember)" } : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}
-                  >
-                    {form.ativo && <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-text">Disponível para venda</p>
-                    <p className="text-[10px] font-medium text-text-dim">Desative para ocultar este item da busca</p>
-                  </div>
-                </label>
-
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-70"
-                    style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
-                  >
-                    {saving ? <LoadingSpinner size="sm" color="white" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+          <ProductFormModal
+            editing={editing}
+            form={form}
+            setForm={setForm}
+            saving={saving}
+            onClose={() => setShowForm(false)}
+            onSave={handleSave}
+          />
         )}
       </AnimatePresence>
 
@@ -384,5 +277,132 @@ function DarkField({ label, children }: { label: string; children: React.ReactNo
       <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">{label}</label>
       {children}
     </div>
+  );
+}
+
+function ProductFormModal({ editing, form, setForm, saving, onClose, onSave }: any) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6 backdrop-blur-sm bg-black/80">
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl bg-surface border border-surface-border"
+      >
+        <div className="w-10 h-1 rounded-full mx-auto mb-6 sm:hidden bg-surface-border" />
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-black text-text">{editing ? "Editar produto" : "Novo produto"}</h2>
+            <p className="text-xs text-muted">Gerencie a oferta do seu catálogo</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 w-10 flex items-center justify-center rounded-full transition-colors bg-surface-mid text-text-dim"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-5">
+          {/* Tipo de produto */}
+          <div>
+            <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">Tipo de Produto</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(["ampola_avulsa", "caixa"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setForm({ ...form, tipo_produto: t })}
+                  className="rounded-2xl py-3.5 text-xs font-bold transition-all"
+                  style={
+                    form.tipo_produto === t
+                      ? { background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", color: "white", boxShadow: "var(--shadow-ember)" }
+                      : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)", color: "var(--color-text-muted)" }
+                  }
+                >
+                  {TIPO_PRODUTO_LABEL[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Dose */}
+          <div>
+            <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">Dose (mg)</label>
+            <div className="flex flex-wrap gap-2">
+              {DOSES.map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setForm({ ...form, dose_mg: String(d) })}
+                  className="min-w-[48px] px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={
+                    form.dose_mg === String(d)
+                      ? { background: "var(--color-ember)", color: "white", boxShadow: "var(--shadow-ember)" }
+                      : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)", color: "var(--color-text-muted)" }
+                  }
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {form.tipo_produto === "caixa" && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+              <DarkField label="Unidades por caixa">
+                <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="Ex: 4" />
+              </DarkField>
+            </motion.div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <DarkField label="Preço (R$)">
+              <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="0,00" />
+            </DarkField>
+            <DarkField label="Promoção (R$)">
+              <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" placeholder="opcional" />
+            </DarkField>
+          </div>
+
+          <DarkField label="Estoque disponível">
+            <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-text bg-surface-mid border border-surface-border focus:outline-none focus:border-ember/40 transition-colors" />
+          </DarkField>
+
+          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-2xl transition-all bg-surface-mid border border-surface-border">
+            <div
+              className="h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
+              onClick={() => setForm({ ...form, ativo: !form.ativo })}
+              style={form.ativo ? { background: "var(--color-ember)" } : { background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}
+            >
+              {form.ativo && <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-text">Disponível para venda</p>
+              <p className="text-[10px] font-medium text-text-dim">Desative para ocultar este item da busca</p>
+            </div>
+          </label>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-70"
+              style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
+            >
+              {saving ? <LoadingSpinner size="sm" color="white" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
   );
 }

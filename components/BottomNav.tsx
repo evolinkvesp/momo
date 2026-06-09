@@ -109,23 +109,25 @@ export function BottomNav() {
     <>
       <AnimatePresence>
         {sheetOpen && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center">
+          <div className="fixed inset-0 flex items-end justify-center" style={{ zIndex: "var(--z-modal)" }}>
             <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={() => setSheetOpen(false)}
+              style={{ zIndex: "var(--z-overlay)" }}
             />
             <m.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative m-4 w-full max-w-md rounded-[32px] p-6 shadow-2xl z-[101]"
+              className="relative m-4 w-full max-w-md rounded-[32px] p-6 shadow-2xl"
               style={{
                 background: "var(--color-surface)",
                 border: "1px solid var(--color-surface-border)",
+                zIndex: "var(--z-modal)",
               }}
             >
               <div className="mb-5 flex items-center justify-between">

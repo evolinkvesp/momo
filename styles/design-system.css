@@ -98,3 +98,8 @@
 .ember-pulse {
   animation: ember-glow-pulse 2s ease-in-out infinite;
 }
+
+/* Fix for markdown chat */
+.markdown-chat p { margin-bottom: 0.5rem !important; }
+.markdown-chat p:last-child { margin-bottom: 0 !important; }
+.markdown-chat ul, .markdown-chat ol { padding-left: 1.25rem !important; margin-bottom: 0.5rem !important; }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bot, Send, AlertCircle, ChevronLeft, MoreVertical } from "lucide-react";
+import { Bot, Send, AlertCircle, ChevronLeft } from "lucide-react";
 import { PaywallCard } from "@/components/PaywallCard";
 import { usePlano } from "@/hooks/usePlano";
 import { m, AnimatePresence } from "framer-motion";
@@ -9,7 +9,12 @@ import { useFabVisibility } from "@/components/FabVisibilityContext";
 import dynamic from "next/dynamic";
 import { SkeletonText } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+
+// Dynamic import to prevent hydration issues with markdown
+const ReactMarkdown = dynamic(() => import("react-markdown"), {
+  loading: () => <SkeletonText lines={3} />,
+  ssr: false,
+});
 
 const suggestions = [
   "Quais proteínas comer na janta?",
@@ -129,7 +134,7 @@ export default function AssistentePage() {
           backgroundSize: "24px 24px",
         }}
       >
-        <div className="space-y-2 px-1">
+        <div className="space-y-3 px-1">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
               <m.div
@@ -169,12 +174,13 @@ export default function AssistentePage() {
                   }
                 >
                   {msg.role === "assistant" ? (
-                    <div className="markdown-chat">
+                    <div className="markdown-chat prose prose-sm max-w-none prose-p:leading-relaxed prose-p:m-0">
                       <ReactMarkdown
                         components={{
-                          h1: ({ children }) => <p className="font-bold text-[15px] mb-1">{children}</p>,
-                          p: ({ children }) => <p className="text-[14px] leading-relaxed mb-1">{children}</p>,
-                          li: ({ children }) => <li className="flex gap-2 text-[14px] mb-1"><span className="text-ember">•</span>{children}</li>,
+                          h1: ({ children }: any) => <p className="font-bold text-[15px] mb-1 text-text">{children}</p>,
+                          p: ({ children }: any) => <p className="text-[14px] leading-relaxed mb-1 text-text">{children}</p>,
+                          li: ({ children }: any) => <li className="flex gap-2 text-[14px] mb-1 text-text"><span className="text-ember shrink-0">•</span>{children}</li>,
+                          ul: ({ children }: any) => <ul className="list-none p-0 m-0">{children}</ul>,
                         }}
                       >
                         {msg.content}

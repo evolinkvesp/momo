@@ -44,38 +44,37 @@ export function AchievementModal({ achievement, onShare, onClose }: Props) {
   if (!mounted || !achievement) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 flex items-center justify-center p-6" style={{ zIndex: "var(--z-modal)" }}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} style={{ zIndex: "var(--z-overlay)" }} />
 
       <div
-        className="relative z-[131] w-full max-w-xs rounded-[28px] p-7 text-center shadow-2xl animate-fade-up"
-        style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
+        className="relative w-full max-w-xs rounded-[28px] p-7 text-center shadow-2xl animate-fade-up border border-surface-border"
+        style={{ background: "var(--color-surface)", zIndex: "var(--z-modal)" }}
       >
         <div
           className="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full text-[64px] leading-none"
-          style={{ background: "rgba(255,101,0,0.1)", border: "1px solid rgba(255,101,0,0.2)" }}
+          style={{ background: "var(--color-ember-glow)", border: "1px solid var(--color-ember-glow-strong)" }}
         >
           <span>{achievement.emoji}</span>
         </div>
-        <p className="text-sm font-black uppercase tracking-widest" style={{ color: "#ff6500" }}>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">
           Conquista desbloqueada!
         </p>
-        <h3 className="mt-1 text-xl font-bold" style={{ color: "var(--color-text)" }}>{achievement.name}</h3>
+        <h3 className="mt-1 text-xl font-bold text-text tracking-tight">{achievement.name}</h3>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-8 space-y-3">
           <button
             onClick={onShare}
-            className="w-full rounded-full py-3.5 text-sm font-bold text-white transition-all active:scale-[0.97]"
-            style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 16px rgba(255,101,0,0.35)" }}
+            className="w-full rounded-full py-4 text-sm font-bold text-white transition-all active:scale-[0.97] shadow-ember"
+            style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))" }}
           >
-            Compartilhar
+            Compartilhar progresso
           </button>
           <button
             onClick={onClose}
-            className="w-full rounded-full py-2.5 text-sm font-bold"
-            style={{ color: "var(--color-text-dim)" }}
+            className="w-full rounded-full py-3 text-sm font-bold text-text-dim hover:text-text transition-colors"
           >
-            Depois
+            Continuar acompanhando
           </button>
         </div>
       </div>
