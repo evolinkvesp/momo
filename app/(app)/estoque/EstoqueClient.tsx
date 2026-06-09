@@ -53,8 +53,12 @@ export function EstoqueClient({ userId, initialAmpolas, initialAlerta, profile, 
   const ampolasDisponiveis = Math.max(0, totalPurchased - ampolasUsadas);
   const qtdMinima = alerta?.quantidade_minima || 2;
 
-  const statusColor = ampolasDisponiveis < qtdMinima ? "text-red-600" : ampolasDisponiveis < (qtdMinima + 2) ? "text-amber-600" : "text-ember";
-  const bgColor = ampolasDisponiveis < qtdMinima ? "bg-red-50" : ampolasDisponiveis < (qtdMinima + 2) ? "bg-amber-50" : "bg-surface";
+  const statusColor = ampolasDisponiveis < qtdMinima ? "text-red-500" : ampolasDisponiveis < (qtdMinima + 2) ? "text-amber-500" : "text-ember";
+  const heroBg = ampolasDisponiveis < qtdMinima
+    ? "rgba(239,68,68,0.08)"
+    : ampolasDisponiveis < (qtdMinima + 2)
+      ? "rgba(245,158,11,0.06)"
+      : "var(--color-surface)";
 
   const handleCompraSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,13 +96,13 @@ export function EstoqueClient({ userId, initialAmpolas, initialAlerta, profile, 
       />
 
       {/* Hero Card */}
-      <div className={`p-8 rounded-[24px] shadow-premium text-center transition-colors ${bgColor}`}>
+      <div className="p-8 rounded-[24px] shadow-premium text-center transition-colors" style={{ background: heroBg }}>
         <p className="text-[10px] font-bold text-dim uppercase tracking-widest mb-2">Disponíveis</p>
         <h2 className={`text-7xl font-black tracking-tighter ${statusColor}`}>{ampolasDisponiveis}</h2>
         <p className="text-sm font-bold text-muted mt-4">Suficiente para <span className="text-text">{ampolasDisponiveis * 7} dias</span></p>
         
         {ampolasDisponiveis < qtdMinima && (
-          <div className="mt-6 flex items-center justify-center gap-2 text-red-600 bg-red-100/50 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider">
+          <div className="mt-6 flex items-center justify-center gap-2 text-red-500 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider" style={{ background: "rgba(239,68,68,0.1)" }}>
             <AlertTriangle size={14} /> Estoque crítico
           </div>
         )}

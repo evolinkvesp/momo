@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { Plus, Package, Edit2, Trash2, X } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
+import { Plus, Package, Edit2, Trash2, X, ChevronDown } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { TIPO_PRODUTO_LABEL, formatBRL } from "@/lib/fornecedores";
 import toast from "react-hot-toast";
+
 const DOSES = [2.5, 5, 7.5, 10, 12.5, 15];
 
 type Produto = {
@@ -139,105 +139,163 @@ export default function FornecedorProdutosPage() {
 
   return (
     <div className="space-y-6 pb-32">
-      <PageHeader
-        title="Meus Produtos"
-        showBack={false}
-        action={
-          <button onClick={openCreate} className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-white shadow-sm">
-            <Plus size={20} />
-          </button>
-        }
-      />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[22px] font-[800] text-white tracking-[-0.5px]">Meus Produtos</h2>
+          <p className="text-[12px] font-medium text-[rgba(255,255,255,0.3)] mt-0.5">Gerencie seu catálogo</p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="h-10 w-10 flex items-center justify-center rounded-full text-white shadow-lg transition-all active:scale-90"
+          style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 4px 16px rgba(255,101,0,0.4)" }}
+        >
+          <Plus size={20} />
+        </button>
+      </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      {/* Product list */}
+      <div className="space-y-3">
         {produtos.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[32px] border border-dashed border-slate-200">
-            <Package className="mx-auto text-slate-300 mb-4" size={48} />
-            <p className="text-slate-500 font-medium">Nenhum produto cadastrado.</p>
-            <button type="button" onClick={openCreate} className="mt-4 text-sm font-bold text-forest hover:underline">+ Adicionar produto</button>
+          <div
+            className="text-center py-20 rounded-[28px] border border-dashed"
+            style={{ background: "#111111", borderColor: "rgba(255,255,255,0.08)" }}
+          >
+            <Package className="mx-auto mb-4" size={40} style={{ color: "rgba(255,255,255,0.1)" }} />
+            <p className="text-[rgba(255,255,255,0.3)] font-medium text-sm">Nenhum produto cadastrado.</p>
+            <button
+              type="button"
+              onClick={openCreate}
+              className="mt-4 text-sm font-bold text-[#ff6500] hover:underline"
+            >
+              + Adicionar produto
+            </button>
           </div>
         ) : (
           produtos.map((p) => (
-            <motion.div 
+            <motion.div
               layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              key={p.id} 
-              className="bg-white p-5 rounded-[24px] border border-slate-50 shadow-sm flex justify-between items-center group hover:border-forest/20 transition-all"
+              key={p.id}
+              className="f-card p-4 flex justify-between items-center"
             >
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center font-black">
+                  <div
+                    className="h-12 w-12 rounded-[16px] flex items-center justify-center font-black text-[#ff6500] text-sm"
+                    style={{ background: "rgba(255,101,0,0.1)" }}
+                  >
                     {p.dose_mg}
                   </div>
                   {p.preco_promocional != null && (
-                    <div className="absolute -top-2 -right-2 bg-amber-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase">
+                    <div
+                      className="absolute -top-2 -right-2 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase"
+                      style={{ background: "#ff6500" }}
+                    >
                       Oferta
                     </div>
                   )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-slate-900">{TIPO_PRODUTO_LABEL[p.tipo_produto]}</p>
-                    {!p.ativo && <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-100 px-1.5 py-0.5 rounded">Inativo</span>}
+                    <p className="text-sm font-bold text-white">{TIPO_PRODUTO_LABEL[p.tipo_produto]}</p>
+                    {!p.ativo && (
+                      <span
+                        className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                        style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}
+                      >
+                        Inativo
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-baseline gap-2 mt-0.5">
-                    <p className="text-xs font-bold text-forest">
+                    <p className="text-xs font-bold text-[#ff6500]">
                       {formatBRL(p.preco_promocional ?? p.preco)}
                     </p>
                     {p.preco_promocional != null && (
-                      <span className="text-[10px] font-medium text-slate-400 line-through">{formatBRL(p.preco)}</span>
+                      <span className="text-[10px] font-medium text-[rgba(255,255,255,0.3)] line-through">{formatBRL(p.preco)}</span>
                     )}
                   </div>
-                  <p className="text-[10px] font-medium text-slate-400">
-                    Estoque: <span className={p.estoque_disponivel <= 2 ? "text-amber-500 font-bold" : ""}>{p.estoque_disponivel} unidades</span>
+                  <p className="text-[10px] font-medium text-[rgba(255,255,255,0.3)]">
+                    Estoque:{" "}
+                    <span className={p.estoque_disponivel <= 2 ? "text-amber-400 font-bold" : "text-[rgba(255,255,255,0.5)]"}>
+                      {p.estoque_disponivel} un
+                    </span>
                   </p>
                 </div>
               </div>
               <div className="flex gap-1">
-                <button type="button" onClick={() => openEdit(p)} className="p-2.5 text-slate-400 hover:text-forest hover:bg-forest/5 rounded-xl transition-all"><Edit2 size={18} /></button>
-                <button type="button" onClick={() => setDeleteTarget(p)} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+                <button
+                  type="button"
+                  onClick={() => openEdit(p)}
+                  className="p-2.5 rounded-xl transition-all"
+                  style={{ color: "rgba(255,255,255,0.3)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#ff6500"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,101,0,0.08)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.3)"; (e.currentTarget as HTMLButtonElement).style.background = ""; }}
+                >
+                  <Edit2 size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(p)}
+                  className="p-2.5 rounded-xl transition-all"
+                  style={{ color: "rgba(255,255,255,0.3)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#f87171"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(248,113,113,0.08)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.3)"; (e.currentTarget as HTMLButtonElement).style.background = ""; }}
+                >
+                  <Trash2 size={18} />
+                </button>
               </div>
             </motion.div>
           ))
         )}
       </div>
 
-      {/* Modal criar/editar */}
+      {/* Create/Edit Modal */}
       <AnimatePresence>
         {showForm && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-6 backdrop-blur-sm">
-            <motion.div 
+          <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-6 backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.8)" }}>
+            <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] bg-white p-6 sm:rounded-[32px] shadow-2xl"
+              className="relative z-[101] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-[32px] sm:rounded-[32px] p-6 shadow-2xl"
+              style={{ background: "#111111", border: "1px solid rgba(255,255,255,0.07)" }}
             >
+              <div className="w-10 h-1 rounded-full mx-auto mb-6 sm:hidden" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900">{editing ? "Editar produto" : "Novo produto"}</h2>
-                  <p className="text-xs text-slate-400">Gerencie a oferta do seu catálogo</p>
+                  <h2 className="text-xl font-black text-white">{editing ? "Editar produto" : "Novo produto"}</h2>
+                  <p className="text-xs text-[rgba(255,255,255,0.3)]">Gerencie a oferta do seu catálogo</p>
                 </div>
-                <button type="button" onClick={() => setShowForm(false)} className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="h-10 w-10 flex items-center justify-center rounded-full transition-colors"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+                >
                   <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-5">
+                {/* Tipo de produto */}
                 <div>
-                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Tipo de Produto</label>
+                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: "rgba(255,255,255,0.3)" }}>Tipo de Produto</label>
                   <div className="grid grid-cols-2 gap-2">
                     {(["ampola_avulsa", "caixa"] as const).map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setForm({ ...form, tipo_produto: t })}
-                        className={`rounded-2xl py-3.5 text-xs font-bold transition-all border ${
-                          form.tipo_produto === t 
-                            ? "bg-forest text-white border-forest shadow-lg shadow-forest/20" 
-                            : "bg-white border-slate-100 text-slate-500 hover:border-slate-200"
-                        }`}
+                        className="rounded-2xl py-3.5 text-xs font-bold transition-all"
+                        style={
+                          form.tipo_produto === t
+                            ? { background: "linear-gradient(135deg, #ff6500, #e05500)", color: "white", boxShadow: "0 4px 16px rgba(255,101,0,0.3)" }
+                            : { background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }
+                        }
                       >
                         {TIPO_PRODUTO_LABEL[t]}
                       </button>
@@ -245,19 +303,21 @@ export default function FornecedorProdutosPage() {
                   </div>
                 </div>
 
+                {/* Dose */}
                 <div>
-                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Dose (mg)</label>
+                  <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: "rgba(255,255,255,0.3)" }}>Dose (mg)</label>
                   <div className="flex flex-wrap gap-2">
                     {DOSES.map((d) => (
                       <button
                         key={d}
                         type="button"
                         onClick={() => setForm({ ...form, dose_mg: String(d) })}
-                        className={`min-w-[48px] px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                          form.dose_mg === String(d) 
-                            ? "bg-slate-900 text-white border-slate-900 shadow-md" 
-                            : "bg-slate-50 border-slate-50 text-slate-500 hover:border-slate-200"
-                        }`}
+                        className="min-w-[48px] px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
+                        style={
+                          form.dose_mg === String(d)
+                            ? { background: "#ff6500", color: "white" }
+                            : { background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }
+                        }
                       >
                         {d}
                       </button>
@@ -267,30 +327,36 @@ export default function FornecedorProdutosPage() {
 
                 {form.tipo_produto === "caixa" && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
-                    <Field label="Unidades por caixa">
-                      <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="input-standard" placeholder="Ex: 4" />
-                    </Field>
+                    <DarkField label="Unidades por caixa">
+                      <input type="number" value={form.unidades_por_caixa} onChange={(e) => setForm({ ...form, unidades_por_caixa: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-white bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[rgba(255,101,0,0.4)]" placeholder="Ex: 4" />
+                    </DarkField>
                   </motion.div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Preço (R$)">
-                    <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="input-standard" placeholder="0,00" />
-                  </Field>
-                  <Field label="Promoção (R$)">
-                    <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="input-standard" placeholder="opcional" />
-                  </Field>
+                  <DarkField label="Preço (R$)">
+                    <input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-white bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[rgba(255,101,0,0.4)]" placeholder="0,00" />
+                  </DarkField>
+                  <DarkField label="Promoção (R$)">
+                    <input type="number" step="0.01" value={form.preco_promocional} onChange={(e) => setForm({ ...form, preco_promocional: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-white bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[rgba(255,101,0,0.4)]" placeholder="opcional" />
+                  </DarkField>
                 </div>
 
-                <Field label="Estoque disponível">
-                  <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="input-standard" />
-                </Field>
+                <DarkField label="Estoque disponível">
+                  <input type="number" value={form.estoque_disponivel} onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} className="w-full h-12 rounded-2xl px-4 text-sm text-white bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] focus:outline-none focus:border-[rgba(255,101,0,0.4)]" />
+                </DarkField>
 
-                <label className="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border border-slate-100/50 transition-all hover:bg-slate-100">
-                  <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} className="h-5 w-5 rounded-lg border-slate-300 text-forest focus:ring-forest" />
+                <label className="flex items-center gap-3 cursor-pointer p-4 rounded-2xl transition-all" style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div
+                    className="h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
+                    onClick={() => setForm({ ...form, ativo: !form.ativo })}
+                    style={form.ativo ? { background: "#ff6500" } : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
+                  >
+                    {form.ativo && <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">Disponível para venda</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Desative para ocultar este item da busca</p>
+                    <p className="text-sm font-bold text-white">Disponível para venda</p>
+                    <p className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>Desative para ocultar este item da busca</p>
                   </div>
                 </label>
 
@@ -299,9 +365,10 @@ export default function FornecedorProdutosPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg shadow-forest/20 active:scale-[0.98] disabled:opacity-70 transition-all"
+                    className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-70"
+                    style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 8px 24px rgba(255,101,0,0.35)" }}
                   >
-                    {saving ? <LoadingSpinner size="sm" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
+                    {saving ? <LoadingSpinner size="sm" color="white" /> : editing ? "Salvar alterações" : "Cadastrar produto"}
                   </button>
                 </div>
               </div>
@@ -322,10 +389,10 @@ export default function FornecedorProdutosPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function DarkField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">{label}</label>
+      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest ml-1" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</label>
       {children}
     </div>
   );

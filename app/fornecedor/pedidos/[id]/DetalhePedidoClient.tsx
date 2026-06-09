@@ -87,16 +87,17 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
             return (
               <div key={step.status} className="flex flex-col items-center flex-1 relative">
                 {idx < STATUS_STEPS.length - 1 && (
-                  <div className={`absolute left-1/2 right-[-50%] top-4 h-[2px] ${isCompleted ? "bg-[#4ade80]" : "bg-[rgba(255,255,255,0.05)]"}`} />
+                  <div className={`absolute left-1/2 right-[-50%] top-4 h-[2px] ${isCompleted ? "bg-[#ff6500]" : "bg-[rgba(255,255,255,0.05)]"}`} />
                 )}
                 <div
                   className={`z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    isCompleted ? "bg-[#4ade80] text-[#052e16]" : "bg-[#1a1a1a] text-[rgba(255,255,255,0.2)]"
-                  } ${isCurrent ? "ring-4 ring-[#4ade80]/20" : ""}`}
+                    isCompleted ? "text-white" : "bg-[#1a1a1a] text-[rgba(255,255,255,0.2)]"
+                  } ${isCurrent ? "ring-4 ring-[rgba(255,101,0,0.25)]" : ""}`}
+                  style={isCompleted ? { background: "linear-gradient(135deg, #ff6500, #e05500)" } : {}}
                 >
                   <Icon size={16} strokeWidth={isCurrent ? 3 : 2} />
                 </div>
-                <span className={`mt-2 text-[9px] font-black uppercase tracking-wider ${isCompleted ? "text-[#4ade80]" : "text-[rgba(255,255,255,0.2)]"}`}>
+                <span className={`mt-2 text-[9px] font-black uppercase tracking-wider ${isCompleted ? "text-[#ff6500]" : "text-[rgba(255,255,255,0.2)]"}`}>
                   {step.label}
                 </span>
               </div>
@@ -114,7 +115,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
           className="f-card p-5 space-y-4"
         >
           <div className="flex items-center gap-2 mb-2">
-            <Package size={16} className="text-[#4ade80]" />
+            <Package size={16} className="text-[#ff6500]" />
             <h4 className="text-[11px] font-black text-[rgba(255,255,255,0.28)] uppercase tracking-widest">Produto e Valor</h4>
           </div>
           
@@ -126,7 +127,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
               </p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-black text-[#4ade80]">×{pedido.quantidade}</p>
+              <p className="text-lg font-black text-white">×{pedido.quantidade}</p>
             </div>
           </div>
           
@@ -144,7 +145,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
           className="f-card p-5 space-y-4"
         >
           <div className="flex items-center gap-2">
-            <MapPin size={16} className="text-[#4ade80]" />
+            <MapPin size={16} className="text-[#ff6500]" />
             <h4 className="text-[11px] font-black text-[rgba(255,255,255,0.28)] uppercase tracking-widest">Destino da Entrega</h4>
           </div>
           
@@ -174,7 +175,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
           className="f-card p-5 space-y-5"
         >
           <div className="flex items-center gap-2">
-            <MessageSquare size={16} className="text-[#4ade80]" />
+            <MessageSquare size={16} className="text-[#ff6500]" />
             <h4 className="text-[11px] font-black text-[rgba(255,255,255,0.28)] uppercase tracking-widest">Observações</h4>
           </div>
 
@@ -191,7 +192,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
               <textarea
                 value={obsFornecedor}
                 onChange={(e) => setObsFornecedor(e.target.value)}
-                className="w-full bg-[#111111] border border-[rgba(255,255,255,0.07)] rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-[#4ade80]/30 min-h-[100px] transition-colors"
+                className="w-full bg-[#111111] border border-[rgba(255,255,255,0.07)] rounded-2xl p-4 text-sm text-white focus:outline-none min-h-[100px] transition-colors" style={{ outline: "none" }} onFocus={(e) => e.target.style.borderColor = "rgba(255,101,0,0.3)"} onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
                 placeholder="Ex: Pedido será postado amanhã pela manhã..."
               />
               <button 
@@ -203,9 +204,9 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
             </div>
           ) : (
             pedido.observacoes_fornecedor && (
-              <div className="bg-[#4ade80]/5 p-4 rounded-2xl border border-[#4ade80]/10">
-                <p className="text-[9px] font-black text-[#4ade80] uppercase tracking-widest mb-2">Mensagem do Fornecedor</p>
-                <p className="text-sm text-[#4ade80]/80 leading-relaxed">{pedido.observacoes_fornecedor}</p>
+              <div className="p-4 rounded-2xl" style={{ background: "rgba(255,101,0,0.06)", border: "1px solid rgba(255,101,0,0.15)" }}>
+                <p className="text-[9px] font-black text-[#ff6500] uppercase tracking-widest mb-2">Mensagem do Fornecedor</p>
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,101,0,0.8)" }}>{pedido.observacoes_fornecedor}</p>
               </div>
             )
           )}
@@ -225,7 +226,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
                 <button
                   onClick={() => updateStatus("confirmado")}
                   disabled={loading}
-                  className="flex-1 h-12 bg-[#4ade80] text-[#052e16] rounded-2xl text-xs font-bold active:scale-95 transition-transform"
+                  className="flex-1 h-12 text-white rounded-2xl text-xs font-bold active:scale-95 transition-transform" style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 4px 16px rgba(255,101,0,0.3)" }}
                 >
                   ACEITAR PEDIDO
                 </button>
@@ -245,7 +246,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
                   updateStatus("enviado", track ? { codigo_rastreio: track } : {});
                 }}
                 disabled={loading}
-                className="flex-1 h-12 bg-[#60a5fa] text-[#082f49] rounded-2xl text-xs font-bold active:scale-95 transition-transform"
+                className="flex-1 h-12 rounded-2xl text-xs font-bold active:scale-95 transition-transform text-white" style={{ background: "rgba(96,165,250,0.15)", border: "1px solid rgba(96,165,250,0.3)", color: "#60a5fa" }}
               >
                 MARCAR COMO ENVIADO
               </button>
@@ -254,7 +255,7 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
               <button
                 onClick={() => updateStatus("entregue")}
                 disabled={loading}
-                className="flex-1 h-12 bg-white text-black rounded-2xl text-xs font-bold active:scale-95 transition-transform"
+                className="flex-1 h-12 text-white rounded-2xl text-xs font-bold active:scale-95 transition-transform" style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 4px 16px rgba(255,101,0,0.3)" }}
               >
                 CONFIRMAR ENTREGA
               </button>

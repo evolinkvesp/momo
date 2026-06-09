@@ -157,9 +157,10 @@ export function ProdutoDetalheClient({
               <Droplet size={32} className="text-white/60" />
             )}
             
-            <button 
+            <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-2 -right-2 w-[22px] h-[22px] rounded-full bg-[#4ade80] flex items-center justify-center text-[#052e16] shadow-md border-2 border-white"
+              className="absolute -bottom-2 -right-2 w-[22px] h-[22px] rounded-full flex items-center justify-center shadow-md border-2 border-white text-white"
+              style={{ background: "#ff6500" }}
             >
               {uploading ? <LoadingSpinner size="sm" /> : <Camera size={12} strokeWidth={2.5} />}
             </button>
@@ -197,7 +198,7 @@ export function ProdutoDetalheClient({
             {hasPromo && (
               <>
                 <span className="text-sm text-dim line-through mb-1">{formatBRL(produto.preco)}</span>
-                <span className="bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md mb-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md mb-1.5 text-red-400" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.2)" }}>
                   -{promoPercent}%
                 </span>
               </>
@@ -238,13 +239,13 @@ export function ProdutoDetalheClient({
               tipoEntrega === "motoboy" ? "border-2 border-ember shadow-md shadow-ember/10" : "border border-surface-border"
             }`}
           >
-            <div className="w-10 h-10 rounded-xl bg-[#fef3c7] flex items-center justify-center text-[#d97706] shrink-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-ember shrink-0" style={{ background: "rgba(255,101,0,0.1)" }}>
               <Bike size={20} strokeWidth={2.5} />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-[12px] font-bold text-text">Frete Full — Motoboy</p>
-                <span className="bg-green-50 text-green-700 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md">Rápido</span>
+                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md text-[#ff6500]" style={{ background: "rgba(255,101,0,0.12)" }}>Rápido</span>
               </div>
               <p className="text-[10px] font-medium text-dim mt-1">Entrega hoje em ~{fornecedor.tempo_entrega_minutos || 60} min</p>
             </div>
@@ -274,13 +275,13 @@ export function ProdutoDetalheClient({
         <div className="px-6 mt-4">
           <div className="bg-surface rounded-[16px] border border-surface-border p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#fef9c3] flex items-center justify-center text-[#ca8a04]">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-ember" style={{ background: "rgba(255,101,0,0.1)" }}>
                 <Banknote size={20} strokeWidth={2.5} />
               </div>
               <div>
                 <p className="text-[12px] font-bold text-text">Pagar na Entrega (COD)</p>
                 {fornecedor.cod_taxa_percentual > 0 && (
-                   <p className="text-[10px] font-medium text-amber-600 mt-0.5">Adicional de {fornecedor.cod_taxa_percentual}%</p>
+                   <p className="text-[10px] font-medium text-muted mt-0.5">Adicional de {fornecedor.cod_taxa_percentual}%</p>
                 )}
               </div>
             </div>

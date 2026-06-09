@@ -24,7 +24,7 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
   const getStatusBadge = () => {
     if (status === 'ativo') return (
       <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider"
-        style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+        style={{ background: "rgba(255,101,0,0.12)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.2)" }}>
         Ativo
       </span>
     );

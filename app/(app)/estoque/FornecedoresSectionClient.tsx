@@ -141,12 +141,12 @@ export function FornecedoresSectionClient({
                     {/* Badges */}
                     <div className="absolute inset-0 p-3 flex justify-between items-start">
                       {f.oferece_frete_full && (
-                        <span className="bg-[#4ade80] text-[#052e16] text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1 shadow-sm text-white" style={{ background: "rgba(255,101,0,0.9)" }}>
                           <Bike size={10} strokeWidth={3} /> Frete Full
                         </span>
                       )}
                       {f.aceita_cod && (
-                        <span className="bg-[#fbbf24] text-[#78350f] text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full shadow-sm ml-auto">
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full shadow-sm ml-auto text-white" style={{ background: "rgba(245,158,11,0.9)" }}>
                           COD
                         </span>
                       )}
@@ -175,7 +175,7 @@ export function FornecedoresSectionClient({
                       <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider" style={{ background: "rgba(255,101,0,0.1)", color: "#ff6500" }}>
                         {TIPO_FORNECEDOR_LABEL[f.tipo] || "Farmácia"}
                       </span>
-                      <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-[9px] font-black uppercase tracking-wider">
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider" style={{ background: "var(--color-surface-mid)", color: "var(--color-text-muted)" }}>
                         📍 {f.endereco_cidade} e região ({f.raio_entrega_km || 50}km)
                       </span>
                     </div>

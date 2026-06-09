@@ -119,7 +119,7 @@ export function FornecedorClient({
             onClick={() => setTab(id)}
             className={`flex-1 rounded-full py-2.5 text-[13px] font-bold transition-all ${
               tab === id
-                ? "bg-ember text-white shadow-lg shadow-forest/20"
+                ? "bg-ember text-white shadow-lg shadow-ember/20"
                 : "text-dim hover:bg-surface-mid"
             }`}
           >
@@ -366,7 +366,7 @@ function ConfirmarPedidoModal({
         </div>
 
         {error && (
-          <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600">
+          <div className="mb-6 rounded-xl p-4 text-sm text-red-400" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" }}>
             {error}
           </div>
         )}
@@ -490,7 +490,7 @@ function ConfirmarPedidoModal({
         <button
           onClick={confirmar}
           disabled={loading}
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-ember py-4.5 text-base font-bold text-white shadow-lg shadow-forest/30 transition-all active:scale-[0.98] disabled:opacity-60"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-ember py-4.5 text-base font-bold text-white shadow-lg shadow-ember/30 transition-all active:scale-[0.98] disabled:opacity-60"
         >
           {loading ? <LoadingSpinner size="sm" /> : "Confirmar pedido"}
         </button>
@@ -529,7 +529,7 @@ function SucessoModal({
         <div className="mt-8 flex flex-col gap-3">
           <Link
             href="/meus-pedidos"
-            className="flex items-center justify-center gap-2 rounded-full bg-ember py-4 text-sm font-bold text-white shadow-lg shadow-forest/20 active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 rounded-full bg-ember py-4 text-sm font-bold text-white shadow-lg shadow-ember/20 active:scale-[0.98]"
           >
             <ShoppingBag size={18} /> Ver meus pedidos
           </Link>

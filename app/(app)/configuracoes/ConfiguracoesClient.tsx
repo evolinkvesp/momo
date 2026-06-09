@@ -8,10 +8,6 @@ import {
   Syringe,
   Salad,
   Bell,
-  CalendarClock,
-  Package,
-  FileBarChart,
-  Lightbulb,
   Download,
   Trash2,
   Info,
@@ -327,34 +323,6 @@ function ExportItem({ userId }: { userId: string }) {
 
 /* ---------- Notifications ---------- */
 
-interface NotifConfig {
-  lembrete_dose: boolean;
-  dia_semana_dose: number | null;
-  horario_dose: string | null;
-  alerta_estoque: boolean;
-  relatorio_semanal: boolean;
-  dicas_dieta: boolean;
-}
-
-const DEFAULT_CONFIG: NotifConfig = {
-  lembrete_dose: false,
-  dia_semana_dose: 1,
-  horario_dose: "09:00",
-  alerta_estoque: false,
-  relatorio_semanal: false,
-  dicas_dieta: false,
-};
-
-const DIAS = [
-  { value: "0", label: "Domingo" },
-  { value: "1", label: "Segunda" },
-  { value: "2", label: "Terça" },
-  { value: "3", label: "Quarta" },
-  { value: "4", label: "Quinta" },
-  { value: "5", label: "Sexta" },
-  { value: "6", label: "Sábado" },
-];
-
 function NotificacoesSection({ userId }: { userId: string }) {
   const [supported, setSupported] = useState(false);
   useEffect(() => { setSupported(pushSupported()); }, []);
@@ -362,65 +330,9 @@ function NotificacoesSection({ userId }: { userId: string }) {
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
 
-  const [config, setConfig] = useState<NotifConfig>(DEFAULT_CONFIG);
-  const [configId, setConfigId] = useState<string | null>(null);
-
-  const [estoqueMin, setEstoqueMin] = useState<number>(2);
-  const [alertaId, setAlertaId] = useState<string | null>(null);
-  const [alertaAtivo, setAlertaAtivo] = useState(false);
-
   useEffect(() => {
     getPushStatus().then(setPushOn).catch(() => {});
-
-    (async () => {
-      const { data } = await supabase
-        .from("configuracoes_notificacao")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (data) {
-        setConfigId(data.id);
-        setConfig({
-          lembrete_dose: data.lembrete_dose ?? false,
-          dia_semana_dose: data.dia_semana_dose ?? 1,
-          horario_dose: data.horario_dose ? String(data.horario_dose).slice(0, 5) : "09:00",
-          alerta_estoque: data.alerta_estoque ?? false,
-          relatorio_semanal: data.relatorio_semanal ?? false,
-          dicas_dieta: data.dicas_dieta ?? false,
-        });
-      }
-
-      const { data: alerta } = await supabase
-        .from("alertas_estoque")
-        .select("id, quantidade_minima, ativo")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (alerta) {
-        setAlertaId(alerta.id);
-        setEstoqueMin(alerta.quantidade_minima ?? 2);
-        setAlertaAtivo(alerta.ativo ?? false);
-      }
-    })();
-  }, [userId]);
-
-  async function persistConfig(patch: Partial<NotifConfig>) {
-    const next = { ...config, ...patch };
-    setConfig(next);
-    const payload = {
-      lembrete_dose: next.lembrete_dose,
-      dia_semana_dose: next.dia_semana_dose,
-      horario_dose: next.horario_dose,
-      alerta_estoque: next.alerta_estoque,
-      relatorio_semanal: next.relatorio_semanal,
-      dicas_dieta: next.dicas_dieta,
-    };
-    if (configId) {
-      await supabase.from("configuracoes_notificacao").update(payload).eq("id", configId);
-    } else {
-      const { data } = await supabase.from("configuracoes_notificacao").insert({ user_id: userId, ...payload }).select("id").single();
-      if (data) setConfigId(data.id);
-    }
-  }
+  }, []);
 
   async function togglePush() {
     if (pushBusy) return;
@@ -431,12 +343,8 @@ function NotificacoesSection({ userId }: { userId: string }) {
 
     if (!pushOn && typeof Notification !== "undefined") {
       if (Notification.permission === "denied") {
-        toast.error("Notificações bloqueadas. Ative nas configurações.");
+        toast.error("Notificações bloqueadas. Ative nas configurações do dispositivo.");
         return;
-      }
-      if (Notification.permission !== "granted") {
-        const perm = await Notification.requestPermission();
-        if (perm !== "granted") return;
       }
     }
 
@@ -446,126 +354,29 @@ function NotificacoesSection({ userId }: { userId: string }) {
       if (pushOn) {
         await unsubscribeFromPush();
         setPushOn(false);
-        toast.success("Desativado.");
+        toast.success("Notificações desativadas.");
       } else {
         await subscribeToPush(userId);
         setPushOn(true);
-        toast.success("Ativado!");
+        toast.success("Notificações ativadas!");
       }
     } catch (err: any) {
-      toast.error("Erro ao alterar notificações.");
+      toast.error(err?.message || "Erro ao alterar notificações.");
     } finally {
       toast.dismiss(loadingId);
       setPushBusy(false);
     }
   }
 
-  async function persistAlerta(patch: { quantidade_minima?: number; ativo?: boolean }) {
-    const nextMin = patch.quantidade_minima ?? estoqueMin;
-    const nextAtivo = patch.ativo ?? alertaAtivo;
-    if (patch.quantidade_minima !== undefined) setEstoqueMin(patch.quantidade_minima);
-    if (patch.ativo !== undefined) setAlertaAtivo(patch.ativo);
-
-    if (alertaId) {
-      await supabase.from("alertas_estoque").update({ quantidade_minima: nextMin, ativo: nextAtivo }).eq("id", alertaId);
-    } else {
-      const { data } = await supabase.from("alertas_estoque").insert({ user_id: userId, quantidade_minima: nextMin, ativo: nextAtivo }).select("id").single();
-      if (data) setAlertaId(data.id);
-    }
-  }
-
   return (
-    <Card className="divide-y" style={{ borderColor: "var(--color-surface-border)" }}>
+    <Card style={{ borderColor: "var(--color-surface-border)" }}>
       <ToggleRow
         icon={<Bell size={20} strokeWidth={2.5} />}
         title="Push e Alertas"
-        subtitle={supported ? "Notificações no seu dispositivo" : "Instale o app para ativar"}
+        subtitle={supported ? "Lembretes de dose, peso e estoque" : "Instale o app para ativar"}
         enabled={pushOn}
         busy={pushBusy}
         onToggle={togglePush}
-      />
-
-      <ToggleRow
-        icon={<CalendarClock size={20} strokeWidth={2.5} />}
-        title="Lembrete de dose"
-        subtitle="Avisa o dia e horário da aplicação"
-        enabled={config.lembrete_dose}
-        onToggle={() => persistConfig({ lembrete_dose: !config.lembrete_dose })}
-        expand={
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-muted">
-                Dia da semana
-              </label>
-              <select
-                className="input-standard appearance-none"
-                value={String(config.dia_semana_dose ?? 1)}
-                onChange={(e) => persistConfig({ dia_semana_dose: Number(e.target.value) })}
-              >
-                {DIAS.map((d) => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-muted">
-                Horário
-              </label>
-              <input
-                type="time"
-                className="input-standard"
-                value={config.horario_dose ?? "09:00"}
-                onChange={(e) => persistConfig({ horario_dose: e.target.value })}
-              />
-            </div>
-          </div>
-        }
-        expanded={config.lembrete_dose}
-      />
-
-      <ToggleRow
-        icon={<Package size={20} strokeWidth={2.5} />}
-        title="Alerta de estoque"
-        subtitle="Avisa quando as ampolas estão acabando"
-        enabled={alertaAtivo}
-        onToggle={() => persistAlerta({ ativo: !alertaAtivo })}
-        expand={
-          <div className="space-y-1.5">
-            <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-muted">
-              Alertar quando restar
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                min={1}
-                inputMode="numeric"
-                className="input-standard w-24"
-                value={estoqueMin}
-                onChange={(e) => persistAlerta({ quantidade_minima: Number(e.target.value) || 1 })}
-              />
-              <span className="text-sm font-medium text-muted">ampola(s)</span>
-            </div>
-          </div>
-        }
-        expanded={alertaAtivo}
-      />
-
-      <ToggleRow
-        icon={<FileBarChart size={20} strokeWidth={2.5} />}
-        title="Relatório semanal"
-        subtitle="Receba um resumo toda segunda-feira"
-        enabled={config.relatorio_semanal}
-        onToggle={() => persistConfig({ relatorio_semanal: !config.relatorio_semanal })}
-      />
-
-      <ToggleRow
-        icon={<Lightbulb size={20} strokeWidth={2.5} />}
-        title="Dicas de dieta"
-        subtitle="Dicas personalizadas para sua fase atual"
-        enabled={config.dicas_dieta}
-        onToggle={() => persistConfig({ dicas_dieta: !config.dicas_dieta })}
       />
     </Card>
   );

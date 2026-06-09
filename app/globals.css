@@ -12,14 +12,18 @@
 html,
 body {
   height: 100%;
-  min-height: 100%;
+  min-height: 100svh;
   background-color: var(--color-bg);
   color: var(--color-text);
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Prevents iOS elastic scroll revealing white background at top/bottom */
+  overscroll-behavior: none;
 }
 
 body {
   @apply antialiased;
+  /* Fills safe area with body background on iOS standalone PWA */
+  background-attachment: fixed;
 }
 
 /* Portal do fornecedor — specialized dark mode */
@@ -28,8 +32,10 @@ body {
 }
 
 .app-container {
+  /* Pushes content below the status bar; background fills the gap */
   padding-top: env(safe-area-inset-top);
-  background-color: inherit;
+  background-color: var(--color-bg);
+  min-height: 100svh;
 }
 
 /* Adaptive scrollbars */

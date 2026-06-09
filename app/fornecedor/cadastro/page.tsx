@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Store, ShieldCheck, MapPin, X, Plus } from "lucide-react";
+import { Store, ShieldCheck, X, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RAIOS = [10, 20, 30, 50, 100];
+
+const inputCls = "block h-12 w-full rounded-2xl px-4 text-sm text-white focus:outline-none transition-all";
+const inputStyle = {
+  background: "#1a1a1a",
+  border: "1px solid rgba(255,255,255,0.07)",
+} as const;
 
 export default function FornecedorCadastroPage() {
   const router = useRouter();
@@ -89,36 +95,44 @@ export default function FornecedorCadastroPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 px-6 py-10 text-slate-900">
+    <div className="flex min-h-screen flex-col px-6 py-10" style={{ background: "#0d0d0d" }}>
       <div className="mx-auto w-full max-w-md pb-20">
-        <div className="mb-6 flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-forest shrink-0">
+        {/* Header */}
+        <div className="mb-8 flex items-start gap-4">
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-2xl text-[#ff6500] shrink-0"
+            style={{ background: "rgba(255,101,0,0.1)" }}
+          >
             <Store size={24} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-black text-slate-900">Torne-se um Fornecedor</h1>
-            <p className="text-sm text-slate-500">Complete os dados da sua empresa para começar a vender.</p>
+            <h1 className="text-xl font-black text-white">Torne-se um Fornecedor</h1>
+            <p className="text-sm text-[rgba(255,255,255,0.4)] mt-0.5">Complete os dados da sua empresa para começar a vender.</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dados da Empresa</p>
-            <Input label="Razão Social" name="razao_social" value={form.razao_social} onChange={handleChange} placeholder="Nome jurídico da empresa" />
-            <Input label="Nome Fantasia" name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} placeholder="Como o cliente te vê" />
-            <Input label="CNPJ" name="cnpj" value={form.cnpj} onChange={handleChange} placeholder="00.000.000/0001-00" />
-            
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Company Data */}
+          <div className="rounded-[24px] p-5 space-y-4" style={{ background: "#111111", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.28)]">Dados da Empresa</p>
+            <DarkInput label="Razão Social" name="razao_social" value={form.razao_social} onChange={handleChange} placeholder="Nome jurídico da empresa" />
+            <DarkInput label="Nome Fantasia" name="nome_fantasia" value={form.nome_fantasia} onChange={handleChange} placeholder="Como o cliente te vê" />
+            <DarkInput label="CNPJ" name="cnpj" value={form.cnpj} onChange={handleChange} placeholder="00.000.000/0001-00" />
+
             <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo de Negócio</label>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.28)] ml-1">Tipo de Negócio</label>
               <div className="grid grid-cols-3 gap-2">
                 {["farmacia", "distribuidor", "fabricante"].map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setForm({ ...form, tipo: t })}
-                    className={`rounded-xl py-3 text-[11px] font-bold capitalize transition-all ${
-                      form.tipo === t ? "bg-forest text-white shadow-md" : "bg-slate-50 border border-slate-100 text-slate-600"
-                    }`}
+                    className="rounded-xl py-3 text-[11px] font-bold capitalize transition-all"
+                    style={
+                      form.tipo === t
+                        ? { background: "linear-gradient(135deg, #ff6500, #e05500)", color: "white" }
+                        : { background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)" }
+                    }
                   >
                     {t}
                   </button>
@@ -127,29 +141,33 @@ export default function FornecedorCadastroPage() {
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Localização e Entrega</p>
-            
+          {/* Location & Delivery */}
+          <div className="rounded-[24px] p-5 space-y-5" style={{ background: "#111111", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.28)]">Localização e Entrega</p>
+
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Cidade" name="endereco_cidade" value={form.endereco_cidade} onChange={handleChange} placeholder="Ex: Belo Horizonte" />
-              <Input label="UF" name="endereco_estado" value={form.endereco_estado} onChange={handleChange} placeholder="MG" maxLength={2} />
+              <DarkInput label="Cidade" name="endereco_cidade" value={form.endereco_cidade} onChange={handleChange} placeholder="Ex: Belo Horizonte" />
+              <DarkInput label="UF" name="endereco_estado" value={form.endereco_estado} onChange={handleChange} placeholder="MG" maxLength={2} />
             </div>
 
-            <Input label="Prazo médio de entrega (dias)" name="prazo_entrega_dias" type="number" value={form.prazo_entrega_dias} onChange={handleChange} placeholder="Ex: 3" />
+            <DarkInput label="Prazo médio de entrega (dias)" name="prazo_entrega_dias" type="number" value={form.prazo_entrega_dias} onChange={handleChange} placeholder="Ex: 3" />
 
-            <div className="h-px bg-slate-50" />
+            <div className="h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
 
             <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Raio de entrega</label>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.28)] ml-1">Raio de entrega</label>
               <div className="flex flex-wrap gap-2">
                 {RAIOS.map((km) => (
                   <button
                     key={km}
                     type="button"
                     onClick={() => setForm({ ...form, raio_entrega_km: km })}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                      form.raio_entrega_km === km ? "bg-forest text-white shadow-md" : "bg-slate-900 text-slate-400"
-                    }`}
+                    className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
+                    style={
+                      form.raio_entrega_km === km
+                        ? { background: "#ff6500", color: "white" }
+                        : { background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }
+                    }
                   >
                     {km}km
                   </button>
@@ -158,24 +176,21 @@ export default function FornecedorCadastroPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Cidades adicionais (opcional)</label>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.28)] ml-1">Cidades adicionais (opcional)</label>
               <div className="flex gap-2">
-                <input 
-                  placeholder="Ex: Contagem, MG" 
+                <input
+                  placeholder="Ex: Contagem, MG"
                   value={novaCidade}
                   onChange={(e) => setNovaCidade(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addCidade();
-                    }
-                  }}
-                  className="block h-12 w-full rounded-2xl border-none bg-slate-50 px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none" 
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCidade(); } }}
+                  className={inputCls}
+                  style={inputStyle}
                 />
-                <button 
+                <button
                   type="button"
                   onClick={addCidade}
-                  className="h-12 w-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center active:scale-90 transition-transform"
+                  className="h-12 w-12 rounded-2xl flex items-center justify-center active:scale-90 transition-transform text-[#ff6500]"
+                  style={{ background: "rgba(255,101,0,0.1)" }}
                 >
                   <Plus size={20} />
                 </button>
@@ -189,10 +204,16 @@ export default function FornecedorCadastroPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       key={cidade}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 text-xs font-bold text-slate-600"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                     >
                       {cidade}
-                      <button type="button" onClick={() => removeCidade(cidade)} className="text-slate-300 hover:text-red-500 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => removeCidade(cidade)}
+                        className="transition-colors"
+                        style={{ color: "rgba(255,255,255,0.3)" }}
+                      >
                         <X size={14} />
                       </button>
                     </motion.span>
@@ -202,9 +223,10 @@ export default function FornecedorCadastroPage() {
             </div>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-2xl flex gap-3">
-            <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
-            <p className="text-xs text-blue-800 leading-relaxed">
+          {/* Info Banner */}
+          <div className="p-4 rounded-2xl flex gap-3" style={{ background: "rgba(255,101,0,0.06)", border: "1px solid rgba(255,101,0,0.15)" }}>
+            <ShieldCheck className="w-5 h-5 text-[#ff6500] shrink-0 mt-0.5" />
+            <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
               Para garantir a segurança dos pacientes, novos fornecedores passam por uma análise documental manual antes de aparecerem na busca.
             </p>
           </div>
@@ -212,9 +234,10 @@ export default function FornecedorCadastroPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg active:scale-95 disabled:opacity-70"
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white active:scale-95 disabled:opacity-70 transition-all"
+            style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 8px 24px rgba(255,101,0,0.35)" }}
           >
-            {loading ? <LoadingSpinner size="sm" /> : "Enviar cadastro"}
+            {loading ? <LoadingSpinner size="sm" color="white" /> : "Enviar cadastro"}
           </button>
         </form>
       </div>
@@ -222,13 +245,14 @@ export default function FornecedorCadastroPage() {
   );
 }
 
-function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function DarkInput({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">{label}</label>
+      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-[rgba(255,255,255,0.28)]">{label}</label>
       <input
         {...props}
-        className="block h-12 w-full rounded-2xl border-none bg-slate-50 px-4 text-sm shadow-sm transition-all focus:ring-2 focus:ring-forest focus:outline-none"
+        className="block h-12 w-full rounded-2xl px-4 text-sm text-white focus:outline-none transition-all"
+        style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.07)" }}
       />
     </div>
   );

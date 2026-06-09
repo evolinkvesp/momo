@@ -62,8 +62,8 @@ export function SupplierDashboardClient({
         },
         (payload) => {
           toast.custom((t) => (
-            <div className={`${t.visible ? "animate-fade-up" : "animate-fade-out"} bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] p-4 rounded-2xl shadow-2xl flex items-center gap-3`}>
-              <div className="h-10 w-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80]">
+            <div className={`${t.visible ? "animate-fade-up" : "animate-fade-out"} bg-[#1a1a1a] border border-[rgba(255,101,0,0.3)] p-4 rounded-2xl shadow-2xl flex items-center gap-3`}>
+              <div className="h-10 w-10 rounded-full bg-[rgba(255,101,0,0.1)] flex items-center justify-center text-[#ff6500]">
                 <ShoppingBag size={20} />
               </div>
               <div>
@@ -103,7 +103,7 @@ export function SupplierDashboardClient({
         animate={{ opacity: 1, y: 0 }}
         className="f-card-lg p-5 relative overflow-hidden"
       >
-        <div className="absolute -top-10 -right-10 w-[140px] h-[140px] rounded-full bg-[radial-gradient(circle,rgba(74,222,128,0.1)_0%,transparent_70%)]" />
+        <div className="absolute -top-10 -right-10 w-[140px] h-[140px] rounded-full bg-[radial-gradient(circle,rgba(255,101,0,0.12)_0%,transparent_70%)]" />
         
         <p className="text-[11px] font-bold text-[rgba(255,255,255,0.28)] uppercase tracking-[1px]">Faturamento do mês</p>
         <div className="flex items-baseline gap-2 mt-1">
@@ -112,7 +112,7 @@ export function SupplierDashboardClient({
         
         <div className="flex items-center justify-between mt-4">
           <p className="text-[12px] font-medium text-[rgba(255,255,255,0.28)]">Junho de 2026</p>
-          <div className="flex items-center gap-1.5 bg-[#4ade80]/10 border border-[#4ade80]/20 text-[#4ade80] px-2.5 py-1 rounded-full text-[11px] font-bold">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-[#ff6500]" style={{ background: "rgba(255,101,0,0.1)", border: "1px solid rgba(255,101,0,0.2)" }}>
             <TrendingUp size={12} />
             +24% vs. mês anterior
           </div>
@@ -122,10 +122,10 @@ export function SupplierDashboardClient({
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { label: "Pedidos novos", value: stats.novos, icon: ShoppingBag, color: "text-[#4ade80]", bg: "bg-[#4ade80]/10" },
+          { label: "Pedidos novos", value: stats.novos, icon: ShoppingBag, color: "text-[#ff6500]", bg: "bg-[rgba(255,101,0,0.1)]" },
           { label: "Total pedidos", value: stats.total, icon: ClipboardList, color: "text-[#60a5fa]", bg: "bg-[#60a5fa]/10" },
           { label: "Produtos ativos", value: stats.produtos, icon: Package, color: "text-[#fbbf24]", bg: "bg-[#fbbf24]/10" },
-          { label: "Avaliação", value: "4.9", icon: Star, color: "text-[#4ade80]", bg: "bg-[#4ade80]/10" },
+          { label: "Avaliação", value: "4.9", icon: Star, color: "text-[#fbbf24]", bg: "bg-[#fbbf24]/10" },
         ].map((item, i) => (
           <motion.div 
             key={item.label}
@@ -140,7 +140,7 @@ export function SupplierDashboardClient({
             <p className="text-[10px] font-bold text-[rgba(255,255,255,0.28)] uppercase tracking-[0.5px]">{item.label}</p>
             <div className="flex items-baseline justify-between mt-0.5">
               <p className="text-[22px] font-bold text-white tracking-[-0.5px]">{item.value}</p>
-              <span className="text-[10px] font-bold text-[#4ade80] flex items-center">+5%</span>
+              <span className="text-[10px] font-bold text-[#ff6500] flex items-center">+5%</span>
             </div>
           </motion.div>
         ))}
@@ -160,7 +160,7 @@ export function SupplierDashboardClient({
               <button 
                 key={t}
                 className={`text-[10px] font-bold px-3 py-1 rounded-full transition-all ${
-                  t === "7d" ? "bg-[#4ade80] text-[#052e16]" : "text-[rgba(255,255,255,0.28)] hover:text-white"
+                  t === "7d" ? "bg-[#ff6500] text-white" : "text-[rgba(255,255,255,0.28)] hover:text-white"
                 }`}
               >
                 {t}
@@ -174,8 +174,8 @@ export function SupplierDashboardClient({
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4ade80" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#4ade80" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#ff6500" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="#ff6500" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
@@ -195,16 +195,16 @@ export function SupplierDashboardClient({
                   color: '#fff',
                   fontSize: '11px'
                 }}
-                itemStyle={{ color: '#4ade80' }}
+                itemStyle={{ color: '#ff6500' }}
               />
               <Area 
                 type="monotone" 
                 dataKey="value" 
-                stroke="#4ade80" 
+                stroke="#ff6500"
                 strokeWidth={2}
-                fillOpacity={1} 
-                fill="url(#colorValue)" 
-                activeDot={{ r: 4, fill: '#4ade80', stroke: '#0d0d0d', strokeWidth: 2 }}
+                fillOpacity={1}
+                fill="url(#colorValue)"
+                activeDot={{ r: 4, fill: '#ff6500', stroke: '#0d0d0d', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -215,7 +215,7 @@ export function SupplierDashboardClient({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-[13px] font-bold text-white">Pedidos Recentes</h4>
-          <Link href="/fornecedor/pedidos" className="text-[11px] font-bold text-[#4ade80] flex items-center gap-1">
+          <Link href="/fornecedor/pedidos" className="text-[11px] font-bold text-[#ff6500] flex items-center gap-1">
             VER TODOS <ArrowUpRight size={12} />
           </Link>
         </div>
@@ -228,9 +228,10 @@ export function SupplierDashboardClient({
           ) : (
             pedidos.map((p, i) => {
               const status = STATUS_PEDIDO[p.status as keyof typeof STATUS_PEDIDO];
-              const statusColor = p.status === 'novo' ? '#60a5fa' : 
-                                 p.status === 'cancelado' ? '#f87171' : 
-                                 p.status === 'pendente' ? '#fbbf24' : '#4ade80';
+              const statusColor = p.status === 'novo' ? '#ff6500' :
+                                 p.status === 'cancelado' ? '#f87171' :
+                                 p.status === 'pendente' ? '#fbbf24' :
+                                 p.status === 'enviado' ? '#60a5fa' : '#22c55e';
 
               return (
                 <motion.div

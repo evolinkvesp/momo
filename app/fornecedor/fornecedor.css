@@ -7,9 +7,12 @@
   --f-text:     #ffffff;
   --f-text2:    rgba(255,255,255,0.55);
   --f-text3:    rgba(255,255,255,0.28);
-  --f-green:    #4ade80;
-  --f-green-bg: rgba(74,222,128,0.1);
-  --f-green-bd: rgba(74,222,128,0.2);
+  --f-ember:    #ff6500;
+  --f-ember-bg: rgba(255,101,0,0.1);
+  --f-ember-bd: rgba(255,101,0,0.2);
+  --f-green:    #22c55e;
+  --f-green-bg: rgba(34,197,94,0.1);
+  --f-green-bd: rgba(34,197,94,0.2);
   --f-blue:     #60a5fa;
   --f-blue-bg:  rgba(96,165,250,0.1);
   --f-yellow:   #fbbf24;
@@ -42,11 +45,13 @@
 }
 
 .f-badge-active {
-  background: rgba(74,222,128,0.08);
-  border: 1px solid var(--f-green-bd);
-  color: var(--f-green);
+  background: var(--f-ember-bg);
+  border: 1px solid var(--f-ember-bd);
+  color: var(--f-ember);
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }

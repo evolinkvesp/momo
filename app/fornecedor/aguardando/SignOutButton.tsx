@@ -12,7 +12,7 @@ export function SignOutButton() {
   return (
     <button
       onClick={handleSignOut}
-      className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm transition-transform active:scale-95"
+      className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-[rgba(255,255,255,0.5)] transition-transform active:scale-95" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       <LogOut size={16} />
       Sair

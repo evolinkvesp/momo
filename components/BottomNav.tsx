@@ -188,7 +188,13 @@ export function BottomNav() {
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pointer-events-none">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 pointer-events-none"
+        style={{
+          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+          background: "var(--color-bg)",
+        }}
+      >
         <div
           className="mx-auto flex w-full max-w-[340px] items-center justify-around gap-1 rounded-full p-1.5 pointer-events-auto"
           style={{

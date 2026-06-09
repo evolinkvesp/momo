@@ -26,9 +26,9 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 
 const STATUS_COLORS: Record<string, string> = {
-  novo: "#60a5fa",
-  confirmado: "#4ade80",
-  enviado: "#4ade80",
+  novo: "#ff6500",
+  confirmado: "#22c55e",
+  enviado: "#60a5fa",
   entregue: "rgba(255,255,255,0.15)",
   pendente: "#fbbf24",
   cancelado: "#f87171",
@@ -54,8 +54,8 @@ export function PedidosFornecedorClient({ fornecedorId }: { fornecedorId: string
         (payload) => {
           setPedidos((prev) => [payload.new, ...prev]);
           toast.custom((t) => (
-            <div className={`${t.visible ? "animate-fade-up" : "animate-fade-out"} bg-[#111111] border border-[#4ade80]/30 p-4 rounded-2xl shadow-2xl flex items-center gap-3`}>
-              <div className="h-10 w-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80]">
+            <div className={`${t.visible ? "animate-fade-up" : "animate-fade-out"} bg-[#111111] border border-[rgba(255,101,0,0.3)] p-4 rounded-2xl shadow-2xl flex items-center gap-3`}>
+              <div className="h-10 w-10 rounded-full bg-[rgba(255,101,0,0.1)] flex items-center justify-center text-[#ff6500]">
                 <ShoppingBag size={20} />
               </div>
               <div>
@@ -174,14 +174,14 @@ export function PedidosFornecedorClient({ fornecedorId }: { fornecedorId: string
             key={status}
             onClick={() => setFilterStatus(status)}
             className={`flex items-center gap-2 px-[12px] py-[8px] rounded-full text-[11px] font-[700] uppercase tracking-[0.3px] transition-all whitespace-nowrap ${
-              filterStatus === status 
-                ? "bg-[#4ade80] text-[#052e16]" 
+              filterStatus === status
+                ? "bg-[#ff6500] text-white"
                 : "bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.35)] border border-[rgba(255,255,255,0.06)]"
             }`}
           >
             {status}
             <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] ${
-              filterStatus === status ? "bg-black/10 text-[#052e16]" : "bg-white/5 text-[rgba(255,255,255,0.2)]"
+              filterStatus === status ? "bg-black/20 text-white" : "bg-white/5 text-[rgba(255,255,255,0.2)]"
             }`}>
               {count}
             </span>
@@ -303,7 +303,7 @@ function PedidoCard({ pedido, onAccept, onReject, onUpdateStatus }: { pedido: an
           <div className="flex gap-2 mt-[10px]">
             <button 
               onClick={onAccept}
-              className="flex-1 h-[38px] bg-[#4ade80] text-[#052e16] rounded-[10px] text-[12px] font-[700] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+              className="flex-1 h-[38px] rounded-[10px] text-[12px] font-[700] flex items-center justify-center gap-2 active:scale-[0.98] transition-all text-white" style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 4px 12px rgba(255,101,0,0.3)" }}
             >
               <Check size={13} strokeWidth={3} /> Aceitar
             </button>
@@ -379,14 +379,14 @@ function AcceptDrawer({ pedido, onClose, onConfirm, loading }: { pedido: any, on
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full h-14 bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] rounded-[16px] px-4 text-white focus:outline-none focus:border-[#4ade80]/30"
+              className="w-full h-14 bg-[#1a1a1a] border border-[rgba(255,255,255,0.05)] rounded-[16px] px-4 text-white focus:outline-none focus:border-[rgba(255,101,0,0.3)]"
             />
           </div>
 
           <button 
             onClick={() => onConfirm(date)}
             disabled={loading}
-            className="w-full h-[52px] bg-[#4ade80] text-[#052e16] rounded-full font-[700] text-[15px] shadow-lg shadow-[#4ade80]/10 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full h-[52px] rounded-full font-[700] text-[15px] text-white active:scale-[0.98] transition-all disabled:opacity-50" style={{ background: "linear-gradient(135deg, #ff6500, #e05500)", boxShadow: "0 8px 24px rgba(255,101,0,0.35)" }}
           >
             {loading ? "Processando..." : "Confirmar aceite"}
           </button>

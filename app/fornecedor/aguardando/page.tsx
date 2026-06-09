@@ -52,13 +52,13 @@ export default async function AguardandoPage() {
 
         <div className="mt-8 space-y-3 text-left">
           <div className="flex items-start gap-3 rounded-2xl bg-[#111111] border border-[rgba(255,255,255,0.07)] p-4">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#4ade80]" />
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6500]" />
             <p className="text-xs leading-relaxed text-[rgba(255,255,255,0.6)]">
               Verificamos os dados da empresa (CNPJ, documentação e regiões de entrega).
             </p>
           </div>
           <div className="flex items-start gap-3 rounded-2xl bg-[#111111] border border-[rgba(255,255,255,0.07)] p-4">
-            <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[#4ade80]" />
+            <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6500]" />
             <p className="text-xs leading-relaxed text-[rgba(255,255,255,0.6)]">
               Você receberá um e-mail assim que a análise for concluída.
             </p>
