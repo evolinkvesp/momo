@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { m, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/app/providers";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface Item {
   label: string;
@@ -36,6 +38,8 @@ export function BottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [role, setRole] = useState<'paciente' | 'fornecedor'>('paciente');
   const [pendingOrders, setPendingOrders] = useState(0);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     async function checkRole() {
@@ -92,6 +96,13 @@ export function BottomNav() {
 
   const maisActive = secondaryItems.some((s) => isActive(pathname, s.href));
 
+  const inactiveIconColor = isDark ? "rgba(255,255,255,0.35)" : "rgba(15,23,42,0.35)";
+  const navPillBg = isDark ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.97)";
+  const navPillBorder = isDark ? "#2d2d2d" : "#e2e8f0";
+  const navPillShadow = isDark
+    ? "0 4px 24px rgba(0,0,0,0.5)"
+    : "0 4px 24px rgba(0,0,0,0.08)";
+
   return (
     <>
       <AnimatePresence>
@@ -110,19 +121,28 @@ export function BottomNav() {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="relative m-4 w-full max-w-md rounded-[32px] p-6 shadow-2xl z-[101]"
-              style={{ background: "#161616", border: "1px solid #2d2d2d" }}
+              style={{
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-surface-border)",
+              }}
             >
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-white">Explorar</h3>
+              <div className="mb-5 flex items-center justify-between">
+                <h3 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>
+                  Explorar
+                </h3>
                 <button
                   onClick={() => setSheetOpen(false)}
                   className="rounded-full p-2 transition-colors"
-                  style={{ background: "#222222", color: "#9ca3af" }}
+                  style={{
+                    background: "var(--color-surface-mid)",
+                    color: "var(--color-text-muted)",
+                  }}
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-4 pb-4">
+
+              <div className="grid grid-cols-3 gap-3 pb-4">
                 {secondaryItems.map((s) => {
                   const Icon = s.icon;
                   const active = isActive(pathname, s.href);
@@ -134,26 +154,33 @@ export function BottomNav() {
                       onClick={() => setSheetOpen(false)}
                       className="flex flex-col items-center gap-2 rounded-[24px] p-4 text-center transition-all"
                       style={{
-                        background: active ? "rgba(255,101,0,0.12)" : "#1e1e1e",
-                        border: active ? "1px solid rgba(255,101,0,0.25)" : "1px solid #2d2d2d",
+                        background: active ? "rgba(255,101,0,0.12)" : "var(--color-surface-mid)",
+                        border: active
+                          ? "1px solid rgba(255,101,0,0.25)"
+                          : "1px solid var(--color-surface-border)",
                       }}
                     >
                       <span
                         className="flex h-12 w-12 items-center justify-center rounded-full"
                         style={{
-                          background: active ? "rgba(255,101,0,0.2)" : "#2a2a2a",
-                          color: active ? "#ff6500" : "#9ca3af",
+                          background: active ? "rgba(255,101,0,0.2)" : "var(--color-surface-border)",
+                          color: active ? "#ff6500" : "var(--color-text-muted)",
                         }}
                       >
                         <Icon className="h-5 w-5" strokeWidth={2.5} />
                       </span>
-                      <span className="text-[11px] font-bold" style={{ color: active ? "#ff6500" : "#ffffff" }}>
+                      <span
+                        className="text-[11px] font-bold"
+                        style={{ color: active ? "#ff6500" : "var(--color-text)" }}
+                      >
                         {s.label}
                       </span>
                     </Link>
                   );
                 })}
               </div>
+
+              <ThemeToggle />
             </m.div>
           </div>
         )}
@@ -161,11 +188,12 @@ export function BottomNav() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pointer-events-none">
         <div
-          className="mx-auto flex w-full max-w-[340px] items-center justify-around gap-1 rounded-full p-1.5 shadow-2xl pointer-events-auto"
+          className="mx-auto flex w-full max-w-[340px] items-center justify-around gap-1 rounded-full p-1.5 pointer-events-auto"
           style={{
-            background: "rgba(10,10,10,0.95)",
+            background: navPillBg,
             backdropFilter: "blur(20px)",
-            border: "1px solid #2d2d2d",
+            border: `1px solid ${navPillBorder}`,
+            boxShadow: navPillShadow,
           }}
         >
           {primaryItems.map((item) => {
@@ -190,7 +218,7 @@ export function BottomNav() {
                 <Icon
                   className="h-5 w-5 shrink-0"
                   strokeWidth={2.5}
-                  style={{ color: active ? "#ffffff" : "rgba(255,255,255,0.35)" }}
+                  style={{ color: active ? "#ffffff" : inactiveIconColor }}
                 />
                 {active && (
                   <m.span
@@ -221,7 +249,7 @@ export function BottomNav() {
             <MoreHorizontal
               className="h-5 w-5 shrink-0"
               strokeWidth={2.5}
-              style={{ color: maisActive ? "#ffffff" : "rgba(255,255,255,0.35)" }}
+              style={{ color: maisActive ? "#ffffff" : inactiveIconColor }}
             />
             {maisActive && (
               <m.span

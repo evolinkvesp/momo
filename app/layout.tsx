@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0d",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -49,7 +49,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${outfit.variable} ${syne.variable}`}>
-      <body className={`${outfit.className} font-sans bg-[#0d0d0d]`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('momo-theme');if(t==='dark')document.documentElement.classList.add('dark');})();`,
+          }}
+        />
+      </head>
+      <body className={`${outfit.className} font-sans bg-bg`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

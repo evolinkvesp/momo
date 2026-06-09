@@ -20,7 +20,7 @@ export function useTheme() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const saved = localStorage.getItem("momo-theme") as Theme;
@@ -28,8 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       setTheme(saved);
       document.documentElement.classList.toggle("dark", saved === "dark");
     } else {
-      // Default to dark for that premium feel, but respect user preference if set
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
