@@ -77,11 +77,11 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
                 className="w-12 h-12 rounded-2xl flex items-center justify-center"
                 style={{ background: "rgba(255,101,0,0.15)", border: "1px solid rgba(255,101,0,0.3)" }}
               >
-                <Star size={22} style={{ color: "#ff6500", fill: "#ff6500" }} />
+                <Star size={22} style={{ color: "var(--color-ember)", fill: "var(--color-ember)" }} />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">Momo Premium</h2>
-                <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
+                <p className="text-xs font-medium text-white/60">
                   Assinatura {assinatura.plano}
                 </p>
               </div>
@@ -89,21 +89,21 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
 
             <div
               className="space-y-3 rounded-2xl p-4 relative z-10"
-              style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ background: "rgba(0,0,0,0.2)", border: "1px solid var(--color-surface-border)" }}
             >
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                <div className="flex items-center gap-2 text-sm text-white/60">
                   <CreditCard size={15} />
                   <span>Status</span>
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#4ade80" }}>
+                <span className="text-xs font-bold uppercase tracking-wider text-success">
                   Ativa
                 </span>
               </div>
 
               {assinatura.proximo_vencimento && (
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <div className="flex items-center gap-2 text-sm text-white/60">
                     <Calendar size={15} />
                     <span>Próxima renovação</span>
                   </div>
@@ -115,7 +115,7 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
 
               {assinatura.valor && (
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <div className="flex items-center gap-2 text-sm text-white/60">
                     <Star size={15} />
                     <span>Valor</span>
                   </div>
@@ -159,12 +159,11 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
             boxShadow: "0 12px 40px rgba(255,101,0,0.2)",
           }}
         >
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10" style={{ background: "#ff6500", filter: "blur(50px)", transform: "translate(20%, -20%)" }} />
+          <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10" style={{ background: "var(--color-ember)", filter: "blur(50px)", transform: "translate(20%, -20%)" }} />
 
           <div className="relative z-10 space-y-3">
             <p
-              className="text-[10px] font-black uppercase tracking-[0.2em]"
-              style={{ color: "rgba(255,101,0,0.8)" }}
+              className="text-[10px] font-black uppercase tracking-[0.2em] text-ember opacity-80"
             >
               Acompanhamento Mounjaro
             </p>
@@ -174,8 +173,7 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
               Você investe R$ 1.500/mês no tratamento. Sabe se está funcionando?
             </h1>
             <p
-              className="text-[13px] font-medium leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.55)" }}
+              className="text-[13px] font-medium leading-relaxed text-white/60"
             >
               Sem dados, você está apostando no escuro.
             </p>
@@ -185,8 +183,7 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
         {/* 3 DORES */}
         <div className="space-y-2.5">
           <p
-            className="text-[10px] font-black uppercase tracking-[0.18em] ml-1"
-            style={{ color: "var(--color-text-dim)" }}
+            className="text-[10px] font-black uppercase tracking-[0.18em] ml-1 text-text-dim"
           >
             O que acontece sem acompanhamento
           </p>
@@ -199,8 +196,8 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
                 border: "1px solid rgba(239,68,68,0.15)",
               }}
             >
-              <span className="shrink-0 mt-0.5" style={{ color: "#f87171" }}>{dor.icon}</span>
-              <p className="text-sm font-medium leading-snug" style={{ color: "var(--color-text)" }}>
+              <span className="shrink-0 mt-0.5 text-danger">{dor.icon}</span>
+              <p className="text-sm font-medium leading-snug text-text">
                 {dor.text}
               </p>
             </div>
@@ -216,8 +213,7 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
           }}
         >
           <p
-            className="text-[10px] font-black uppercase tracking-[0.18em]"
-            style={{ color: "var(--color-text-dim)" }}
+            className="text-[10px] font-black uppercase tracking-[0.18em] text-text-dim"
           >
             O que o Momo resolve
           </p>
@@ -226,15 +222,15 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
             <div key={i} className="flex items-start gap-3">
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(255,101,0,0.1)", color: "#ff6500" }}
+                style={{ background: "var(--color-ember-glow)", color: "var(--color-ember)" }}
               >
                 {sol.icon}
               </div>
               <div>
-                <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
+                <p className="text-sm font-bold text-text">
                   {sol.titulo}
                 </p>
-                <p className="text-xs leading-snug mt-0.5" style={{ color: "var(--color-text-muted)" }}>
+                <p className="text-xs leading-snug mt-0.5 text-text-muted">
                   {sol.desc}
                 </p>
               </div>
@@ -251,14 +247,14 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
           }}
         >
           <div className="text-center space-y-1">
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-dim)" }}>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-text-dim">
               Acesso completo
             </p>
             <div className="flex items-end justify-center gap-1">
-              <span className="text-[36px] font-black tracking-tight" style={{ color: "var(--color-text)" }}>
+              <span className="text-[36px] font-black tracking-tight text-text">
                 R$ 29,90
               </span>
-              <span className="text-sm font-medium mb-2" style={{ color: "var(--color-text-muted)" }}>
+              <span className="text-sm font-medium mb-2 text-text-muted">
                 /mês
               </span>
             </div>
@@ -270,8 +266,8 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-base font-black text-white transition-all active:scale-[0.97]"
             style={{
-              background: "linear-gradient(135deg, #ff6500, #e05500)",
-              boxShadow: "0 8px 24px rgba(255,101,0,0.4)",
+              background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
+              boxShadow: "var(--shadow-ember)",
             }}
           >
             Ativar meu acompanhamento
@@ -279,12 +275,12 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
           </a>
 
           <div className="flex items-center justify-center gap-4">
-            <span className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: "var(--color-text-dim)" }}>
-              <ShieldCheck size={13} style={{ color: "#ff6500" }} />
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-text-dim">
+              <ShieldCheck size={13} className="text-ember" />
               Pagamento seguro
             </span>
-            <span className="text-[11px]" style={{ color: "var(--color-surface-border)" }}>·</span>
-            <span className="text-[11px] font-medium" style={{ color: "var(--color-text-dim)" }}>
+            <span className="text-[11px] text-surface-border">·</span>
+            <span className="text-[11px] font-medium text-text-dim">
               Cancele quando quiser
             </span>
           </div>

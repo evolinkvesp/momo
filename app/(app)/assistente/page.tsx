@@ -115,8 +115,8 @@ export default function AssistentePage() {
         className="mx-0 mb-3 flex gap-2.5 rounded-2xl px-3.5 py-2.5"
         style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.18)" }}
       >
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-        <p className="text-[11px] font-semibold leading-tight" style={{ color: "rgba(180,120,0,0.9)" }}>
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+        <p className="text-[11px] font-semibold leading-tight text-warning opacity-90">
           Respostas geradas por IA — siga sempre as orientações do seu médico.
         </p>
       </div>
@@ -146,8 +146,8 @@ export default function AssistentePage() {
                   <div
                     className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
                     style={{
-                      background: "linear-gradient(135deg, #ff6500, #c94500)",
-                      boxShadow: "0 2px 10px rgba(255,101,0,0.35)",
+                      background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
+                      boxShadow: "var(--shadow-ember)",
                     }}
                   >
                     <Bot size={13} strokeWidth={2.5} color="white" />
@@ -156,20 +156,19 @@ export default function AssistentePage() {
 
                 {/* Bolha */}
                 <div
-                  className="relative max-w-[80%] px-4 py-3"
+                  className="relative max-w-[80%] px-4 py-3 shadow-card"
                   style={
                     msg.role === "user"
                       ? {
-                          background: "linear-gradient(135deg, #ff6500 0%, #d95000 100%)",
+                          background: "linear-gradient(135deg, var(--color-ember) 0%, var(--color-ember-dim) 100%)",
                           borderRadius: "20px 20px 5px 20px",
-                          boxShadow: "0 2px 14px rgba(255,101,0,0.3)",
+                          boxShadow: "var(--shadow-ember)",
                           color: "white",
                         }
                       : {
                           background: "var(--color-surface)",
                           border: "1px solid var(--color-surface-border)",
                           borderRadius: "20px 20px 20px 5px",
-                          boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
                         }
                   }
                 >
@@ -199,7 +198,7 @@ export default function AssistentePage() {
                         ),
                         li: ({ children }) => (
                           <li style={{ display: "flex", gap: 8, marginBottom: 6, fontSize: 14, color: "var(--color-text)" }}>
-                            <span style={{ color: "#ff6500", flexShrink: 0, marginTop: 2 }}>•</span>
+                            <span style={{ color: "var(--color-ember)", flexShrink: 0, marginTop: 2 }}>•</span>
                             <span>{children}</span>
                           </li>
                         ),
@@ -225,14 +224,14 @@ export default function AssistentePage() {
               <div
                 className="mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
                 style={{
-                  background: "linear-gradient(135deg, #ff6500, #c94500)",
-                  boxShadow: "0 2px 10px rgba(255,101,0,0.35)",
+                  background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
+                  boxShadow: "var(--shadow-ember)",
                 }}
               >
                 <Bot size={13} strokeWidth={2.5} color="white" />
               </div>
               <div
-                className="px-4 py-3"
+                className="px-4 py-3 shadow-card"
                 style={{
                   background: "var(--color-surface)",
                   border: "1px solid var(--color-surface-border)",
@@ -244,7 +243,7 @@ export default function AssistentePage() {
                     <div
                       key={i}
                       className="h-2 w-2 rounded-full subtle-bounce"
-                      style={{ background: "#ff6500", animationDelay: `${i * 0.18}s`, opacity: 0.8 }}
+                      style={{ background: "var(--color-ember)", animationDelay: `${i * 0.18}s`, opacity: 0.8 }}
                     />
                   ))}
                 </div>
@@ -275,9 +274,9 @@ export default function AssistentePage() {
                   onClick={() => setInput(s)}
                   className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-95"
                   style={{
-                    background: "rgba(255,101,0,0.08)",
+                    background: "var(--color-ember-glow)",
                     border: "1px solid rgba(255,101,0,0.22)",
-                    color: "#ff6500",
+                    color: "var(--color-ember)",
                   }}
                 >
                   {s}
@@ -291,7 +290,7 @@ export default function AssistentePage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite uma mensagem..."
-              className="h-12 flex-1 rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ember/20"
+              className="h-12 flex-1 rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-ember/20 shadow-sm"
               style={{
                 background: "var(--color-surface)",
                 border: "1.5px solid var(--color-surface-border)",
@@ -304,9 +303,9 @@ export default function AssistentePage() {
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white transition-all active:scale-95 disabled:opacity-40"
               style={{
                 background: input.trim()
-                  ? "linear-gradient(135deg, #ff6500, #d95000)"
+                  ? "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))"
                   : "var(--color-surface-mid)",
-                boxShadow: input.trim() ? "0 4px 16px rgba(255,101,0,0.38)" : "none",
+                boxShadow: input.trim() ? "var(--shadow-ember)" : "none",
                 border: "1.5px solid var(--color-surface-border)",
               }}
             >
@@ -345,11 +344,11 @@ function ChatHeader({ onBack }: { onBack: () => void }) {
           className="flex h-10 w-10 items-center justify-center rounded-full"
           style={{ background: "rgba(255,101,0,0.2)", border: "2px solid rgba(255,101,0,0.45)" }}
         >
-          <Bot size={20} strokeWidth={2} color="#ff6500" />
+          <Bot size={20} strokeWidth={2} color="var(--color-ember)" />
         </div>
         <div
           className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full"
-          style={{ background: "#22c55e", border: "2px solid #1a0800", boxShadow: "0 0 6px #22c55e" }}
+          style={{ background: "var(--color-success)", border: "2px solid #1a0800", boxShadow: "0 0 6px var(--color-success)" }}
         />
       </div>
 
@@ -365,10 +364,10 @@ function ChatHeader({ onBack }: { onBack: () => void }) {
         style={{ background: "rgba(34,197,94,0.15)" }}
       >
         <div
-          className="h-1.5 w-1.5 rounded-full bg-green-400"
-          style={{ boxShadow: "0 0 5px #22c55e" }}
+          className="h-1.5 w-1.5 rounded-full bg-success"
+          style={{ boxShadow: "0 0 5px var(--color-success)" }}
         />
-        <span className="text-[10px] font-bold text-green-400">Online</span>
+        <span className="text-[10px] font-bold text-success">Online</span>
       </div>
     </div>
   );

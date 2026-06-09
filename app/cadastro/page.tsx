@@ -87,19 +87,19 @@ export default function CadastroPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: "#0d0d0d" }}>
+    <div className="flex min-h-screen flex-col bg-bg text-text transition-colors duration-300">
       <header
-        className="flex items-center justify-between px-6 py-4"
-        style={{ background: "#111111", borderBottom: "1px solid #1e1e1e" }}
+        className="flex items-center justify-between px-6 py-4 shadow-sm"
+        style={{ background: "var(--color-surface)", borderBottom: "1px solid var(--color-surface-border)" }}
       >
         <button
           onClick={prevStep}
-          className="rounded-full p-2 transition-colors"
-          style={{ background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }}
+          className="rounded-full p-2 transition-all active:scale-95"
+          style={{ background: "var(--color-surface-mid)", color: "var(--color-text-muted)", border: "1px solid var(--color-surface-border)" }}
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-bold text-white">Criar conta</h1>
+        <h1 className="text-lg font-bold text-text">Criar conta</h1>
         <div className="w-10" />
       </header>
 
@@ -111,8 +111,8 @@ export default function CadastroPage() {
               className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300"
               style={
                 step >= s
-                  ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.35)" }
-                  : { background: "#1a1a1a", color: "#555", border: "1px solid #2d2d2d" }
+                  ? { background: "var(--color-ember)", color: "#fff", boxShadow: "var(--shadow-ember)" }
+                  : { background: "var(--color-surface-mid)", color: "var(--color-text-dim)", border: "1px solid var(--color-surface-border)" }
               }
             >
               {step > s ? <Check className="h-4 w-4" /> : s}
@@ -120,7 +120,7 @@ export default function CadastroPage() {
             {s < 3 && (
               <div
                 className="h-0.5 flex-1 transition-all duration-300"
-                style={{ background: step > s ? "#ff6500" : "#1a1a1a" }}
+                style={{ background: step > s ? "var(--color-ember)" : "var(--color-surface-border)" }}
               />
             )}
           </div>
@@ -131,8 +131,7 @@ export default function CadastroPage() {
         <div className="mx-auto max-w-md pb-32">
           {error && (
             <div
-              className="mb-6 rounded-xl p-4 text-sm text-red-400 animate-fade-up"
-              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+              className="mb-6 rounded-xl p-4 text-sm text-danger animate-fade-up bg-danger/5 border border-danger/20"
             >
               {error}
             </div>
@@ -153,7 +152,7 @@ export default function CadastroPage() {
               <DarkInput label="Início do tratamento" name="data_inicio_tratamento" type="date" value={formData.data_inicio_tratamento} onChange={handleChange} />
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-white">Dose atual (mg)</label>
+                <label className="mb-2 block text-sm font-bold text-text">Dose atual (mg)</label>
                 <div className="grid grid-cols-3 gap-2">
                   {DOSES.map((d) => (
                     <button
@@ -163,8 +162,8 @@ export default function CadastroPage() {
                       className="rounded-xl py-3 text-sm font-bold transition-all duration-200"
                       style={
                         formData.dose_atual_mg === d
-                          ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.35)", transform: "scale(1.02)" }
-                          : { background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }
+                          ? { background: "var(--color-ember)", color: "#fff", boxShadow: "var(--shadow-ember)", transform: "scale(1.02)" }
+                          : { background: "var(--color-surface)", color: "var(--color-text-muted)", border: "1px solid var(--color-surface-border)" }
                       }
                     >
                       {d}
@@ -186,7 +185,7 @@ export default function CadastroPage() {
               <DarkInput label="Peso meta (opcional)" name="peso_meta" type="number" value={formData.peso_meta} onChange={handleChange} placeholder="Ex: 70.0" />
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-white">Dia da aplicação</label>
+                <label className="mb-2 block text-sm font-bold text-text">Dia da aplicação</label>
                 <div className="flex flex-wrap gap-2">
                   {DIAS_SEMANA.map((d) => (
                     <button
@@ -196,15 +195,15 @@ export default function CadastroPage() {
                       className="flex-1 min-w-[60px] rounded-full py-2.5 text-xs font-bold transition-all duration-200"
                       style={
                         formData.dia_aplicacao === String(d.id)
-                          ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.3)", transform: "scale(1.05)" }
-                          : { background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }
+                          ? { background: "var(--color-ember)", color: "#fff", boxShadow: "var(--shadow-ember)", transform: "scale(1.05)" }
+                          : { background: "var(--color-surface)", color: "var(--color-text-muted)", border: "1px solid var(--color-surface-border)" }
                       }
                     >
                       {d.label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-3 text-xs" style={{ color: "#555" }}>Enviaremos lembretes neste dia para você não esquecer a dose.</p>
+                <p className="mt-3 text-xs text-text-dim">Enviaremos lembretes neste dia para você não esquecer a dose.</p>
               </div>
             </div>
           )}
@@ -212,15 +211,15 @@ export default function CadastroPage() {
       </main>
 
       <footer
-        className="fixed bottom-0 left-0 right-0 p-6"
-        style={{ background: "#111111", borderTop: "1px solid #1e1e1e" }}
+        className="fixed bottom-0 left-0 right-0 p-6 z-40"
+        style={{ background: "var(--color-surface)", borderTop: "1px solid var(--color-surface-border)" }}
       >
         <div className="mx-auto max-w-md">
           {step < 3 ? (
             <button
               onClick={nextStep}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all hover:scale-[1.01] active:scale-95"
-              style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 20px rgba(255,101,0,0.4)" }}
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all active:scale-95 shadow-lg"
+              style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
             >
               Próximo
               <ArrowRight className="h-5 w-5" />
@@ -229,17 +228,17 @@ export default function CadastroPage() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70"
-              style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 20px rgba(255,101,0,0.4)" }}
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all active:scale-95 disabled:opacity-70 shadow-lg"
+              style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
             >
               {loading ? 'Criando conta...' : 'Concluir e entrar'}
               {!loading && <Check className="h-5 w-5" />}
             </button>
           )}
         </div>
-        <p className="mt-4 text-center text-sm" style={{ color: "#555" }}>
+        <p className="mt-4 text-center text-sm text-text-dim">
           Já tem uma conta?{' '}
-          <Link href="/login" className="font-bold hover:underline" style={{ color: "#ff6500" }}>
+          <Link href="/login" className="font-bold hover:underline" style={{ color: "var(--color-ember)" }}>
             Entrar
           </Link>
         </p>
@@ -253,13 +252,13 @@ function StepHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: s
     <div className="mb-6 flex items-start gap-4">
       <div
         className="flex h-12 w-12 items-center justify-center rounded-2xl shrink-0"
-        style={{ background: "rgba(255,101,0,0.12)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.2)" }}
+        style={{ background: "var(--color-ember-glow)", color: "var(--color-ember)", border: "1px solid var(--color-ember-glow-strong)" }}
       >
         {icon}
       </div>
       <div>
-        <h2 className="text-xl font-bold text-white">{title}</h2>
-        <p className="text-sm" style={{ color: "#777" }}>{subtitle}</p>
+        <h2 className="text-xl font-bold text-text">{title}</h2>
+        <p className="text-sm text-muted">{subtitle}</p>
       </div>
     </div>
   );
@@ -268,13 +267,13 @@ function StepHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: s
 function DarkInput({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-bold text-white">{label}</label>
+      <label className="mb-1.5 block text-sm font-bold text-text">{label}</label>
       <input
         {...props}
-        className="block h-12 w-full rounded-xl px-4 text-sm text-white outline-none transition-all"
-        style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
-        onFocus={(e) => { e.currentTarget.style.borderColor = "#ff6500"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,101,0,0.1)"; }}
-        onBlur={(e) => { e.currentTarget.style.borderColor = "#2d2d2d"; e.currentTarget.style.boxShadow = "none"; }}
+        className="block h-12 w-full rounded-xl px-4 text-sm text-text outline-none transition-all"
+        style={{ background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-ember)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--color-ember-glow)"; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-surface-border)"; e.currentTarget.style.boxShadow = "none"; }}
       />
     </div>
   );

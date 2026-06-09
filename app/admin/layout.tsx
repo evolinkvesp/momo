@@ -27,7 +27,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("status", "pendente");
 
   return (
-    <div data-portal="admin" className="min-h-screen bg-[#0d0d0d] text-white">
+    <div data-portal="admin" className="min-h-screen bg-bg text-text transition-colors duration-300">
       <AdminNav pendingCount={pendingCount || 0} />
       <main className="md:pl-60 min-h-screen">
         <div className="w-full px-6 pt-8 pb-32 md:pb-10">
