@@ -74,12 +74,16 @@ export function TextInput({
   placeholder,
   type = "text",
   readOnly,
+  inputMode,
+  maxLength,
 }: {
   value: string;
   onChange?: (val: string) => void;
   placeholder?: string;
   type?: string;
   readOnly?: boolean;
+  inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
+  maxLength?: number;
 }) {
   return (
     <input
@@ -89,6 +93,8 @@ export function TextInput({
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
       readOnly={readOnly}
+      inputMode={inputMode}
+      maxLength={maxLength}
     />
   );
 }
