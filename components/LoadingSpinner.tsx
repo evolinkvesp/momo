@@ -9,7 +9,7 @@ export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
     <div className="flex justify-center items-center p-4">
       <div
         className={`animate-spin rounded-full ${sizeClasses[size]}`}
-        style={{ borderColor: "#2d2d2d", borderTopColor: "#ff6500" }}
+        style={{ borderColor: "var(--color-surface-border)", borderTopColor: "#ff6500" }}
       ></div>
     </div>
   );

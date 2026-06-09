@@ -206,7 +206,7 @@ export function DietaClient({
                          <p className="text-sm font-bold text-text">{r.descricao}</p>
                          <p className="text-[11px] text-dim mt-0.5">{r.calorias_estimadas} kcal · P:{r.proteinas_g}g C:{r.carboidratos_g}g</p>
                        </div>
-                       <button onClick={() => handleDelete(r.id)} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                       <button onClick={() => handleDelete(r.id)} className="p-2 text-dim hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                      </div>
                    ))
                  )}
@@ -297,7 +297,7 @@ function RefeicaoForm({
 
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Tipo</label>
+            <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Tipo</label>
             <div className="grid grid-cols-4 gap-2">
               {(Object.keys(TIPO_REFEICAO_LABEL) as TipoRefeicao[]).map((t) => (
                 <button
@@ -305,7 +305,7 @@ function RefeicaoForm({
                   type="button"
                   onClick={() => setForm({ ...form, tipo: t })}
                   className={`py-2.5 rounded-xl text-[11px] font-bold transition-all ${
-                    form.tipo === t ? "bg-ember text-white shadow-md" : "bg-surface-mid text-slate-600"
+                    form.tipo === t ? "bg-ember text-white shadow-md" : "bg-surface-mid text-muted"
                   }`}
                 >
                   {TIPO_REFEICAO_LABEL[t]}
@@ -315,7 +315,7 @@ function RefeicaoForm({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">Descrição</label>
+            <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Descrição</label>
             <textarea
               value={form.descricao}
               onChange={(e) => setForm({ ...form, descricao: e.target.value })}
@@ -347,7 +347,7 @@ function RefeicaoForm({
 function MacroInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-700 ml-1">{label}</label>
+      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted ml-1">{label}</label>
       <input type="number" value={value} onChange={(e) => onChange(e.target.value)} className="input-standard" placeholder="0" />
     </div>
   );
@@ -523,7 +523,7 @@ function ReceitaCard({ receita, onClick }: { receita: ReceitaIA; onClick: () => 
         style={{ backgroundColor: TIPO_COR[receita.tipo] ?? "#f1f5f9" }}
       >
         <span className="text-[36px] leading-none">{receita.emoji}</span>
-        <span className="absolute top-2 right-2 bg-surface text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+        <span className="absolute top-2 right-2 bg-surface text-text text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
           ⏱ {receita.tempo_preparo}min
         </span>
       </div>
@@ -566,7 +566,7 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
           <span className="text-[48px] leading-none">{receita.emoji}</span>
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-2 rounded-full bg-surface/70 text-slate-600"
+            className="absolute top-3 right-3 p-2 rounded-full bg-surface/70 text-muted"
           >
             <X size={18} />
           </button>
@@ -576,10 +576,10 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
           <div>
             <h2 className="text-lg font-black text-text leading-tight">{receita.nome}</h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="flex items-center gap-1 bg-surface-border text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1 bg-surface-border text-muted text-[11px] font-bold px-2.5 py-1 rounded-full">
                 <Timer size={12} /> {receita.tempo_preparo} min
               </span>
-              <span className="bg-surface-border text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full capitalize">
+              <span className="bg-surface-border text-muted text-[11px] font-bold px-2.5 py-1 rounded-full capitalize">
                 {receita.dificuldade}
               </span>
             </div>
@@ -593,7 +593,7 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
               { label: "Carb", val: `${receita.carboidratos}g` },
               { label: "Gord", val: `${receita.gorduras}g` },
             ].map((m, i, arr) => (
-              <div key={m.label} className={`text-center flex-1 ${i < arr.length - 1 ? "border-r border-gray-200" : ""}`}>
+              <div key={m.label} className={`text-center flex-1 ${i < arr.length - 1 ? "border-r border-surface-border" : ""}`}>
                 <p className="text-[10px] font-bold text-dim uppercase tracking-widest">{m.label}</p>
                 <p className="text-sm font-black text-text">{m.val}</p>
               </div>
@@ -611,7 +611,7 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
             <h5 className="text-[11px] font-black text-dim uppercase tracking-[0.2em] mb-3">Ingredientes</h5>
             <ul className="space-y-2">
               {receita.ingredientes.map((ing, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-700 font-medium">
+                <li key={i} className="flex items-start gap-2 text-sm text-text font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-ember mt-1.5 shrink-0" />
                   {ing}
                 </li>
@@ -627,7 +627,7 @@ function ReceitaDrawer({ receita, onClose }: { receita: ReceitaIA; onClose: () =
                   <span className="w-6 h-6 rounded-lg bg-surface text-ember text-[11px] font-black flex items-center justify-center shrink-0 shadow-sm">
                     {i + 1}
                   </span>
-                  <p className="text-sm text-gray-600 leading-relaxed pt-0.5">{step}</p>
+                  <p className="text-sm text-muted leading-relaxed pt-0.5">{step}</p>
                 </div>
               ))}
             </div>
@@ -669,12 +669,12 @@ function MeuPlano({ fase }: { fase: FaseMounjaro }) {
     <div className="space-y-4">
       <div className="bg-surface p-5 rounded-[24px] shadow-premium">
         <h3 className="font-bold text-text mb-2">{plano.foco}</h3>
-        <p className="text-sm text-slate-600 leading-relaxed">{plano.resumo}</p>
+        <p className="text-sm text-muted leading-relaxed">{plano.resumo}</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-surface p-4 rounded-[24px] shadow-premium">
            <h4 className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-3">Recomendados</h4>
-           <ul className="text-xs text-slate-600 space-y-2">
+           <ul className="text-xs text-muted space-y-2">
              {plano.alimentosRecomendados.slice(0, 5).map(a => (
                <li key={a} className="flex items-start gap-2">
                  <Check size={12} className="mt-0.5 text-green-500 shrink-0" />
@@ -685,7 +685,7 @@ function MeuPlano({ fase }: { fase: FaseMounjaro }) {
         </div>
         <div className="bg-surface p-4 rounded-[24px] shadow-premium">
            <h4 className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-3">Evitar</h4>
-           <ul className="text-xs text-slate-600 space-y-2">
+           <ul className="text-xs text-muted space-y-2">
              {plano.alimentosEvitar.slice(0, 5).map(a => (
                <li key={a} className="flex items-start gap-2">
                  <X size={12} className="mt-0.5 text-red-400 shrink-0" />

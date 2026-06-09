@@ -304,8 +304,9 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
                       icon: '⏳',
                       style: {
                         borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
+                        background: 'var(--color-surface)',
+                        color: 'var(--color-text)',
+                        border: '1px solid var(--color-surface-border)',
                         fontSize: '12px'
                       },
                     });
@@ -617,15 +618,15 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
       {showMedicaoForm && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowMedicaoForm(false)} />
-          <div className="relative z-[101] w-full max-w-md bg-[#f2f2f7] rounded-t-[28px] shadow-xl animate-slide-up h-[92vh] flex flex-col overflow-hidden">
+          <div className="relative z-[101] w-full max-w-md rounded-t-[28px] shadow-xl animate-slide-up h-[92vh] flex flex-col overflow-hidden" style={{ background: "var(--color-surface-mid)" }}>
             <div className="flex-shrink-0 pt-3 pb-2">
-              <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-4" />
+              <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--color-surface-border)" }} />
               <div className="px-6 flex justify-between items-center">
                 <div>
                   <h2 className="text-[18px] font-bold text-text">Nova Medição</h2>
                   <p className="text-xs font-medium text-dim capitalize">{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
                 </div>
-                <button onClick={() => setShowMedicaoForm(false)} className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-muted">
+                <button onClick={() => setShowMedicaoForm(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted" style={{ background: "var(--color-surface-border)" }}>
                   <X size={18} />
                 </button>
               </div>
@@ -656,7 +657,7 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
                       key={val}
                       type="button"
                       onClick={() => setPeso(prev => (Math.max(0, (parseFloat(prev) || 0) + val)).toFixed(1))}
-                      className="flex-1 py-2 rounded-xl bg-surface-mid text-slate-600 text-xs font-bold active:bg-surface-border"
+                      className="flex-1 py-2 rounded-xl bg-surface-mid text-muted text-xs font-bold active:bg-surface-border"
                     >
                       {val > 0 ? `+${val}` : val}
                     </button>
@@ -676,7 +677,7 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
                 {showMeasures && (
                   <div className="bg-surface p-5 rounded-[20px] shadow-sm animate-fade-in">
                     <div className="flex items-center justify-between gap-4">
-                      <label className="text-xs font-bold text-slate-600 whitespace-nowrap">Circunferência Abdominal (cm)</label>
+                      <label className="text-xs font-bold text-muted whitespace-nowrap">Circunferência Abdominal (cm)</label>
                       <input 
                         type="number" 
                         value={circAbdominal} 
@@ -810,7 +811,7 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowSintomaForm(false)} />
           <div className="relative z-[101] w-full max-w-md bg-surface rounded-t-[32px] p-6 shadow-xl animate-slide-up pb-10">
-            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
+            <div className="w-12 h-1.5 rounded-full mx-auto mb-6" style={{ background: "var(--color-surface-border)" }} />
             <h2 className="text-xl font-bold mb-6">Registrar Sintoma</h2>
             <form onSubmit={handleSintomaSubmit} className="space-y-4">
               <div>

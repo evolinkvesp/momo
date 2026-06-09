@@ -155,7 +155,7 @@ function PedidoCard({ pedido, index }: { pedido: PedidoComInfo, index: number })
 
         <div className="flex items-center justify-between pt-1">
           <div className="text-[11px] font-bold text-dim uppercase tracking-widest">
-            Cod: <span className="text-gray-600">{pedido.codigo || "---"}</span>
+            Cod: <span className="text-muted">{pedido.codigo || "---"}</span>
           </div>
           <Link 
             href={`/meus-pedidos/${pedido.id}`}

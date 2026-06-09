@@ -172,7 +172,7 @@ export function EstoqueClient({ userId, initialAmpolas, initialAlerta, profile, 
 function EmptyState({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
     <div className="flex flex-col items-center justify-center p-10 bg-surface rounded-[24px] shadow-premium text-center border-none">
-      <div className="text-gray-200 mb-4">{icon}</div>
+      <div className="text-dim mb-4">{icon}</div>
       <h4 className="text-sm font-bold text-text">{title}</h4>
       <p className="text-xs text-muted mt-1">{description}</p>
     </div>

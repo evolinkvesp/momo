@@ -161,10 +161,10 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
     <div className="fixed inset-0 z-[120] flex items-end justify-center">
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-[121] flex max-h-[94vh] w-full max-w-md flex-col overflow-hidden rounded-t-[28px] bg-[#f2f2f7] shadow-xl animate-slide-up">
+      <div className="relative z-[121] flex max-h-[94vh] w-full max-w-md flex-col overflow-hidden rounded-t-[28px] shadow-xl animate-slide-up" style={{ background: "var(--color-surface-mid)" }}>
         {/* Header */}
         <div className="flex-shrink-0 pt-3">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300" />
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--color-surface-border)" }} />
           <div className="flex items-start justify-between px-6 pb-3">
             <div>
               <h2 className="text-[18px] font-bold text-text">Compartilhar progresso</h2>
@@ -174,7 +174,8 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
             </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-muted"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted"
+              style={{ background: "var(--color-surface-border)" }}
               aria-label="Fechar"
             >
               <X size={18} />
@@ -223,7 +224,7 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
               <button
                 onClick={handleSaveImage}
                 disabled={busy}
-                className="flex items-center justify-center gap-2 rounded-full bg-surface py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all active:scale-[0.97] disabled:opacity-50"
+                className="flex items-center justify-center gap-2 rounded-full bg-surface py-3.5 text-sm font-bold text-text shadow-sm transition-all active:scale-[0.97] disabled:opacity-50"
               >
                 <Download size={18} /> Salvar imagem
               </button>

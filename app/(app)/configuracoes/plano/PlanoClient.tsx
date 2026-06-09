@@ -100,7 +100,7 @@ export function PlanoClient({ planoAtivo, assinatura, checkoutUrl }: PlanoClient
               ].map((feature, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <CheckCircle2 size={18} className="text-ember shrink-0" />
-                  <span className="text-sm font-medium text-slate-700">{feature}</span>
+                  <span className="text-sm font-medium text-muted">{feature}</span>
                 </div>
               ))}
             </div>

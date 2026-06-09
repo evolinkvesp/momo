@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { getTextoProximaDose, type CalculoDose } from "@/lib/utils/dose";
 import { usePlano } from "@/hooks/usePlano";
 import { BlurPaywall } from "@/components/BlurPaywall";
+import { useTheme } from "@/app/providers";
 
 interface Dose {
   id: string;
@@ -44,6 +45,9 @@ export function DosesClient({
   const [observacoes, setObservacoes] = useState("");
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const textosDose = getTextoProximaDose(calculoDose);
 
@@ -118,6 +122,16 @@ export function DosesClient({
 
   const { isExpirado } = usePlano();
 
+  // Theme-aware hero card
+  const heroBg = calculoDose.isAtrasado
+    ? { background: "linear-gradient(135deg, #7f1d1d, #ef4444)", boxShadow: "0 8px 24px rgba(239,68,68,0.25)" }
+    : isDark
+      ? { background: "linear-gradient(135deg, #1a0800, #2d1200)", border: "1px solid rgba(255,101,0,0.25)", boxShadow: "0 8px 24px rgba(255,101,0,0.15)" }
+      : { background: "linear-gradient(135deg, #fff4ed, #ffe8cc)", border: "1px solid rgba(255,101,0,0.2)", boxShadow: "0 8px 24px rgba(255,101,0,0.08)" };
+
+  const heroText = (calculoDose.isAtrasado || isDark) ? "#ffffff" : "var(--color-text)";
+  const heroSubText = (calculoDose.isAtrasado || isDark) ? "rgba(255,255,255,0.6)" : "rgba(15,23,42,0.45)";
+
   return (
     <div className="space-y-6 pb-32">
       <PageHeader
@@ -136,13 +150,13 @@ export function DosesClient({
       <BlurPaywall ativo={isExpirado} mensagem="Registre suas aplicações no plano Premium">
         {calculoDose.isAtrasado && (
           <div
-            className="p-4 rounded-2xl flex items-start gap-3 animate-fade-in"
+            className="p-4 rounded-2xl flex items-start gap-3"
             style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
           >
             <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#ef4444" }} />
             <div>
-              <p className="text-sm font-bold text-white">Atenção!</p>
-              <p className="text-xs leading-relaxed mt-0.5" style={{ color: "#9ca3af" }}>
+              <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>Atenção!</p>
+              <p className="text-xs leading-relaxed mt-0.5" style={{ color: "var(--color-text-muted)" }}>
                 Sua última dose foi há {calculoDose.diasAtraso + 7} dias. O recomendado é aplicar a cada 7 dias para manter a eficácia do tratamento.
               </p>
             </div>
@@ -151,21 +165,17 @@ export function DosesClient({
 
         {/* Hero Card */}
         <div
-          className="rounded-[24px] p-6 text-white relative overflow-hidden"
-          style={
-            calculoDose.isAtrasado
-              ? { background: "linear-gradient(135deg, #7f1d1d, #ef4444)", boxShadow: "0 8px 24px rgba(239,68,68,0.25)" }
-              : { background: "linear-gradient(135deg, #1a0800, #2d1200)", border: "1px solid rgba(255,101,0,0.25)", boxShadow: "0 8px 24px rgba(255,101,0,0.15)" }
-          }
+          className="rounded-[24px] p-6 relative overflow-hidden"
+          style={heroBg}
         >
           <div className="relative z-10">
-            <p className="text-[12px] font-bold uppercase tracking-wider opacity-60">
+            <p className="text-[12px] font-bold uppercase tracking-wider" style={{ color: heroSubText }}>
               {calculoDose.isAtrasado ? 'Dose Atrasada' : 'Próxima dose'}
             </p>
-            <h2 className="text-[24px] font-bold mt-1">
+            <h2 className="text-[24px] font-bold mt-1" style={{ color: heroText }}>
               {textosDose.principal} · <span className="capitalize">{format(calculoDose.data, "eeee", { locale: ptBR })}</span>
             </h2>
-            <p className="text-[13px] opacity-60 mt-1">{calculoDose.dataFormatada}</p>
+            <p className="text-[13px] mt-1" style={{ color: heroSubText }}>{calculoDose.dataFormatada}</p>
 
             <button
               onClick={handleOpenForm}
@@ -175,7 +185,7 @@ export function DosesClient({
               Registrar agora
             </button>
           </div>
-          <div className="absolute top-[-20px] right-[-20px] opacity-10">
+          <div className="absolute top-[-20px] right-[-20px] opacity-10" style={{ color: heroText }}>
             <Droplet size={120} />
           </div>
         </div>
@@ -183,14 +193,14 @@ export function DosesClient({
         {showForm && (
           <div
             className="rounded-2xl p-6"
-            style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+            style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-white">Nova Aplicação</h2>
+              <h2 className="text-lg font-bold" style={{ color: "var(--color-text)" }}>Nova Aplicação</h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="transition-colors"
-                style={{ color: "#555" }}
+                className="transition-opacity hover:opacity-60"
+                style={{ color: "var(--color-text-muted)" }}
               >
                 <X className="h-6 w-6" />
               </button>
@@ -208,17 +218,17 @@ export function DosesClient({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Data e Hora</label>
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "var(--color-text-muted)" }}>Data e Hora</label>
                   <input type="datetime-local" required value={dataAplicacao} onChange={(e) => setDataAplicacao(e.target.value)} className="input-standard mt-1" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Dose (mg)</label>
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "var(--color-text-muted)" }}>Dose (mg)</label>
                   <select required value={doseMg} onChange={(e) => setDoseMg(e.target.value)} className="input-standard mt-1">
                     {[2.5, 5, 7.5, 10, 12.5, 15].map(v => <option key={v} value={v}>{v} mg</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Local da Aplicação</label>
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "var(--color-text-muted)" }}>Local da Aplicação</label>
                   <select required value={localAplicacao} onChange={(e) => setLocalAplicacao(e.target.value)} className="input-standard mt-1">
                     <option value="">Selecione o local</option>
                     <option value="abdômen esquerdo">Abdômen esquerdo</option>
@@ -228,7 +238,7 @@ export function DosesClient({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Foto (Opcional)</label>
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "var(--color-text-muted)" }}>Foto (Opcional)</label>
                   <div className="mt-1 flex items-center gap-2">
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-ghost flex-1 py-3 text-xs">
                       <ImageIcon className="w-4 h-4 mr-2" />
@@ -240,7 +250,7 @@ export function DosesClient({
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Observações</label>
+                <label className="text-xs font-bold uppercase ml-1" style={{ color: "var(--color-text-muted)" }}>Observações</label>
                 <textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Como foi a aplicação?" className="input-standard mt-1" />
               </div>
 
@@ -255,7 +265,7 @@ export function DosesClient({
 
         {/* Histórico */}
         <div className="space-y-4 relative">
-          <h3 className="text-sm font-bold uppercase tracking-widest ml-1" style={{ color: "#555" }}>Histórico</h3>
+          <h3 className="text-sm font-bold uppercase tracking-widest ml-1" style={{ color: "var(--color-text-muted)" }}>Histórico</h3>
 
           {doses.length === 0 ? (
             <EmptyState icon={<Droplet />} title="Nenhuma dose" description="Comece registrando sua primeira dose." />
@@ -263,14 +273,14 @@ export function DosesClient({
             <div className="space-y-3 relative pb-10">
               <div
                 className="absolute left-[22px] top-8 bottom-8 w-[2px]"
-                style={{ background: "#222" }}
+                style={{ background: "var(--color-surface-border)" }}
               />
 
               {doses.map((dose) => (
                 <div
                   key={dose.id}
                   className="relative flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98]"
-                  style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+                  style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
                 >
                   <div
                     className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
@@ -280,16 +290,16 @@ export function DosesClient({
                   </div>
 
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
                       {format(new Date(dose.data_aplicacao), "dd 'de' MMM", { locale: ptBR })}
                     </p>
-                    <p className="text-[12px]" style={{ color: "#9ca3af" }}>
+                    <p className="text-[12px]" style={{ color: "var(--color-text-muted)" }}>
                       {dose.dose_mg}mg · <span className="capitalize">{dose.local_aplicacao}</span>
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-[11px]" style={{ color: "#555" }}>
+                    <p className="text-[11px]" style={{ color: "var(--color-text-dim)" }}>
                       {differenceInDays(new Date(), new Date(dose.data_aplicacao)) === 0
                         ? "hoje"
                         : `há ${differenceInDays(new Date(), new Date(dose.data_aplicacao))} dias`}

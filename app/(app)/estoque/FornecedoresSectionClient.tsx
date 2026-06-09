@@ -65,7 +65,7 @@ export function FornecedoresSectionClient({
         {/* Search Bar Overlay */}
         <div className="absolute left-6 right-6 -bottom-6">
           <div className="bg-surface border border-surface-border shadow-xl shadow-forest/10 rounded-2xl flex items-center gap-3 px-4 py-3.5 transition-all focus-within:ring-2 focus-within:ring-[#1c4d2e]/20">
-            <Search size={18} className="text-slate-300" />
+            <Search size={18} className="text-dim" />
             <input 
               type="text"
               placeholder="Buscar farmácia ou produto..."
@@ -103,9 +103,9 @@ export function FornecedoresSectionClient({
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-16 bg-surface rounded-[24px] border border-dashed border-slate-200"
+              className="text-center py-16 bg-surface rounded-[24px] border border-dashed border-surface-border"
             >
-              <MapPin className="mx-auto text-slate-200 mb-4" size={40} />
+              <MapPin className="mx-auto text-dim mb-4" size={40} />
               <p className="text-muted font-bold">Nenhum fornecedor disponível</p>
               <p className="text-xs text-dim mt-1">
                 {cidade ? `Na região de ${cidade}` : "Ajuste seus filtros ou busca"}
@@ -166,7 +166,7 @@ export function FornecedoresSectionClient({
                           <span className="text-[11px] font-medium text-dim">({f.total_pedidos || 0})</span>
                         </div>
                       </div>
-                      <div className="h-8 w-8 rounded-full bg-surface-mid flex items-center justify-center text-slate-300">
+                      <div className="h-8 w-8 rounded-full bg-surface-mid flex items-center justify-center text-dim">
                         <ChevronRight size={18} />
                       </div>
                     </div>

@@ -91,7 +91,7 @@ export function RestricoesClient({
                 <span className="flex-1 text-sm font-bold text-text">{o.label}</span>
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-lg border-2 transition-colors ${
-                    checked ? "border-forest bg-ember text-white" : "border-gray-200"
+                    checked ? "border-forest bg-ember text-white" : "border-surface-border"
                   }`}
                 >
                   {checked && <Check size={15} strokeWidth={3} />}

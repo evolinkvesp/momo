@@ -132,7 +132,7 @@ export function FornecedorClient({
         <div className="space-y-3">
           {produtos.length === 0 ? (
             <div className="rounded-[24px] bg-surface p-10 text-center shadow-premium">
-               <Package className="h-10 w-10 text-gray-200 mx-auto mb-4" />
+               <Package className="h-10 w-10 text-dim mx-auto mb-4" />
                <p className="text-sm font-bold text-text">Nenhum produto</p>
                <p className="text-xs text-muted mt-1">Este fornecedor ainda não cadastrou produtos.</p>
             </div>
@@ -167,7 +167,7 @@ export function FornecedorClient({
                   </span>
                 </div>
                 {a.comentario && (
-                  <p className="mt-3 text-sm text-gray-600 leading-relaxed">{a.comentario}</p>
+                  <p className="mt-3 text-sm text-muted leading-relaxed">{a.comentario}</p>
                 )}
               </div>
             ))
@@ -390,7 +390,7 @@ function ConfirmarPedidoModal({
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setQuantidade((q) => Math.max(1, q - 1))}
-                className="h-10 w-10 rounded-full bg-surface-mid flex items-center justify-center text-lg font-bold text-gray-600 transition-all active:scale-90"
+                className="h-10 w-10 rounded-full bg-surface-mid flex items-center justify-center text-lg font-bold text-text transition-all active:scale-90"
               >
                 −
               </button>
@@ -399,14 +399,14 @@ function ConfirmarPedidoModal({
               </span>
               <button
                 onClick={() => setQuantidade((q) => Math.min(max, q + 1))}
-                className="h-10 w-10 rounded-full bg-surface-mid flex items-center justify-center text-lg font-bold text-gray-600 transition-all active:scale-90"
+                className="h-10 w-10 rounded-full bg-surface-mid flex items-center justify-center text-lg font-bold text-text transition-all active:scale-90"
               >
                 +
               </button>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-5">
+          <div className="mt-6 flex items-center justify-between border-t border-surface-border pt-5">
             <span className="text-base font-bold text-text">Total</span>
             <span className="text-2xl font-black text-ember tracking-tighter">
               {formatBRL(total)}
@@ -535,7 +535,7 @@ function SucessoModal({
           </Link>
           <button
             onClick={onClose}
-            className="rounded-full py-3 text-sm font-bold text-dim hover:text-gray-600 transition-colors"
+            className="rounded-full py-3 text-sm font-bold text-dim hover:text-text transition-colors"
           >
             Continuar comprando
           </button>

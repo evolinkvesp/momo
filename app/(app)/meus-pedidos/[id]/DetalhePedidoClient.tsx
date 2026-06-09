@@ -174,7 +174,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
                         relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500
                         ${status === 'done' ? 'bg-[#1c4d2e] text-white' : 
                           status === 'active' ? 'bg-surface border-2 border-[#1c4d2e]' : 
-                          'bg-surface-border text-slate-300'}
+                          'bg-surface-border text-dim'}
                       `}>
                         {status === 'active' ? (
                           <div className="w-2.5 h-2.5 bg-[#1c4d2e] rounded-full" />
@@ -189,7 +189,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
                   </div>
                   <div className="pt-1.5 flex-1">
                     <div className="flex justify-between items-start">
-                      <p className={`text-sm font-bold tracking-tight ${status === 'future' ? 'text-slate-300' : 'text-text'}`}>
+                      <p className={`text-sm font-bold tracking-tight ${status === 'future' ? 'text-dim' : 'text-text'}`}>
                         {step.label}
                       </p>
                       {status === 'done' && (
@@ -232,7 +232,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
               </div>
 
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dim">
                   <ShieldCheck size={20} />
                 </div>
                 <input 
@@ -372,7 +372,7 @@ function RatingModal({ pedido, onClose }: { pedido: any; onClose: () => void }) 
       >
         <button 
           onClick={onClose}
-          className="absolute right-6 top-6 text-slate-300"
+          className="absolute right-6 top-6 text-dim"
         >
           <X size={20} />
         </button>
@@ -393,7 +393,7 @@ function RatingModal({ pedido, onClose }: { pedido: any; onClose: () => void }) 
               <button key={s} onClick={() => setNota(s)}>
                 <Star 
                   size={36} 
-                  className={`${s <= nota ? 'text-amber-400 fill-amber-400' : 'text-slate-100'} transition-all`}
+                  className={`${s <= nota ? 'text-amber-400 fill-amber-400' : 'text-surface-border'} transition-all`}
                 />
               </button>
             ))}
@@ -414,7 +414,7 @@ function RatingModal({ pedido, onClose }: { pedido: any; onClose: () => void }) 
                </div>
              ))}
              {fotos.length < 3 && (
-               <label className="aspect-square rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 cursor-pointer">
+               <label className="aspect-square rounded-xl border-2 border-dashed border-surface-border flex items-center justify-center text-dim cursor-pointer">
                  <Camera size={24} />
                  <input type="file" className="hidden" onChange={handlePhotoChange} multiple accept="image/*" />
                </label>

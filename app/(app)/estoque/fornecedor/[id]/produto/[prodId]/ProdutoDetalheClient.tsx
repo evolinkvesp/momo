@@ -139,7 +139,7 @@ export function ProdutoDetalheClient({
   };
 
   return (
-    <div className="bg-[#f2f2f7] min-h-screen pb-32">
+    <div className="bg-bg min-h-screen pb-32">
       {/* Hero */}
       <div className="relative h-[160px] bg-gradient-to-br from-[#1c4d2e] to-[#3a9460] px-6 pt-8">
         <button 
@@ -186,7 +186,7 @@ export function ProdutoDetalheClient({
           </button>
 
           <div>
-            <h1 className="text-[18px] font-bold text-[#111] leading-tight">Mounjaro {produto.dose_mg}mg</h1>
+            <h1 className="text-[18px] font-bold text-text leading-tight">Mounjaro {produto.dose_mg}mg</h1>
             <p className="text-[11px] font-medium text-dim mt-1 uppercase tracking-widest">
               Ampola avulsa · {fornecedor.nome_fantasia || fornecedor.razao_social}
             </p>
@@ -339,7 +339,7 @@ export function ProdutoDetalheClient({
                       <p className="text-[11px] font-bold text-text">{av.paciente?.nome || "Usuário Anônimo"}</p>
                       <div className="flex text-amber-400 mt-0.5">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={10} fill={i < av.nota ? "currentColor" : "none"} className={i >= av.nota ? "text-slate-200" : ""} />
+                          <Star key={i} size={10} fill={i < av.nota ? "currentColor" : "none"} className={i >= av.nota ? "text-surface-border" : ""} />
                         ))}
                       </div>
                     </div>
@@ -350,7 +350,7 @@ export function ProdutoDetalheClient({
                 </div>
                 
                 {av.comentario && (
-                  <p className="text-xs text-slate-600 leading-relaxed">{av.comentario}</p>
+                  <p className="text-xs text-muted leading-relaxed">{av.comentario}</p>
                 )}
 
                 {av.fotos_url && av.fotos_url.length > 0 && (
