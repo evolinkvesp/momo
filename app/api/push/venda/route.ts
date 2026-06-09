@@ -192,7 +192,7 @@ export async function POST(req: Request) {
         url: payloadFornecedor.url,
         tag: payloadFornecedor.tag ?? null,
         read: false,
-      }).then(() => {}).catch(() => {});
+      });
     }
     if (payloadPaciente) {
       enviados.paciente = await enviarPush(pacienteUserId, payloadPaciente);
@@ -203,7 +203,7 @@ export async function POST(req: Request) {
         url: payloadPaciente.url,
         tag: payloadPaciente.tag ?? null,
         read: false,
-      }).then(() => {}).catch(() => {});
+      });
     }
 
     return NextResponse.json({ ok: true, evento, enviados });
