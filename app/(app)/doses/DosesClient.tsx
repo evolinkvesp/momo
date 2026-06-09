@@ -22,14 +22,14 @@ interface Dose {
   foto_url: string | null;
 }
 
-export function DosesClient({ 
-  userId, 
-  initialDoses, 
+export function DosesClient({
+  userId,
+  initialDoses,
   currentDoseMg,
-  calculoDose 
-}: { 
-  userId: string, 
-  initialDoses: Dose[], 
+  calculoDose
+}: {
+  userId: string,
+  initialDoses: Dose[],
   currentDoseMg: number,
   calculoDose: CalculoDose
 }) {
@@ -37,8 +37,7 @@ export function DosesClient({
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Form State
+
   const [dataAplicacao, setDataAplicacao] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
   const [doseMg, setDoseMg] = useState(currentDoseMg.toString());
   const [localAplicacao, setLocalAplicacao] = useState("");
@@ -47,7 +46,7 @@ export function DosesClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const textosDose = getTextoProximaDose(calculoDose);
-  
+
   const lastDose = doses.length > 0 ? doses[0] : null;
   const suggestedLocation = () => {
     if (!lastDose) return "abdômen esquerdo";
@@ -58,16 +57,12 @@ export function DosesClient({
   };
 
   const handleOpenForm = () => {
-    if (!localAplicacao) {
-      setLocalAplicacao(suggestedLocation());
-    }
+    if (!localAplicacao) setLocalAplicacao(suggestedLocation());
     setShowForm(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFotoFile(e.target.files[0]);
-    }
+    if (e.target.files && e.target.files.length > 0) setFotoFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,12 +120,13 @@ export function DosesClient({
 
   return (
     <div className="space-y-6 pb-32">
-      <PageHeader 
-        title="Minhas Doses" 
+      <PageHeader
+        title="Minhas Doses"
         action={
-          <button 
+          <button
             onClick={handleOpenForm}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-white shadow-sm transition-transform active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white shadow-sm transition-transform active:scale-90"
+            style={{ background: "#ff6500", boxShadow: "0 4px 12px rgba(255,101,0,0.35)" }}
           >
             <Plus className="h-5 w-5" />
           </button>
@@ -139,11 +135,14 @@ export function DosesClient({
 
       <BlurPaywall ativo={isExpirado} mensagem="Registre suas aplicações no plano Premium">
         {calculoDose.isAtrasado && (
-          <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3 animate-fade-in">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div
+            className="p-4 rounded-2xl flex items-start gap-3 animate-fade-in"
+            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+          >
+            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#ef4444" }} />
             <div>
-              <p className="text-sm font-bold text-amber-900">Atenção!</p>
-              <p className="text-xs text-amber-700 leading-relaxed mt-0.5">
+              <p className="text-sm font-bold text-white">Atenção!</p>
+              <p className="text-xs leading-relaxed mt-0.5" style={{ color: "#9ca3af" }}>
                 Sua última dose foi há {calculoDose.diasAtraso + 7} dias. O recomendado é aplicar a cada 7 dias para manter a eficácia do tratamento.
               </p>
             </div>
@@ -151,19 +150,27 @@ export function DosesClient({
         )}
 
         {/* Hero Card */}
-        <div className={`rounded-[24px] p-6 text-white shadow-lg relative overflow-hidden transition-colors ${calculoDose.isAtrasado ? 'bg-red-600 shadow-red-200' : 'bg-forest shadow-forest/20'}`}>
+        <div
+          className="rounded-[24px] p-6 text-white relative overflow-hidden"
+          style={
+            calculoDose.isAtrasado
+              ? { background: "linear-gradient(135deg, #7f1d1d, #ef4444)", boxShadow: "0 8px 24px rgba(239,68,68,0.25)" }
+              : { background: "linear-gradient(135deg, #1a0800, #2d1200)", border: "1px solid rgba(255,101,0,0.25)", boxShadow: "0 8px 24px rgba(255,101,0,0.15)" }
+          }
+        >
           <div className="relative z-10">
-            <p className="text-[12px] font-medium opacity-80 uppercase tracking-wider">
+            <p className="text-[12px] font-bold uppercase tracking-wider opacity-60">
               {calculoDose.isAtrasado ? 'Dose Atrasada' : 'Próxima dose'}
             </p>
             <h2 className="text-[24px] font-bold mt-1">
               {textosDose.principal} · <span className="capitalize">{format(calculoDose.data, "eeee", { locale: ptBR })}</span>
             </h2>
-            <p className="text-[13px] opacity-70 mt-1">{calculoDose.dataFormatada}</p>
-            
-            <button 
+            <p className="text-[13px] opacity-60 mt-1">{calculoDose.dataFormatada}</p>
+
+            <button
               onClick={handleOpenForm}
-              className="mt-5 bg-white text-forest px-6 py-2.5 rounded-full text-sm font-bold transition-transform active:scale-95"
+              className="mt-5 px-6 py-2.5 rounded-full text-sm font-bold transition-transform active:scale-95"
+              style={{ background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.4)" }}
             >
               Registrar agora
             </button>
@@ -174,51 +181,45 @@ export function DosesClient({
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <div
+            className="rounded-2xl p-6"
+            style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+          >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold">Nova Aplicação</h2>
-              <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-lg font-bold text-white">Nova Aplicação</h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="transition-colors"
+                style={{ color: "#555" }}
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm">{error}</div>}
-              
+              {error && (
+                <div
+                  className="p-3 rounded-xl text-sm"
+                  style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}
+                >
+                  {error}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Data e Hora</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={dataAplicacao}
-                    onChange={(e) => setDataAplicacao(e.target.value)}
-                    className="input-standard mt-1"
-                  />
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Data e Hora</label>
+                  <input type="datetime-local" required value={dataAplicacao} onChange={(e) => setDataAplicacao(e.target.value)} className="input-standard mt-1" />
                 </div>
-
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Dose (mg)</label>
-                  <select
-                    required
-                    value={doseMg}
-                    onChange={(e) => setDoseMg(e.target.value)}
-                    className="input-standard mt-1"
-                  >
-                    {[2.5, 5, 7.5, 10, 12.5, 15].map(v => (
-                      <option key={v} value={v}>{v} mg</option>
-                    ))}
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Dose (mg)</label>
+                  <select required value={doseMg} onChange={(e) => setDoseMg(e.target.value)} className="input-standard mt-1">
+                    {[2.5, 5, 7.5, 10, 12.5, 15].map(v => <option key={v} value={v}>{v} mg</option>)}
                   </select>
                 </div>
-
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Local da Aplicação</label>
-                  <select
-                    required
-                    value={localAplicacao}
-                    onChange={(e) => setLocalAplicacao(e.target.value)}
-                    className="input-standard mt-1"
-                  >
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Local da Aplicação</label>
+                  <select required value={localAplicacao} onChange={(e) => setLocalAplicacao(e.target.value)} className="input-standard mt-1">
                     <option value="">Selecione o local</option>
                     <option value="abdômen esquerdo">Abdômen esquerdo</option>
                     <option value="abdômen direito">Abdômen direito</option>
@@ -226,15 +227,10 @@ export function DosesClient({
                     <option value="coxa direita">Coxa direita</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Foto (Opcional)</label>
+                  <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Foto (Opcional)</label>
                   <div className="mt-1 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="btn-ghost flex-1 py-3 text-xs"
-                    >
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-ghost flex-1 py-3 text-xs">
                       <ImageIcon className="w-4 h-4 mr-2" />
                       {fotoFile ? "Trocar" : "Escolher"}
                     </button>
@@ -244,22 +240,12 @@ export function DosesClient({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Observações</label>
-                <textarea
-                  rows={2}
-                  value={observacoes}
-                  onChange={(e) => setObservacoes(e.target.value)}
-                  placeholder="Como foi a aplicação?"
-                  className="input-standard mt-1"
-                />
+                <label className="text-xs font-bold uppercase ml-1" style={{ color: "#555" }}>Observações</label>
+                <textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Como foi a aplicação?" className="input-standard mt-1" />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary flex-1 py-4 text-base"
-                >
+                <button type="submit" disabled={loading} className="btn-primary flex-1 py-4 text-base">
                   {loading ? <LoadingSpinner size="sm" /> : 'Salvar Registro'}
                 </button>
               </div>
@@ -269,34 +255,43 @@ export function DosesClient({
 
         {/* Histórico */}
         <div className="space-y-4 relative">
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Histórico</h3>
-          
+          <h3 className="text-sm font-bold uppercase tracking-widest ml-1" style={{ color: "#555" }}>Histórico</h3>
+
           {doses.length === 0 ? (
             <EmptyState icon={<Droplet />} title="Nenhuma dose" description="Comece registrando sua primeira dose." />
           ) : (
-            <div className="space-y-4 relative pb-10">
-              {/* Timeline Line */}
-              <div className="absolute left-[22px] top-8 bottom-8 w-[2px] bg-slate-100" />
-              
+            <div className="space-y-3 relative pb-10">
+              <div
+                className="absolute left-[22px] top-8 bottom-8 w-[2px]"
+                style={{ background: "#222" }}
+              />
+
               {doses.map((dose) => (
-                <div key={dose.id} className="relative flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-50 transition-all active:scale-[0.98]">
-                  <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
+                <div
+                  key={dose.id}
+                  className="relative flex items-center gap-4 p-4 rounded-2xl transition-all active:scale-[0.98]"
+                  style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+                >
+                  <div
+                    className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                    style={{ background: "rgba(255,101,0,0.12)", color: "#ff6500" }}
+                  >
                     <Droplet className="h-5 w-5" />
                   </div>
-                  
+
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-sm font-bold text-white">
                       {format(new Date(dose.data_aplicacao), "dd 'de' MMM", { locale: ptBR })}
                     </p>
-                    <p className="text-[12px] text-slate-500">
+                    <p className="text-[12px]" style={{ color: "#9ca3af" }}>
                       {dose.dose_mg}mg · <span className="capitalize">{dose.local_aplicacao}</span>
                     </p>
                   </div>
-                  
+
                   <div className="text-right">
-                    <p className="text-[11px] text-slate-400">
-                      {differenceInDays(new Date(), new Date(dose.data_aplicacao)) === 0 
-                        ? "hoje" 
+                    <p className="text-[11px]" style={{ color: "#555" }}>
+                      {differenceInDays(new Date(), new Date(dose.data_aplicacao)) === 0
+                        ? "hoje"
                         : `há ${differenceInDays(new Date(), new Date(dose.data_aplicacao))} dias`}
                     </p>
                   </div>

@@ -1,14 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans } from "next/font/google";
+import { Outfit, Syne } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const dmSans = DM_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-dm-sans",
+  variable: "--font-outfit",
   display: "swap",
   preload: true,
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -27,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c4d2e",
+  themeColor: "#0d0d0d",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -40,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={dmSans.variable}>
-      <body className={`${dmSans.className} font-sans bg-[#f2f2f7]`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${outfit.variable} ${syne.variable}`}>
+      <body className={`${outfit.className} font-sans bg-[#0d0d0d]`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

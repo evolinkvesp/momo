@@ -1,19 +1,13 @@
 "use client";
 
-/**
- * Shared building blocks for the /configuracoes pages. Keeps the visual
- * language consistent across the menu and every sub-page:
- *  - light surface background (#f2f2f7) inherited from <body>
- *  - white cards, 20px radius, soft shadow, no border
- *  - small uppercase section labels
- *  - green (forest) accents
- */
-
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-2 ml-4 text-[11px] font-bold uppercase tracking-widest text-gray-400">
+    <h2
+      className="mb-2 ml-4 text-[11px] font-bold uppercase tracking-widest"
+      style={{ color: "#555" }}
+    >
       {children}
     </h2>
   );
@@ -27,7 +21,10 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-[20px] bg-white shadow-premium ${className}`}>
+    <div
+      className={`rounded-[20px] ${className}`}
+      style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+    >
       {children}
     </div>
   );
@@ -44,11 +41,11 @@ export function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+      <label className="ml-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#555" }}>
         {label}
       </label>
       {children}
-      {hint && <p className="ml-1 text-[11px] font-medium text-gray-400">{hint}</p>}
+      {hint && <p className="ml-1 text-[11px] font-medium" style={{ color: "#555" }}>{hint}</p>}
     </div>
   );
 }
@@ -77,7 +74,7 @@ export function TextInput({
   return (
     <input
       type={type}
-      className={`input-standard bg-gray-50 ${readOnly ? "cursor-not-allowed text-gray-400" : ""}`}
+      className={`input-standard ${readOnly ? "cursor-not-allowed opacity-50" : ""}`}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
@@ -103,7 +100,7 @@ export function SelectInput({
 }) {
   return (
     <select
-      className="input-standard appearance-none bg-gray-50"
+      className="input-standard appearance-none"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >

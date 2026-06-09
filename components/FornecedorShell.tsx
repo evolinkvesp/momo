@@ -18,13 +18,28 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
   const isCadastroOrAguardando = pathname === '/fornecedor/cadastro' || pathname === '/fornecedor/aguardando';
 
   if (isCadastroOrAguardando) {
-    return <main className="min-h-screen bg-slate-50">{children}</main>;
+    return <main className="min-h-screen" style={{ background: "#0d0d0d" }}>{children}</main>;
   }
 
   const getStatusBadge = () => {
-    if (status === 'ativo') return <span className="px-2 py-0.5 rounded-md bg-green-100 text-green-800 text-xs font-bold uppercase tracking-wider">Ativo</span>;
-    if (status === 'pendente') return <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">Pendente</span>;
-    return <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider">Suspenso</span>;
+    if (status === 'ativo') return (
+      <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider"
+        style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+        Ativo
+      </span>
+    );
+    if (status === 'pendente') return (
+      <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider"
+        style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.2)" }}>
+        Pendente
+      </span>
+    );
+    return (
+      <span className="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider"
+        style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>
+        Suspenso
+      </span>
+    );
   };
 
   const navItems = [
@@ -37,13 +52,14 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
   const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-1 flex-col overflow-y-auto">
       <div className="px-5 py-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Store className="h-6 w-6 text-forest" />
-          <div className="leading-tight">
-            <p className="text-sm font-bold text-slate-900">Momo</p>
-          </div>
+        <div className="flex items-center gap-2 mb-2">
+          <Store className="h-6 w-6" style={{ color: "#ff6500" }} />
+          <p className="text-sm font-bold text-white">Momo</p>
         </div>
-        <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-forest text-white text-[10px] font-bold uppercase tracking-wider">
+        <div
+          className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
+          style={{ background: "rgba(255,101,0,0.12)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.2)" }}
+        >
           Painel Fornecedor
         </div>
       </div>
@@ -57,13 +73,14 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
+              style={
                 active
-                  ? "bg-surface-mid text-forest"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
+                  ? { background: "rgba(255,101,0,0.12)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.15)" }
+                  : { color: "#9ca3af" }
+              }
             >
-              <Icon className={`h-5 w-5 ${active ? "text-forest" : "text-slate-400"}`} />
+              <Icon className="h-5 w-5" style={{ color: active ? "#ff6500" : "#555" }} />
               {item.label}
             </Link>
           );
@@ -73,19 +90,29 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
   );
 
   return (
-    <div className="min-h-screen lg:flex bg-slate-50">
+    <div className="min-h-screen lg:flex" style={{ background: "#0d0d0d" }}>
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+      <aside
+        className="hidden w-64 shrink-0 lg:flex lg:flex-col"
+        style={{ background: "#111111", borderRight: "1px solid #1e1e1e" }}
+      >
         <SidebarContent />
       </aside>
 
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} aria-hidden />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col bg-white shadow-xl">
-            <div className="flex items-center justify-end border-b border-slate-200 px-4 py-3">
-              <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} aria-hidden />
+          <aside
+            className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col shadow-2xl"
+            style={{ background: "#111111", borderRight: "1px solid #1e1e1e" }}
+          >
+            <div className="flex items-center justify-end px-4 py-3" style={{ borderBottom: "1px solid #1e1e1e" }}>
+              <button
+                onClick={() => setOpen(false)}
+                className="rounded-lg p-2 transition-colors"
+                style={{ color: "#9ca3af" }}
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -96,14 +123,20 @@ export function FornecedorShell({ children, fornecedorNome, status }: Fornecedor
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
+        <header
+          className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 backdrop-blur lg:px-8"
+          style={{ background: "rgba(17,17,17,0.9)", borderBottom: "1px solid #1e1e1e" }}
+        >
           <div className="flex items-center gap-3">
-            <button onClick={() => setOpen(true)} className="rounded-lg p-2 -ml-2 text-slate-600 hover:bg-slate-100 lg:hidden">
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-lg p-2 -ml-2 transition-colors lg:hidden"
+              style={{ color: "#9ca3af" }}
+            >
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-bold text-slate-900">{fornecedorNome || 'Carregando...'}</h1>
+              <h1 className="text-lg font-bold text-white">{fornecedorNome || 'Carregando...'}</h1>
               {getStatusBadge()}
             </div>
           </div>

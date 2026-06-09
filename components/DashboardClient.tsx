@@ -98,7 +98,6 @@ export function DashboardClient({
     }
   };
 
-  // Compartilhamento de conquista a partir do dashboard.
   const [shareOpen, setShareOpen] = useState(false);
   const pesoPerdido = Number(weightDelta) > 0 ? Number(weightDelta) : 0;
   const semanasShare = Math.max(1, weeksCompleted);
@@ -116,26 +115,35 @@ export function DashboardClient({
     serie: [...(weights || [])].reverse().map((w) => w.peso_kg).filter(Boolean),
   };
 
+  const doseColor =
+    textosDose.cor === 'red' ? '#ef4444' :
+    textosDose.cor === 'green' ? '#22c55e' :
+    textosDose.cor === 'yellow' ? '#f59e0b' :
+    '#ff6500';
+
   return (
-    <m.div 
+    <m.div
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-6 pb-32"
+      className="space-y-5 pb-32"
     >
       {/* Top row */}
-      <m.div variants={item} className="flex justify-between items-center">
+      <m.div variants={item} className="flex justify-between items-center pt-1">
         <div>
-          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#ff6500" }}>
             {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Olá, {firstName} 👋
+          <h1 className="text-[26px] font-bold text-white tracking-tight leading-tight">
+            Olá, {firstName}
           </h1>
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell userId={userId} />
-          <div className="w-10 h-10 rounded-full bg-surface-mid text-forest flex items-center justify-center font-bold text-sm">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white"
+            style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)" }}
+          >
             {initials}
           </div>
         </div>
@@ -143,29 +151,37 @@ export function DashboardClient({
 
       {/* Push Notification Banner */}
       {showPushBanner && (
-        <m.div 
+        <m.div
           variants={item}
-          className="bg-amber-50 border border-amber-100 p-4 rounded-3xl flex items-center justify-between gap-4"
+          className="flex items-center justify-between gap-4 p-4 rounded-3xl"
+          style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+            <div
+              className="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,101,0,0.15)", color: "#ff6500" }}
+            >
               <Zap size={20} fill="currentColor" />
             </div>
             <div>
-              <p className="text-xs font-bold text-amber-900">Ativar Notificações</p>
-              <p className="text-[11px] text-amber-700 leading-tight mt-0.5">Receba lembretes importantes do seu tratamento.</p>
+              <p className="text-xs font-bold text-white">Ativar Notificações</p>
+              <p className="text-[11px] leading-tight mt-0.5" style={{ color: "#9ca3af" }}>
+                Receba lembretes importantes do seu tratamento.
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => setShowPushBanner(false)}
-              className="px-3 py-2 text-[11px] font-bold text-amber-800/50 hover:text-amber-800"
+              className="px-3 py-2 text-[11px] font-bold"
+              style={{ color: "rgba(255,255,255,0.3)" }}
             >
               Depois
             </button>
-            <button 
+            <button
               onClick={handleEnablePush}
-              className="px-4 py-2 bg-amber-500 text-white text-[11px] font-bold rounded-xl shadow-md active:scale-95 transition-all"
+              className="px-4 py-2 text-white text-[11px] font-bold rounded-xl active:scale-95 transition-all"
+              style={{ background: "#ff6500", boxShadow: "0 4px 12px rgba(255,101,0,0.35)" }}
             >
               Ativar
             </button>
@@ -173,38 +189,43 @@ export function DashboardClient({
         </m.div>
       )}
 
-      {/* Hero Section with Week Tracker */}
-      <m.div 
+      {/* Hero — Week Tracker */}
+      <m.div
         variants={item}
-        className="bg-gradient-to-br from-[#1c4d2e] to-[#2d7a4f] rounded-[24px] p-6 text-white shadow-lg"
+        className="rounded-[24px] p-6 text-white"
+        style={{
+          background: "linear-gradient(135deg, #1a0a00 0%, #2d1000 40%, #1a0800 100%)",
+          border: "1px solid rgba(255,101,0,0.2)",
+          boxShadow: "0 8px 32px rgba(255,101,0,0.1)",
+        }}
       >
         <BlurPaywall ativo={isExpirado} mensagem="Veja suas doses semanais no plano Premium">
-          <p className="text-[13px] font-bold opacity-70 uppercase tracking-widest mb-4">
-            Semana {weeksCompleted + 1} de tratamento
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              className="h-1.5 w-6 rounded-full"
+              style={{ background: "#ff6500" }}
+            />
+            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Semana {weeksCompleted + 1} de tratamento
+            </p>
+          </div>
           <WeekTracker doseDates={doses?.map(d => d.data_aplicacao) || []} nextDoseDate={calculoDose.data} />
         </BlurPaywall>
       </m.div>
 
       {/* Metric Grid 2x2 */}
       <BlurPaywall ativo={isExpirado} mensagem="Acompanhe peso, dose e estoque">
-        <div className="grid grid-cols-2 gap-4">
-          <MetricCard 
+        <div className="grid grid-cols-2 gap-3">
+          <MetricCard
             variants={item}
             icon={<Calendar className="w-4 h-4" />}
             label="Próxima dose"
             value={textosDose.principal}
             subValue={textosDose.secundario}
             badge={textosDose.badge}
-            badgeColor={
-              textosDose.cor === 'red' ? 'bg-red-50 border border-red-200 text-red-600' :
-              textosDose.cor === 'green' ? 'bg-green-50 border border-green-200 text-green-600 animate-pulse' :
-              textosDose.cor === 'yellow' ? 'bg-yellow-50 border border-yellow-200 text-yellow-600' :
-              undefined
-            }
-            valueColor={textosDose.cor === 'red' ? 'text-red-600' : textosDose.cor === 'green' ? 'text-green-600' : undefined}
-            iconBg={textosDose.cor === 'red' ? 'bg-red-50' : textosDose.cor === 'green' ? 'bg-green-50' : 'bg-[#e8f5ee]'}
-            iconColor={textosDose.cor === 'red' ? 'text-red-600' : textosDose.cor === 'green' ? 'text-green-600' : 'text-[#16a34a]'}
+            accentColor={doseColor}
+            iconBg={`rgba(${doseColor === '#ef4444' ? '239,68,68' : doseColor === '#22c55e' ? '34,197,94' : '255,101,0'},0.12)`}
+            iconColor={doseColor}
           />
           <MetricCard
             variants={item}
@@ -213,57 +234,77 @@ export function DashboardClient({
             value={`${lastWeight?.peso_kg || '--'}`}
             subValue="kg"
             badge={Number(weightDelta) > 0 ? `-${weightDelta}kg total` : undefined}
-            iconBg="bg-[#e8f5ee]"
-            iconColor="text-[#16a34a]"
+            accentColor="#ff6500"
+            iconBg="rgba(255,101,0,0.12)"
+            iconColor="#ff6500"
             footer={
               pesoPerdido >= 1 ? (
                 <button
                   onClick={() => setShareOpen(true)}
-                  className="mt-2 self-start rounded-full bg-[#e8f5ee] px-3 py-1 text-[11px] font-bold text-[#1c4d2e] transition-transform active:scale-95"
+                  className="mt-2 self-start rounded-full px-3 py-1 text-[11px] font-bold transition-transform active:scale-95"
+                  style={{ background: "rgba(255,101,0,0.15)", color: "#ff7a1a" }}
                 >
-                  🎉 Compartilhar conquista
+                  Compartilhar conquista
                 </button>
               ) : undefined
             }
           />
-          <MetricCard 
+          <MetricCard
             variants={item}
             icon={<Droplet className="w-4 h-4" />}
             label="Dose mg"
             value={`${profile?.dose_atual_mg || '2.5'}`}
             subValue="mg por semana"
-            iconBg="bg-[#e8f5ee]"
-            iconColor="text-[#16a34a]"
+            accentColor="#ff6500"
+            iconBg="rgba(255,101,0,0.12)"
+            iconColor="#ff6500"
           />
-          <MetricCard 
+          <MetricCard
             variants={item}
             icon={<Package className="w-4 h-4" />}
             label="Estoque"
             value={`${totalAmpolas}`}
             subValue="ampolas restantes"
             badge={totalAmpolas <= 1 ? "Comprar" : undefined}
-            badgeColor={totalAmpolas <= 1 ? "bg-red-100 text-red-600" : undefined}
-            iconBg={totalAmpolas === 0 ? "bg-red-50" : "bg-[#e8f5ee]"}
-            iconColor={totalAmpolas === 0 ? "text-red-600" : "text-[#16a34a]"}
+            accentColor={totalAmpolas === 0 ? "#ef4444" : "#ff6500"}
+            iconBg={totalAmpolas === 0 ? "rgba(239,68,68,0.12)" : "rgba(255,101,0,0.12)"}
+            iconColor={totalAmpolas === 0 ? "#ef4444" : "#ff6500"}
           />
         </div>
       </BlurPaywall>
 
       {/* Last Dose Card */}
-      <m.div 
+      <m.div
         variants={item}
-        className="bg-gradient-to-br from-[#1c4d2e] to-[#2d7a4f] rounded-[20px] p-4 flex justify-between items-center shadow-premium"
+        className="rounded-[20px] p-4 flex justify-between items-center"
+        style={{
+          background: "linear-gradient(135deg, #1a0a00, #2d1200)",
+          border: "1px solid rgba(255,101,0,0.2)",
+        }}
       >
         <BlurPaywall ativo={isExpirado} mensagem="Gerencie suas doses no plano Premium">
           <div className="flex w-full justify-between items-center">
             <div>
-              <p className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Última aplicação</p>
-              <h3 className="text-lg font-bold text-white mt-0.5">{lastDose?.local_aplicacao || 'Não registrada'}</h3>
-              <p className="text-[11px] text-white/50 mt-0.5">
-                {lastDose ? `Há ${differenceInDays(new Date(), new Date(lastDose.data_aplicacao))} dias · ${lastDose.dose_mg}mg` : '---'}
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Última aplicação
+              </p>
+              <h3 className="text-lg font-bold text-white mt-0.5">
+                {lastDose?.local_aplicacao || 'Não registrada'}
+              </h3>
+              <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {lastDose
+                  ? `Há ${differenceInDays(new Date(), new Date(lastDose.data_aplicacao))} dias · ${lastDose.dose_mg}mg`
+                  : '---'}
               </p>
             </div>
-            <Link href="/doses" className="bg-white/15 border border-white/20 px-4 py-2 rounded-full text-white text-xs font-bold hover:bg-white/25 transition-all">
+            <Link
+              href="/doses"
+              className="px-4 py-2 rounded-full text-white text-xs font-bold transition-all"
+              style={{
+                background: "#ff6500",
+                boxShadow: "0 4px 12px rgba(255,101,0,0.35)",
+              }}
+            >
               + Registrar
             </Link>
           </div>
@@ -271,13 +312,16 @@ export function DashboardClient({
       </m.div>
 
       {/* Weight Evolution */}
-      <m.div 
+      <m.div
         variants={item}
-        className="bg-white rounded-[20px] p-5 shadow-premium"
+        className="rounded-[20px] p-5"
+        style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
       >
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-[15px] font-bold text-gray-900">Evolução do peso</h3>
-          <Link href="/saude" className="text-[11px] font-bold text-[#16a34a] hover:underline">Ver tudo</Link>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-[15px] font-bold text-white">Evolução do peso</h3>
+          <Link href="/saude" className="text-[11px] font-bold" style={{ color: "#ff6500" }}>
+            Ver tudo
+          </Link>
         </div>
         <BlurPaywall ativo={isExpirado} mensagem="Veja a evolução do seu peso">
           <DashboardChart data={weights} />
@@ -287,23 +331,9 @@ export function DashboardClient({
       {/* Stats Row */}
       <BlurPaywall ativo={isExpirado}>
         <div className="grid grid-cols-3 gap-3">
-          <MiniStatCard 
-            variants={item}
-            label="IMC atual"
-            value={`${profile?.imc || '--'}`}
-            delta="Normal"
-          />
-          <MiniStatCard 
-            variants={item}
-            label="Semanas"
-            value={`${weeksCompleted}`}
-          />
-          <MiniStatCard
-            variants={item}
-            label="Perdido"
-            value={`${weightDelta}kg`}
-            delta="total"
-          />
+          <MiniStatCard variants={item} label="IMC atual" value={`${profile?.imc || '--'}`} delta="Normal" />
+          <MiniStatCard variants={item} label="Semanas" value={`${weeksCompleted}`} />
+          <MiniStatCard variants={item} label="Perdido" value={`${weightDelta}kg`} delta="total" />
         </div>
       </BlurPaywall>
 
@@ -312,27 +342,38 @@ export function DashboardClient({
   );
 }
 
-function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, iconColor, valueColor, variants, footer }: any) {
+function MetricCard({ icon, label, value, subValue, badge, accentColor, iconBg, iconColor, variants, footer }: any) {
   return (
     <m.div
       variants={variants}
-      className="bg-white rounded-[20px] p-4 shadow-premium flex flex-col justify-between"
+      className="rounded-[20px] p-4 flex flex-col justify-between"
+      style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
     >
       <div className="flex justify-between items-start">
-        <div className={`h-8 w-8 rounded-[10px] ${iconBg} ${iconColor} flex items-center justify-center`}>
+        <div
+          className="h-8 w-8 rounded-[10px] flex items-center justify-center"
+          style={{ background: iconBg, color: iconColor }}
+        >
           {icon}
         </div>
         {badge && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor || 'bg-[#e8f5ee] text-[#16a34a]'}`}>
+          <span
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{
+              background: `rgba(${accentColor === '#ef4444' ? '239,68,68' : accentColor === '#22c55e' ? '34,197,94' : '255,101,0'},0.12)`,
+              color: accentColor,
+              border: `1px solid ${accentColor}30`,
+            }}
+          >
             {badge}
           </span>
         )}
       </div>
       <div className="mt-4 flex flex-col">
-        <p className="text-[11px] font-medium text-gray-400">{label}</p>
+        <p className="text-[11px] font-medium" style={{ color: "#555" }}>{label}</p>
         <div className="flex flex-col mt-0.5">
-          <h4 className={`text-[18px] font-bold tracking-tight line-clamp-1 ${valueColor || 'text-gray-900'}`}>{value}</h4>
-          <span className="text-[11px] font-medium text-gray-400">{subValue}</span>
+          <h4 className="text-[18px] font-bold tracking-tight line-clamp-1 text-white">{value}</h4>
+          <span className="text-[11px] font-medium" style={{ color: "#555" }}>{subValue}</span>
         </div>
         {footer}
       </div>
@@ -342,13 +383,14 @@ function MetricCard({ icon, label, value, subValue, badge, badgeColor, iconBg, i
 
 function MiniStatCard({ label, value, delta, variants }: any) {
   return (
-    <m.div 
+    <m.div
       variants={variants}
-      className="bg-white rounded-[16px] p-3 shadow-premium"
+      className="rounded-[16px] p-3"
+      style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
     >
-      <p className="text-[10px] font-medium text-gray-400">{label}</p>
-      <h5 className="text-[17px] font-bold text-gray-900 mt-1 tracking-tight">{value}</h5>
-      {delta && <p className="text-[10px] font-bold text-[#16a34a] mt-0.5">{delta}</p>}
+      <p className="text-[10px] font-medium" style={{ color: "#555" }}>{label}</p>
+      <h5 className="text-[17px] font-bold text-white mt-1 tracking-tight">{value}</h5>
+      {delta && <p className="text-[10px] font-bold mt-0.5" style={{ color: "#ff6500" }}>{delta}</p>}
     </m.div>
   );
 }

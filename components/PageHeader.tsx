@@ -22,7 +22,8 @@ export function PageHeader({
         {showBack && (
           <button
             onClick={() => (onBack ? onBack() : router.back())}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition-transform active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-90"
+            style={{ background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }}
             aria-label="Voltar"
           >
             <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
@@ -30,7 +31,7 @@ export function PageHeader({
         )}
       </div>
 
-      <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-900 whitespace-nowrap">
+      <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-white whitespace-nowrap">
         {title}
       </h1>
 

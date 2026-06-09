@@ -2,11 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { Lock } from "lucide-react";    
+import { Lock } from "lucide-react";
 
 interface BlurPaywallProps {
   children: React.ReactNode;
-  ativo: boolean; // true = aplicar blur
+  ativo: boolean;
   mensagem?: string;
 }
 
@@ -15,19 +15,10 @@ export function BlurPaywall({ children, ativo, mensagem }: BlurPaywallProps) {
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Conteúdo com blur */}
-      <div
-        style={{
-          filter: "blur(6px)",
-          userSelect: "none",
-          pointerEvents: "none",
-          opacity: 0.7,
-        }}
-      >
+      <div style={{ filter: "blur(6px)", userSelect: "none", pointerEvents: "none", opacity: 0.5 }}>
         {children}
       </div>
 
-      {/* Overlay com CTA */}
       <div
         style={{
           position: "absolute",
@@ -41,14 +32,14 @@ export function BlurPaywall({ children, ativo, mensagem }: BlurPaywallProps) {
           zIndex: 10,
         }}
       >
-        {/* Card central */}
         <div
           style={{
-            background: "#fff",
+            background: "#161616",
+            border: "1px solid #2d2d2d",
             borderRadius: 20,
             padding: "20px 24px",
             textAlign: "center",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            boxShadow: "0 16px 40px rgba(0,0,0,0.6)",
             maxWidth: 260,
             width: "100%",
           }}
@@ -57,7 +48,8 @@ export function BlurPaywall({ children, ativo, mensagem }: BlurPaywallProps) {
             style={{
               width: 44,
               height: 44,
-              background: "#e8f5ee",
+              background: "rgba(255,101,0,0.12)",
+              border: "1px solid rgba(255,101,0,0.2)",
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
@@ -65,52 +57,31 @@ export function BlurPaywall({ children, ativo, mensagem }: BlurPaywallProps) {
               margin: "0 auto 12px",
             }}
           >
-            <Lock size={20} color="#1c4d2e" />
+            <Lock size={20} color="#ff6500" />
           </div>
-          <p
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: "#111",
-              margin: "0 0 6px",
-            }}
-          >
+          <p style={{ fontSize: 15, fontWeight: 700, color: "#ffffff", margin: "0 0 6px" }}>
             Seu trial expirou
           </p>
-          <p
-            style={{
-              fontSize: 12,
-              color: "#6b7280",
-              margin: "0 0 16px",
-              lineHeight: 1.5,
-            }}
-          >
-            {mensagem ||
-              "Assine o Momo para continuar acompanhando seu tratamento"}
+          <p style={{ fontSize: 12, color: "#9ca3af", margin: "0 0 16px", lineHeight: 1.5 }}>
+            {mensagem || "Assine o Momo para continuar acompanhando seu tratamento"}
           </p>
-
           <Link
             href="/plano"
             style={{
               display: "block",
-              background: "#1c4d2e",
+              background: "linear-gradient(135deg, #ff6500, #cc4c00)",
               color: "#fff",
               fontSize: 13,
               fontWeight: 700,
               padding: "12px 20px",
               borderRadius: 999,
               textDecoration: "none",
+              boxShadow: "0 4px 16px rgba(255,101,0,0.35)",
             }}
           >
             Ver planos — R$ 29,90/mês
           </Link>
-          <p
-            style={{
-              fontSize: 11,
-              color: "#9ca3af",
-              margin: "8px 0 0",
-            }}
-          >
+          <p style={{ fontSize: 11, color: "#555", margin: "8px 0 0" }}>
             Cancele quando quiser
           </p>
         </div>

@@ -9,13 +9,12 @@ interface Action {
   label: string;
   href: string;
   icon: LucideIcon;
-  color: string;
 }
 
 const ACTIONS: Action[] = [
-  { label: "Registrar dose", href: "/doses", icon: Syringe, color: "text-[#16a34a]" },
-  { label: "Pesar agora", href: "/saude", icon: Scale, color: "text-[#16a34a]" },
-  { label: "Registrar sintoma", href: "/saude", icon: Activity, color: "text-[#16a34a]" },
+  { label: "Registrar dose", href: "/doses", icon: Syringe },
+  { label: "Pesar agora", href: "/saude", icon: Scale },
+  { label: "Registrar sintoma", href: "/saude", icon: Activity },
 ];
 
 export function Fab() {
@@ -29,7 +28,7 @@ export function Fab() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-gray-900/40 backdrop-blur-[2px]"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
           />
         )}
@@ -52,10 +51,20 @@ export function Fab() {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 group"
                   >
-                    <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900 shadow-premium">
+                    <span
+                      className="rounded-full px-4 py-2 text-sm font-bold text-white"
+                      style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+                    >
                       {a.label}
                     </span>
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-white ${a.color} shadow-premium transition-transform group-hover:scale-105`}>
+                    <span
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-white transition-transform group-hover:scale-105"
+                      style={{
+                        background: "#1a1a1a",
+                        border: "1px solid rgba(255,101,0,0.3)",
+                        color: "#ff6500",
+                      }}
+                    >
                       <a.icon className="h-5 w-5" strokeWidth={2.5} />
                     </span>
                   </Link>
@@ -69,10 +78,19 @@ export function Fab() {
           onClick={() => setOpen((v) => !v)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1c4d2e] text-white shadow-lg shadow-[#1c4d2e]/30 transition-shadow hover:shadow-xl"
+          className="flex h-14 w-14 items-center justify-center rounded-full text-white"
+          style={{
+            background: open
+              ? "#1a1a1a"
+              : "linear-gradient(135deg, #ff6500, #cc4c00)",
+            border: open ? "1px solid #ff6500" : "none",
+            boxShadow: open
+              ? "0 4px 20px rgba(255,101,0,0.2)"
+              : "0 4px 20px rgba(255,101,0,0.4)",
+          }}
         >
           {open ? (
-            <X className="h-7 w-7" strokeWidth={2.5} />
+            <X className="h-7 w-7" style={{ color: "#ff6500" }} strokeWidth={2.5} />
           ) : (
             <Plus className="h-7 w-7" strokeWidth={2.5} />
           )}

@@ -3,10 +3,6 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 
-/**
- * Inline paywall shown in place of a premium feature once the user's
- * trial/subscription has expired.
- */
 export function PaywallCard({
   recurso = "Recurso Premium",
   descricao,
@@ -17,22 +13,26 @@ export function PaywallCard({
   return (
     <div
       style={{
-        background: "#f9fafb",
-        border: "2px dashed #e5e7eb",
+        background: "#1a1a1a",
+        border: "1px dashed #2d2d2d",
         borderRadius: 20,
         padding: 32,
         textAlign: "center",
       }}
       className="flex flex-col items-center"
     >
-      <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
-        <Lock size={32} color="#9ca3af" />
+      <div
+        className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+        style={{ background: "rgba(255,101,0,0.08)", border: "1px solid rgba(255,101,0,0.15)" }}
+      >
+        <Lock size={32} style={{ color: "#ff6500" }} />
       </div>
-      <h3 className="text-lg font-bold text-gray-900">{recurso}</h3>
-      <p className="mt-1 max-w-[260px] text-sm font-medium text-gray-500">{descricao}</p>
+      <h3 className="text-lg font-bold text-white">{recurso}</h3>
+      <p className="mt-1 max-w-[260px] text-sm font-medium" style={{ color: "#9ca3af" }}>{descricao}</p>
       <Link
         href="/plano"
-        className="mt-6 inline-flex items-center justify-center rounded-full bg-forest px-6 py-3.5 text-sm font-bold text-white shadow-sm transition-transform active:scale-[0.97]"
+        className="mt-6 inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold text-white transition-transform active:scale-[0.97]"
+        style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 16px rgba(255,101,0,0.3)" }}
       >
         Assinar Momo — R$ 29,90/mês
       </Link>

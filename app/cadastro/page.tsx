@@ -33,7 +33,7 @@ export default function CadastroPage() {
     altura_cm: '',
     peso_inicial: '',
     peso_meta: '',
-    dia_aplicacao: '0', // 0 = Domingo
+    dia_aplicacao: '0',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -53,11 +53,7 @@ export default function CadastroPage() {
   };
 
   const prevStep = () => {
-    if (step === 1) {
-      router.push('/login');
-    } else {
-      setStep(step - 1);
-    }
+    if (step === 1) { router.push('/login'); } else { setStep(step - 1); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,38 +82,46 @@ export default function CadastroPage() {
       setLoading(false);
     } else {
       toast.success('Conta criada com sucesso!');
-      // Simular redirecionamento
-      setTimeout(() => {
-        router.push('/');
-        router.refresh();
-      }, 1500);
+      setTimeout(() => { router.push('/'); router.refresh(); }, 1500);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
-        <button onClick={prevStep} className="rounded-full p-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors">
+    <div className="flex min-h-screen flex-col" style={{ background: "#0d0d0d" }}>
+      <header
+        className="flex items-center justify-between px-6 py-4"
+        style={{ background: "#111111", borderBottom: "1px solid #1e1e1e" }}
+      >
+        <button
+          onClick={prevStep}
+          className="rounded-full p-2 transition-colors"
+          style={{ background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }}
+        >
           <ArrowLeft className="h-6 w-6" />
         </button>
-        <h1 className="text-lg font-bold text-gray-900">Criar conta</h1>
-        <div className="w-10" /> {/* Spacer */}
+        <h1 className="text-lg font-bold text-white">Criar conta</h1>
+        <div className="w-10" />
       </header>
 
       {/* Progress Bar */}
       <div className="flex px-6 pt-6">
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex flex-1 items-center">
-            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-              step >= s ? 'bg-forest text-white' : 'bg-gray-200 text-gray-500'
-            }`}>
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300"
+              style={
+                step >= s
+                  ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.35)" }
+                  : { background: "#1a1a1a", color: "#555", border: "1px solid #2d2d2d" }
+              }
+            >
               {step > s ? <Check className="h-4 w-4" /> : s}
             </div>
             {s < 3 && (
-              <div className={`h-1 flex-1 transition-all duration-300 ${
-                step > s ? 'bg-forest' : 'bg-gray-200'
-              }`} />
+              <div
+                className="h-0.5 flex-1 transition-all duration-300"
+                style={{ background: step > s ? "#ff6500" : "#1a1a1a" }}
+              />
             )}
           </div>
         ))}
@@ -126,7 +130,10 @@ export default function CadastroPage() {
       <main className="flex-1 px-6 pt-8 overflow-y-auto">
         <div className="mx-auto max-w-md pb-32">
           {error && (
-            <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 animate-fade-up">
+            <div
+              className="mb-6 rounded-xl p-4 text-sm text-red-400 animate-fade-up"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+            >
               {error}
             </div>
           )}
@@ -134,31 +141,31 @@ export default function CadastroPage() {
           {step === 1 && (
             <div className="space-y-4 animate-fade-up">
               <StepHeader icon={<User className="h-5 w-5" />} title="Dados pessoais" subtitle="Comece sua jornada" />
-              <Input label="Nome completo" name="nome" value={formData.nome} onChange={handleChange} placeholder="Como deseja ser chamado?" />
-              <Input label="E-mail" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" />
-              <Input label="Senha" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 6 caracteres" />
+              <DarkInput label="Nome completo" name="nome" value={formData.nome} onChange={handleChange} placeholder="Como deseja ser chamado?" />
+              <DarkInput label="E-mail" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" />
+              <DarkInput label="Senha" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 6 caracteres" />
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-6 animate-fade-up">
               <StepHeader icon={<Activity className="h-5 w-5" />} title="Seu tratamento" subtitle="Personalize seu acompanhamento" />
-              
-              <Input label="Início do tratamento" name="data_inicio_tratamento" type="date" value={formData.data_inicio_tratamento} onChange={handleChange} />
+              <DarkInput label="Início do tratamento" name="data_inicio_tratamento" type="date" value={formData.data_inicio_tratamento} onChange={handleChange} />
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">Dose atual (mg)</label>
+                <label className="mb-2 block text-sm font-bold text-white">Dose atual (mg)</label>
                 <div className="grid grid-cols-3 gap-2">
                   {DOSES.map((d) => (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setFormData({ ...formData, dose_atual_mg: d })}
-                      className={`rounded-xl py-3 text-sm font-bold transition-all duration-200 ${
-                        formData.dose_atual_mg === d 
-                          ? 'bg-forest text-white shadow-md scale-[1.02]' 
-                          : 'bg-white border border-gray-100 text-gray-600 hover:border-forest/30'
-                      }`}
+                      className="rounded-xl py-3 text-sm font-bold transition-all duration-200"
+                      style={
+                        formData.dose_atual_mg === d
+                          ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.35)", transform: "scale(1.02)" }
+                          : { background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }
+                      }
                     >
                       {d}
                     </button>
@@ -167,8 +174,8 @@ export default function CadastroPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Altura (cm)" name="altura_cm" type="number" value={formData.altura_cm} onChange={handleChange} placeholder="Ex: 175" />
-                <Input label="Peso inicial (kg)" name="peso_inicial" type="number" value={formData.peso_inicial} onChange={handleChange} placeholder="Ex: 95.5" />
+                <DarkInput label="Altura (cm)" name="altura_cm" type="number" value={formData.altura_cm} onChange={handleChange} placeholder="Ex: 175" />
+                <DarkInput label="Peso inicial (kg)" name="peso_inicial" type="number" value={formData.peso_inicial} onChange={handleChange} placeholder="Ex: 95.5" />
               </div>
             </div>
           )}
@@ -176,41 +183,44 @@ export default function CadastroPage() {
           {step === 3 && (
             <div className="space-y-6 animate-fade-up">
               <StepHeader icon={<Target className="h-5 w-5" />} title="Metas e rotina" subtitle="Onde você quer chegar?" />
-              
-              <Input label="Peso meta (opcional)" name="peso_meta" type="number" value={formData.peso_meta} onChange={handleChange} placeholder="Ex: 70.0" />
+              <DarkInput label="Peso meta (opcional)" name="peso_meta" type="number" value={formData.peso_meta} onChange={handleChange} placeholder="Ex: 70.0" />
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">Dia da aplicação</label>
+                <label className="mb-2 block text-sm font-bold text-white">Dia da aplicação</label>
                 <div className="flex flex-wrap gap-2">
                   {DIAS_SEMANA.map((d) => (
                     <button
                       key={d.id}
                       type="button"
                       onClick={() => setFormData({ ...formData, dia_aplicacao: String(d.id) })}
-                      className={`flex-1 min-w-[60px] rounded-full py-2.5 text-xs font-bold transition-all duration-200 ${
+                      className="flex-1 min-w-[60px] rounded-full py-2.5 text-xs font-bold transition-all duration-200"
+                      style={
                         formData.dia_aplicacao === String(d.id)
-                          ? 'bg-forest text-white shadow-md scale-[1.05]'
-                          : 'bg-white border border-gray-100 text-gray-600 hover:bg-gray-50'
-                      }`}
+                          ? { background: "#ff6500", color: "#fff", boxShadow: "0 4px 12px rgba(255,101,0,0.3)", transform: "scale(1.05)" }
+                          : { background: "#1a1a1a", color: "#9ca3af", border: "1px solid #2d2d2d" }
+                      }
                     >
                       {d.label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-gray-400">Enviaremos lembretes neste dia para você não esquecer a dose.</p>
+                <p className="mt-3 text-xs" style={{ color: "#555" }}>Enviaremos lembretes neste dia para você não esquecer a dose.</p>
               </div>
             </div>
           )}
         </div>
       </main>
 
-      {/* Footer Actions */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <footer
+        className="fixed bottom-0 left-0 right-0 p-6"
+        style={{ background: "#111111", borderTop: "1px solid #1e1e1e" }}
+      >
         <div className="mx-auto max-w-md">
           {step < 3 ? (
             <button
               onClick={nextStep}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg transition-all hover:bg-forest/95 active:scale-95"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all hover:scale-[1.01] active:scale-95"
+              style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 20px rgba(255,101,0,0.4)" }}
             >
               Próximo
               <ArrowRight className="h-5 w-5" />
@@ -219,39 +229,52 @@ export default function CadastroPage() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-forest text-base font-bold text-white shadow-lg transition-all hover:bg-forest/95 active:scale-95 disabled:opacity-70"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-70"
+              style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 20px rgba(255,101,0,0.4)" }}
             >
               {loading ? 'Criando conta...' : 'Concluir e entrar'}
               {!loading && <Check className="h-5 w-5" />}
             </button>
           )}
         </div>
+        <p className="mt-4 text-center text-sm" style={{ color: "#555" }}>
+          Já tem uma conta?{' '}
+          <Link href="/login" className="font-bold hover:underline" style={{ color: "#ff6500" }}>
+            Entrar
+          </Link>
+        </p>
       </footer>
     </div>
   );
 }
 
-function StepHeader({ icon, title, subtitle }: { icon: React.ReactNode, title: string, subtitle: string }) {
+function StepHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className="mb-6 flex items-start gap-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-forest shrink-0">
+      <div
+        className="flex h-12 w-12 items-center justify-center rounded-2xl shrink-0"
+        style={{ background: "rgba(255,101,0,0.12)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.2)" }}
+      >
         {icon}
       </div>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-500">{subtitle}</p>
+        <h2 className="text-xl font-bold text-white">{title}</h2>
+        <p className="text-sm" style={{ color: "#777" }}>{subtitle}</p>
       </div>
     </div>
   );
 }
 
-function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function DarkInput({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-bold text-gray-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-bold text-white">{label}</label>
       <input
         {...props}
-        className="block h-12 w-full rounded-xl border-gray-100 bg-white px-4 text-sm shadow-sm transition-all focus:border-forest focus:ring-1 focus:ring-forest outline-none"
+        className="block h-12 w-full rounded-xl px-4 text-sm text-white outline-none transition-all"
+        style={{ background: "#1a1a1a", border: "1px solid #2d2d2d" }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = "#ff6500"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,101,0,0.1)"; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = "#2d2d2d"; e.currentTarget.style.boxShadow = "none"; }}
       />
     </div>
   );

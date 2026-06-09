@@ -4,9 +4,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { macroKcal, macroPercent, type Macros } from "@/lib/diet-plans";
 
 const COLORS = {
-  proteina: "#16a34a", // green (brand)
-  carbo: "#f59e0b", // amber
-  gordura: "#6366f1", // indigo
+  proteina: "#ff6500",
+  carbo: "#f59e0b",
+  gordura: "#a78bfa",
 } as const;
 
 /**
@@ -30,7 +30,7 @@ export function MacroRing({
   const isEmpty = totalKcal === 0;
 
   const data = isEmpty
-    ? [{ name: "vazio", value: 1, color: "#e5e7eb" }]
+    ? [{ name: "vazio", value: 1, color: "#2a2a2a" }]
     : [
         { name: "Proteína", value: kcal.proteina, color: COLORS.proteina },
         { name: "Carboidrato", value: kcal.carbo, color: COLORS.carbo },
@@ -67,10 +67,10 @@ export function MacroRing({
 
         {/* Center label */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-gray-900">{totalKcal}</span>
-          <span className="text-xs font-medium text-gray-500">kcal hoje</span>
+          <span className="text-2xl font-bold text-white">{totalKcal}</span>
+          <span className="text-xs font-medium" style={{ color: "#9ca3af" }}>kcal hoje</span>
           {metaPct !== null && (
-            <span className="mt-0.5 text-[11px] font-semibold text-green-600">
+            <span className="mt-0.5 text-[11px] font-semibold" style={{ color: "#ff6500" }}>
               {metaPct}% da meta
             </span>
           )}
@@ -115,16 +115,13 @@ function LegendItem({
   percent: number;
 }) {
   return (
-    <div className="rounded-lg bg-gray-50 px-2 py-2">
+    <div className="rounded-lg px-2 py-2" style={{ background: "#1e1e1e", border: "1px solid #2a2a2a" }}>
       <div className="flex items-center justify-center gap-1.5">
-        <span
-          className="h-2.5 w-2.5 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-medium text-gray-600">{label}</span>
+        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+        <span className="text-xs font-medium" style={{ color: "#9ca3af" }}>{label}</span>
       </div>
-      <p className="mt-1 text-sm font-bold text-gray-900">{grams}g</p>
-      <p className="text-[11px] text-gray-400">{percent}%</p>
+      <p className="mt-1 text-sm font-bold text-white">{grams}g</p>
+      <p className="text-[11px]" style={{ color: "#555" }}>{percent}%</p>
     </div>
   );
 }

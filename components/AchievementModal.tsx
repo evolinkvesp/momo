@@ -14,11 +14,6 @@ interface Props {
   onClose: () => void;
 }
 
-/**
- * Celebration modal shown when the user unlocks a new achievement.
- * Fires a confetti burst (canvas-confetti, loaded lazily) and offers to
- * share the milestone via the ShareProgressDrawer.
- */
 export function AchievementModal({ achievement, onShare, onClose }: Props) {
   const [mounted, setMounted] = useState(false);
 
@@ -33,7 +28,7 @@ export function AchievementModal({ achievement, onShare, onClose }: Props) {
       const fire = (particleRatio: number, opts: Record<string, unknown>) =>
         confetti({
           origin: { y: 0.7 },
-          colors: ["#1c4d2e", "#2d7a4f", "#4ade80", "#e8f5ee", "#fbbf24"],
+          colors: ["#ff6500", "#ff7a1a", "#ffaa66", "#ffffff", "#f59e0b"],
           particleCount: Math.floor(200 * particleRatio),
           ...opts,
         });
@@ -43,36 +38,42 @@ export function AchievementModal({ achievement, onShare, onClose }: Props) {
       fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
       fire(0.1, { spread: 120, startVelocity: 45 });
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [achievement]);
 
   if (!mounted || !achievement) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-[131] w-full max-w-xs rounded-[28px] bg-white p-7 text-center shadow-2xl animate-fade-up">
-        <div className="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-surface text-[64px] leading-none">
+      <div
+        className="relative z-[131] w-full max-w-xs rounded-[28px] p-7 text-center shadow-2xl animate-fade-up"
+        style={{ background: "#161616", border: "1px solid #2d2d2d" }}
+      >
+        <div
+          className="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full text-[64px] leading-none"
+          style={{ background: "rgba(255,101,0,0.1)", border: "1px solid rgba(255,101,0,0.2)" }}
+        >
           <span>{achievement.emoji}</span>
         </div>
-        <p className="text-sm font-black uppercase tracking-widest text-forest">
+        <p className="text-sm font-black uppercase tracking-widest" style={{ color: "#ff6500" }}>
           Conquista desbloqueada!
         </p>
-        <h3 className="mt-1 text-xl font-bold text-slate-900">{achievement.name}</h3>
+        <h3 className="mt-1 text-xl font-bold text-white">{achievement.name}</h3>
 
         <div className="mt-6 space-y-3">
           <button
             onClick={onShare}
-            className="w-full rounded-full bg-forest py-3.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.97]"
+            className="w-full rounded-full py-3.5 text-sm font-bold text-white transition-all active:scale-[0.97]"
+            style={{ background: "linear-gradient(135deg, #ff6500, #cc4c00)", boxShadow: "0 4px 16px rgba(255,101,0,0.35)" }}
           >
             Compartilhar
           </button>
           <button
             onClick={onClose}
-            className="w-full rounded-full py-2.5 text-sm font-bold text-slate-400"
+            className="w-full rounded-full py-2.5 text-sm font-bold"
+            style={{ color: "#555" }}
           >
             Depois
           </button>

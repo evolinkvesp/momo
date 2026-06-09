@@ -18,11 +18,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
           duration: 4000,
           style: {
             borderRadius: "12px",
-            background: "#0f172a",
+            background: "#1a1a1a",
+            border: "1px solid #2d2d2d",
             color: "#fff",
           },
           success: {
-            iconTheme: { primary: "#16a34a", secondary: "#fff" },
+            iconTheme: { primary: "#ff6500", secondary: "#fff" },
           },
         }}
       />
