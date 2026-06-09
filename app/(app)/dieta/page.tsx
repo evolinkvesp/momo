@@ -32,7 +32,7 @@ export default async function DietaPage() {
     <DietaClient
       userId={session.user.id}
       doseMg={profile?.dose_atual_mg ?? 2.5}
-      initialRefeicoes={refeicoes ?? []}
+      refeicoesIniciais={refeicoes ?? []}
     />
   );
 }
