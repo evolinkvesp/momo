@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Outfit, Syne } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import PushRegistrar from "@/components/PushRegistrar";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -57,6 +58,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${outfit.className} font-sans bg-bg`} suppressHydrationWarning>
+        <PushRegistrar />
         <Providers>{children}</Providers>
       </body>
     </html>
