@@ -1,7 +1,7 @@
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
+/.pnp        
+.pnp.js      
 
 # next.js
 /.next/
@@ -36,3 +36,8 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Agents and temporary files
+.agents/
+*.gif
+!public/*.gif
