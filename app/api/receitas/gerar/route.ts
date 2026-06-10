@@ -28,6 +28,28 @@ export async function POST(req: Request) {
     }
   }
 
+  // --- Verificação de Limite Diário ---
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("receitas_geradas_hoje, ultima_receita_data")
+    .eq("id", user.id)
+    .single();
+
+  const hojeStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  let geradasHoje = profile?.receitas_geradas_hoje || 0;
+  
+  if (profile?.ultima_receita_data !== hojeStr) {
+    geradasHoje = 0; // Resetou o dia
+  }
+
+  if (geradasHoje >= 3) {
+    return NextResponse.json(
+      { error: "Limite diário atingido. Você pode gerar ou atualizar receitas até 3 vezes por dia." },
+      { status: 429 }
+    );
+  }
+  // ------------------------------------
+
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const faseMap: Record<number, string> = {
@@ -91,9 +113,16 @@ Crie receitas reais, saborosas, típicas da culinária brasileira e adequadas ao
       { onConflict: "user_id,fase" }
     );
 
+    // Atualiza o contador diário do usuário
+    await supabase.from("profiles").update({
+      receitas_geradas_hoje: geradasHoje + 1,
+      ultima_receita_data: hojeStr,
+    }).eq("id", user.id);
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error("[Receitas] Error:", error?.message ?? error);
     return NextResponse.json({ error: "Erro ao gerar receitas" }, { status: 500 });
   }
 }
+

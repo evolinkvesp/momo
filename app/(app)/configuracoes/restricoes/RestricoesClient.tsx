@@ -59,10 +59,13 @@ export function RestricoesClient({
           restricoes: labels,
         }),
       });
+      
+      const data = await res.json().catch(() => ({}));
+      
       if (res.ok) {
         toast.success("Receitas atualizadas para suas restrições!");
       } else {
-        toast.error("Restrições salvas, mas falhou ao regenerar receitas.");
+        toast.error(data.error || "Restrições salvas, mas falhou ao regenerar receitas.");
       }
     } catch {
       toast.error("Erro ao salvar restrições.");

@@ -478,11 +478,15 @@ function ReceitasIA({ userId, fase, doseMg }: { userId: string; fase: FaseMounja
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fase, dose_mg: doseMg, forcar }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      
       setReceitas((data.receitas ?? []) as ReceitaIA[]);
-    } catch {
-      toast.error("Erro ao carregar receitas.");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao carregar receitas.");
     } finally {
       setLoading(false);
     }

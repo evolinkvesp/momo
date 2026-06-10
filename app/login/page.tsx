@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Mail, Lock, Eye, EyeOff, MailCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, MailCheck, ArrowRight } from 'lucide-react';
 
 const getFriendlyLoginError = (error: { code?: string; message?: string; status?: number }) => {
   const code = error.code?.toLowerCase() ?? "";
@@ -68,273 +68,200 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden" style={{ background: "#080808" }}>
-
-      {/* ── Hero ── */}
-      <div className="relative flex flex-col items-center justify-end px-6 pb-16 pt-20 text-center" style={{ minHeight: "52vh" }}>
-
-        {/* Deep ember ground glow */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(255,101,0,0.18) 0%, transparent 70%)",
-          }}
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#FAFAFA] px-4 py-12 sm:px-6 lg:px-8 text-[#111]">
+      
+      {/* Background Ambience */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden flex items-center justify-center">
+        <div 
+          className="h-[600px] w-[600px] rounded-full opacity-[0.03]" 
+          style={{ background: "radial-gradient(circle, #ff6500 0%, transparent 70%)", filter: "blur(80px)" }} 
         />
-        {/* Secondary hot spot behind logo */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(255,101,0,0.10) 0%, transparent 70%)" }}
-        />
-        {/* Subtle vignette top */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(8,8,8,0.6) 0%, transparent 40%)" }}
-        />
-
-        {/* Logo + wordmark */}
-        <div className="relative z-10 flex flex-col items-center" style={{ animation: "loginFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt="Momo"
-            width={108}
-            height={108}
-            className="rounded-[28px] select-none"
-            style={{
-              boxShadow: "0 0 0 1px rgba(255,101,0,0.15), 0 12px 48px rgba(255,101,0,0.30), 0 4px 16px rgba(0,0,0,0.6)",
-              animation: "logoFloat 4s ease-in-out infinite",
-            }}
-          />
-
-          <div className="mt-5">
-            <h1
-              className="text-[52px] font-black leading-none tracking-[-3px] text-white"
-              style={{ fontFamily: "var(--font-syne, sans-serif)", letterSpacing: "-0.06em" }}
-            >
-              momo
-            </h1>
-            <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.4em]" style={{ color: "#ff6500" }}>
-              sua melhor versão
-            </p>
-          </div>
-
-          {/* Decorative ember bar */}
-          <div className="mt-6 flex items-center gap-2">
-            <div className="h-px w-10 rounded-full" style={{ background: "linear-gradient(to right, transparent, rgba(255,101,0,0.5))" }} />
-            <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#ff6500", boxShadow: "0 0 6px rgba(255,101,0,0.8)" }} />
-            <div className="h-px w-10 rounded-full" style={{ background: "linear-gradient(to left, transparent, rgba(255,101,0,0.5))" }} />
-          </div>
-
-          <p
-            className="mt-5 max-w-[240px] text-sm leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.4)", animation: "loginFadeUp 0.7s 0.15s cubic-bezier(0.22,1,0.36,1) both" }}
-          >
-            Acompanhamento inteligente para sua jornada com Mounjaro
-          </p>
-        </div>
       </div>
 
-      {/* ── Form card ── */}
-      <div
-        className="relative z-20 flex flex-1 flex-col rounded-t-[40px] px-7 pt-10 pb-12"
-        style={{
-          background: "linear-gradient(180deg, #111111 0%, #0d0d0d 100%)",
-          borderTop: "1px solid rgba(255,101,0,0.12)",
-          animation: "loginFadeUp 0.8s 0.25s cubic-bezier(0.22,1,0.36,1) both",
-          boxShadow: "0 -24px 60px rgba(255,101,0,0.05)",
-        }}
-      >
-        {/* Top notch accent */}
-        <div className="absolute left-1/2 top-3 h-1 w-10 -translate-x-1/2 rounded-full" style={{ background: "rgba(255,101,0,0.25)" }} />
-
-        <div className="mx-auto w-full max-w-sm">
-          <h2
-            className="text-xl font-black text-white"
-            style={{ fontFamily: "var(--font-syne, sans-serif)", letterSpacing: "-0.02em" }}
+      <div className="relative z-10 w-full max-w-[420px]" style={{ animation: "fadeUp 1s cubic-bezier(0.32,0.72,0,1) both" }}>
+        
+        {/* Brand Header */}
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div 
+            className="mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-white p-1 ring-1 ring-black/5"
+            style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.04)" }}
           >
-            Bem-vindo de volta
-          </h2>
-          <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Entre na sua conta para continuar</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Momo"
+              className="h-full w-full rounded-[calc(2rem-0.25rem)] object-cover"
+            />
+          </div>
+          
+          <div className="inline-flex items-center rounded-full bg-[#ff6500]/10 px-3 py-1 mb-4 ring-1 ring-[#ff6500]/20">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ff6500]">
+              Bem-vindo de volta
+            </span>
+          </div>
 
-          <form className="mt-8 space-y-3" onSubmit={handleEmailLogin}>
-            {error && (
-              <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
-                {error}
+          <h1 
+            className="text-4xl font-black tracking-tight text-black"
+            style={{ fontFamily: "var(--font-syne, sans-serif)" }}
+          >
+            Entrar no Momo
+          </h1>
+          <p className="mt-3 text-sm font-medium text-black/50">
+            Acompanhe sua jornada com Mounjaro.
+          </p>
+        </div>
+
+        {/* Double-Bezel Card Container */}
+        <div 
+          className="rounded-[2.5rem] bg-black/[0.03] p-1.5 ring-1 ring-black/5 backdrop-blur-xl"
+          style={{ animation: "fadeUp 1s 0.15s cubic-bezier(0.32,0.72,0,1) both" }}
+        >
+          <div className="rounded-[calc(2.5rem-0.375rem)] bg-white px-6 py-8 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_8px_32px_rgba(0,0,0,0.04)] sm:px-8">
+            
+            <form className="space-y-4" onSubmit={handleEmailLogin}>
+              {error && (
+                <div className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-red-100">
+                  {error}
+                </div>
+              )}
+              {confirmationSent && (
+                <div className="rounded-2xl bg-green-50 p-4 text-sm font-medium text-green-600 ring-1 ring-green-100">
+                  Enviamos um novo link de confirmação para o seu e-mail.
+                </div>
+              )}
+
+              {/* Email Input - Double Bezel */}
+              <div className="group rounded-[1.25rem] bg-black/[0.03] p-1 ring-1 ring-black/5 transition-all duration-500 focus-within:bg-[#ff6500]/5 focus-within:ring-[#ff6500]/20">
+                <div className="relative flex items-center rounded-[calc(1.25rem-0.25rem)] bg-white px-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-colors duration-500 group-focus-within:bg-white/50">
+                  <Mail className="h-[18px] w-[18px] text-black/30 transition-colors duration-500 group-focus-within:text-[#ff6500]" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="E-mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 w-full bg-transparent pl-3 text-[15px] font-medium text-black outline-none placeholder:text-black/30"
+                  />
+                </div>
               </div>
-            )}
-            {confirmationSent && (
-              <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", color: "#4ade80" }}>
-                Enviamos um novo link de confirmação para o seu e-mail.
+
+              {/* Password Input - Double Bezel */}
+              <div className="space-y-2">
+                <div className="group rounded-[1.25rem] bg-black/[0.03] p-1 ring-1 ring-black/5 transition-all duration-500 focus-within:bg-[#ff6500]/5 focus-within:ring-[#ff6500]/20">
+                  <div className="relative flex items-center rounded-[calc(1.25rem-0.25rem)] bg-white px-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-colors duration-500 group-focus-within:bg-white/50">
+                    <Lock className="h-[18px] w-[18px] text-black/30 transition-colors duration-500 group-focus-within:text-[#ff6500]" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      placeholder="Senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 w-full bg-transparent pl-3 pr-10 text-[15px] font-medium text-black outline-none placeholder:text-black/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-full text-black/30 transition-all hover:bg-black/5 hover:text-black/60"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end px-1">
+                  <Link 
+                    href="/esqueceu-senha" 
+                    className="text-xs font-bold text-black/40 transition-colors hover:text-[#ff6500]"
+                  >
+                    Esqueceu a senha?
+                  </Link>
+                </div>
               </div>
-            )}
 
-            {/* Email */}
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" style={{ color: "rgba(255,255,255,0.25)" }} />
-              <input
-                type="email"
-                required
-                placeholder="E-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block h-[52px] w-full rounded-2xl pl-11 pr-4 text-sm text-white outline-none transition-all placeholder:text-[rgba(255,255,255,0.2)]"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,101,0,0.5)";
-                  e.currentTarget.style.background = "rgba(255,101,0,0.04)";
-                  e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,101,0,0.08)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              />
-            </div>
+              {/* Primary Action - Button in Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="group mt-2 flex w-full items-center justify-between rounded-full bg-[#ff6500] p-1.5 pl-6 text-white transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] disabled:opacity-60"
+                style={{ boxShadow: "0 8px 24px rgba(255,101,0,0.25)" }}
+              >
+                <span className="text-[15px] font-bold">
+                  {loading ? 'Entrando...' : 'Entrar na conta'}
+                </span>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-[2px] group-hover:scale-105">
+                  {loading ? (
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                  ) : (
+                    <ArrowRight className="h-5 w-5" />
+                  )}
+                </div>
+              </button>
 
-            {/* Password */}
-            <div>
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2" style={{ color: "rgba(255,255,255,0.25)" }} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  placeholder="Senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block h-[52px] w-full rounded-2xl pl-11 pr-12 text-sm text-white outline-none transition-all placeholder:text-[rgba(255,255,255,0.2)]"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,101,0,0.5)";
-                    e.currentTarget.style.background = "rgba(255,101,0,0.04)";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,101,0,0.08)";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                />
+              {needsConfirmation && (
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 transition-opacity"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
+                  onClick={handleResendConfirmation}
+                  disabled={resendingConfirmation}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-orange-50 text-sm font-bold text-[#ff6500] transition-all hover:bg-orange-100 active:scale-[0.98] disabled:opacity-60"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  <MailCheck className="h-4 w-4" />
+                  {resendingConfirmation ? 'Reenviando...' : 'Reenviar confirmação'}
                 </button>
-              </div>
-              <div className="mt-2 flex justify-end px-1">
-                <Link href="/esqueceu-senha" className="text-[12px] font-bold transition-opacity hover:opacity-100" style={{ color: "#ff6500", opacity: 0.85 }}>
-                  Esqueceu a senha?
-                </Link>
-              </div>
+              )}
+            </form>
+
+            <div className="my-8 flex items-center gap-4">
+              <div className="h-px flex-1 bg-black/5" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-black/20">ou</span>
+              <div className="h-px flex-1 bg-black/5" />
             </div>
 
-            {/* Submit */}
+            {/* Secondary Action - Google */}
             <button
-              type="submit"
-              disabled={loading}
-              className="flex h-[52px] w-full items-center justify-center rounded-2xl text-[15px] font-bold text-white transition-all active:scale-[0.98] disabled:opacity-60"
-              style={{
-                background: loading
-                  ? "rgba(255,101,0,0.5)"
-                  : "linear-gradient(135deg, #ff6500, #cc4c00)",
-                boxShadow: loading ? "none" : "0 8px 32px rgba(255,101,0,0.35)",
-              }}
+              onClick={handleGoogleLogin}
+              className="group flex h-[52px] w-full items-center justify-center gap-3 rounded-full border border-black/5 bg-white text-[15px] font-bold text-black transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-black/[0.02] hover:shadow-md active:scale-[0.98]"
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Entrando...
-                </span>
-              ) : 'Entrar'}
+              <svg viewBox="0 0 24 24" className="h-5 w-5 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-110">
+                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" />
+              </svg>
+              Continuar com Google
             </button>
 
-            {needsConfirmation && (
-              <button
-                type="button"
-                onClick={handleResendConfirmation}
-                disabled={resendingConfirmation}
-                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-sm font-bold transition-all disabled:opacity-60"
-                style={{
-                  background: "rgba(255,101,0,0.08)",
-                  border: "1px solid rgba(255,101,0,0.2)",
-                  color: "#ff7a1a",
-                }}
-              >
-                <MailCheck className="h-4 w-4" />
-                {resendingConfirmation ? 'Reenviando...' : 'Reenviar confirmação de e-mail'}
-              </button>
-            )}
-          </form>
-
-          {/* Divider */}
-          <div className="my-7 flex items-center gap-4">
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
-            <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.2)" }}>ou</span>
-            <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
           </div>
+        </div>
 
-          {/* Google */}
-          <button
-            onClick={handleGoogleLogin}
-            className="flex h-[52px] w-full items-center justify-center gap-3 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98]"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5">
-              <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" />
-            </svg>
-            Entrar com Google
-          </button>
-
-          {/* Footer links */}
-          <p className="mt-8 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+        {/* Footer Links */}
+        <div 
+          className="mt-8 flex flex-col items-center space-y-4"
+          style={{ animation: "fadeUp 1s 0.25s cubic-bezier(0.32,0.72,0,1) both" }}
+        >
+          <p className="text-sm font-medium text-black/50">
             Não tem uma conta?{' '}
-            <Link href="/cadastro" className="font-bold text-white transition-opacity hover:opacity-80">
-              Cadastre-se
+            <Link href="/cadastro" className="font-bold text-black transition-colors hover:text-[#ff6500]">
+              Criar agora
             </Link>
           </p>
 
-          <div className="mt-4 text-center">
-            <Link
-              href="/cadastro/fornecedor"
-              className="text-[11px] font-bold uppercase tracking-widest transition-colors"
-              style={{ color: "rgba(255,101,0,0.5)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#ff6500"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(255,101,0,0.5)"; }}
-            >
-              Quero ser um fornecedor parceiro
-            </Link>
-          </div>
+          <Link
+            href="/cadastro/fornecedor"
+            className="text-[10px] font-bold uppercase tracking-widest text-black/30 transition-colors hover:text-[#ff6500]"
+          >
+            Quero ser um fornecedor parceiro
+          </Link>
         </div>
+
       </div>
 
-      {/* Global keyframes injected inline */}
       <style>{`
-        @keyframes loginFadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes logoFloat {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-6px); }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.98); filter: blur(4px); }
+          to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
       `}</style>
     </div>
   );
 }
+
