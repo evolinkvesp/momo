@@ -268,7 +268,7 @@ export function DietaClient({
               </div>
             </div>
           ) : (
-            <ReceitasIA userId={userId} fase={fase} />
+            <ReceitasIA userId={userId} fase={fase} doseMg={doseMg} />
           )}
         </div>
       </BlurPaywall>
@@ -465,7 +465,7 @@ interface ReceitaIA {
   modo_preparo: string[];
 }
 
-function ReceitasIA({ userId, fase }: { userId: string; fase: FaseMounjaro }) {
+function ReceitasIA({ userId, fase, doseMg }: { userId: string; fase: FaseMounjaro; doseMg: number }) {
   const [receitas, setReceitas] = useState<ReceitaIA[]>([]);
   const [loading, setLoading] = useState(false);
   const [selecionada, setSelecionada] = useState<ReceitaIA | null>(null);
@@ -475,8 +475,10 @@ function ReceitasIA({ userId, fase }: { userId: string; fase: FaseMounjaro }) {
     try {
       const res = await fetch("/api/receitas/gerar", {
         method: "POST",
-        body: JSON.stringify({ userId, fase }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fase, dose_mg: doseMg, forcar }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setReceitas((data.receitas ?? []) as ReceitaIA[]);
     } catch {
