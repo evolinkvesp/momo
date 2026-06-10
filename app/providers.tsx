@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { LazyMotion, domMax } from "framer-motion";
+import { SplashScreen } from "@/components/SplashScreen";
 
 type Theme = "light" | "dark";
 
@@ -21,6 +22,7 @@ export function useTheme() {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem("momo-theme") as Theme;
@@ -30,6 +32,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // Hide splash after a delay to ensure GIF is seen and app is ready
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleTheme = () => {
@@ -41,6 +50,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <SplashScreen isVisible={showSplash} />
       <LazyMotion features={domMax}>
         {children}
         <Toaster
