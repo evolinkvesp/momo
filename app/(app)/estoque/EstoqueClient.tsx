@@ -135,7 +135,7 @@ export function EstoqueClient({ userId, initialAmpolas, initialAlerta, profile, 
       {showForm && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative w-full max-w-md bg-surface rounded-t-[32px] p-8 shadow-2xl animate-slide-up z-[101]">
+          <div className="relative w-full max-w-md bg-surface rounded-t-[32px] pt-8 px-8 pb-24 shadow-2xl animate-slide-up z-[101]">
             <div className="w-12 h-1.5 bg-surface-border rounded-full mx-auto mb-8" />
             <h2 className="text-xl font-bold text-text mb-8">Nova Compra</h2>
             <form onSubmit={handleCompraSubmit} className="space-y-5">

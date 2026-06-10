@@ -347,7 +347,7 @@ function ConfirmarPedidoModal({
         className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-[32px] bg-bg p-8 shadow-2xl animate-slide-up z-[101]">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-[32px] bg-bg pt-8 px-8 pb-24 shadow-2xl animate-slide-up z-[101]">
         <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-surface-border" />
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-text">Confirmar pedido</h2>

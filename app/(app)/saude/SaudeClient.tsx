@@ -778,7 +778,7 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
       {showSintomaForm && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowSintomaForm(false)} />
-          <div className="relative z-[101] w-full max-w-md bg-surface rounded-t-[32px] p-6 shadow-xl animate-slide-up pb-10">
+          <div className="relative z-[101] w-full max-w-md bg-surface rounded-t-[32px] pt-6 px-6 pb-24 shadow-xl animate-slide-up">
             <div className="w-12 h-1.5 rounded-full mx-auto mb-6" style={{ background: "var(--color-surface-border)" }} />
             <h2 className="text-xl font-bold mb-6">Registrar Sintoma</h2>
             <form onSubmit={handleSintomaSubmit} className="space-y-4">
