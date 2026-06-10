@@ -36,7 +36,7 @@ async function enviarPush(userId: string, payload: PushPayload): Promise<number>
   const supabase = createServiceClient();
   const { data: subs } = await supabase
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
+    .select("id, subscription_json")
     .eq("user_id", userId);
 
   if (!subs?.length) return 0;
@@ -46,7 +46,7 @@ async function enviarPush(userId: string, payload: PushPayload): Promise<number>
     subs.map((sub) =>
       webpush
         .sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.parse(sub.subscription_json),
           json,
         )
         .catch(async (err: any) => {
