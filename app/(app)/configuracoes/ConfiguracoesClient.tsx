@@ -352,7 +352,7 @@ function NotificacoesSection({ userId }: { userId: string }) {
     const loadingId = toast.loading(pushOn ? "Desativando..." : "Ativando...");
     try {
       if (pushOn) {
-        await unsubscribeFromPush();
+        await unsubscribeFromPush(userId);
         setPushOn(false);
         toast.success("Notificações desativadas.");
       } else {
