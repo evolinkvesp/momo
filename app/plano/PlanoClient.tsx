@@ -192,9 +192,15 @@ function PremiumAtivo({ assinaturaExpiraEm }: { assinaturaExpiraEm: string | nul
     setLoading(true);
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' });
-      const { url } = await res.json();
-      window.location.href = url;
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Não foi possível abrir o portal. Tente novamente.');
+        setLoading(false);
+      }
     } catch {
+      alert('Erro ao conectar com o servidor.');
       setLoading(false);
     }
   }
