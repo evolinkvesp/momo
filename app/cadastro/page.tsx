@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +33,7 @@ export default function CadastroPage() {
   const [loading, setLoading] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const creatingRef = React.useRef(false);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -51,6 +52,8 @@ export default function CadastroPage() {
   };
 
   const createAccount = async () => {
+    if (creatingRef.current) return false;
+    creatingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -74,6 +77,7 @@ export default function CadastroPage() {
     setLoading(false);
 
     if (signUpError) {
+      creatingRef.current = false;  // allow retry on error
       setError(signUpError.message);
       return false;
     }
@@ -81,9 +85,19 @@ export default function CadastroPage() {
   };
 
   const nextStep = async () => {
-    if (step === 1 && (!formData.nome || !formData.email || !formData.password)) {
-      toast.error('Preencha os dados básicos');
-      return;
+    if (step === 1) {
+      if (!formData.nome || !formData.email || !formData.password) {
+        toast.error('Preencha os dados básicos');
+        return;
+      }
+      if (!formData.email.includes('@')) {
+        toast.error('Digite um e-mail válido');
+        return;
+      }
+      if (formData.password.length < 6) {
+        toast.error('A senha deve ter pelo menos 6 caracteres');
+        return;
+      }
     }
     if (step === 2 && (!formData.data_inicio_tratamento || !formData.altura_cm || !formData.peso_inicial)) {
       toast.error('Preencha os dados do tratamento');

@@ -30,7 +30,7 @@ BEGIN
       NULL
     );
   ELSE
-    -- Legacy flow: 7-day trial starts on signup
+    -- All signups start as free — Stripe manages trials
     INSERT INTO public.profiles (
       id,
       email,
@@ -39,7 +39,10 @@ BEGIN
       sexo,
       altura_cm,
       dose_atual_mg,
-      data_inicio_tratamento
+      data_inicio_tratamento,
+      plano_ativo,
+      trial_inicio,
+      trial_expira_em
     ) VALUES (
       new.id,
       new.email,
@@ -48,7 +51,10 @@ BEGIN
       new.raw_user_meta_data->>'sexo',
       NULLIF(new.raw_user_meta_data->>'altura_cm', '')::decimal,
       NULLIF(new.raw_user_meta_data->>'dose_atual_mg', '')::decimal,
-      NULLIF(new.raw_user_meta_data->>'data_inicio_tratamento', '')::date
+      NULLIF(new.raw_user_meta_data->>'data_inicio_tratamento', '')::date,
+      'free',
+      NULL,
+      NULL
     );
   END IF;
   RETURN new;
