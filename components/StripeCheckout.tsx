@@ -6,7 +6,7 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-export function StripeCheckout({ signup }: { signup?: boolean }) {
+export function StripeCheckout({ signup, email }: { signup?: boolean; email?: string }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,7 +14,7 @@ export function StripeCheckout({ signup }: { signup?: boolean }) {
     fetch('/api/stripe/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ signup: signup ?? false }),
+      body: JSON.stringify({ signup: signup ?? false, email }),
     })
       .then(r => r.json())
       .then(data => {

@@ -248,7 +248,7 @@ export default function CadastroPage() {
               <StepHeader icon={<Star className="h-5 w-5" />} title="Seu plano" subtitle="7 dias grátis para começar" />
 
               {showCheckout ? (
-                <StripeCheckout signup />
+                <StripeCheckout signup email={formData.email} />
               ) : (
                 <div
                   className="space-y-5 rounded-[24px] p-6"

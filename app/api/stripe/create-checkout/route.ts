@@ -9,24 +9,31 @@ export async function POST(req: NextRequest) {
     const supabase = createRouteClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      return Response.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
-    const stripeKey = process.env.STRIPE_SECRET_KEY
     const priceId = process.env.STRIPE_PRICE_ID
-    if (!stripeKey || !priceId) {
-      return Response.json({ error: `Env missing: key=${!!stripeKey} price=${!!priceId}` }, { status: 500 })
+    if (!priceId) {
+      return Response.json({ error: 'STRIPE_PRICE_ID not configured' }, { status: 500 })
     }
 
     const body = await req.json().catch(() => ({}))
     const isSignup = body.signup === true
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
 
+    // For the signup flow the session cookie may not exist yet (signUp returns
+    // session:null when email confirmation is enabled). Accept the email from
+    // the request body and fall back to the authenticated user's email.
+    const customerEmail: string =
+      (isSignup && typeof body.email === 'string' && body.email.includes('@'))
+        ? body.email
+        : (user?.email ?? '')
+
+    if (!customerEmail) {
+      return Response.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+
     const sessionParams: Record<string, any> = {
       mode: 'subscription',
       ui_mode: 'embedded',
-      customer_email: user.email,
+      customer_email: customerEmail,
       line_items: [{ price: priceId, quantity: 1 }],
       return_url: `${baseUrl}/plano?success=1`,
     }
