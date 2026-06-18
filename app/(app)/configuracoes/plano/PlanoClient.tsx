@@ -87,12 +87,12 @@ export function PlanoClient({ planoAtivo, assinatura }: PlanoClientProps) {
               </div>
 
               {assinatura.proximo_vencimento && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2 text-sm text-white/60">
-                    <Calendar size={15} />
-                    <span>Próxima renovação</span>
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm text-white/60 min-w-0">
+                    <Calendar size={15} className="shrink-0" />
+                    <span className="truncate">Próxima renovação</span>
                   </div>
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-white shrink-0">
                     {format(parseISO(assinatura.proximo_vencimento), "dd 'de' MMM, yyyy", { locale: ptBR })}
                   </span>
                 </div>

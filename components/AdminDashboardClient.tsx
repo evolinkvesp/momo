@@ -545,7 +545,7 @@ export function AdminDashboardClient({
           <div className="px-7 py-4 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
             <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.15)" }}>
               <ShieldCheck size={11} />
-              Transações processadas via Cakto
+              Transações processadas via Stripe
             </div>
           </div>
         </motion.div>

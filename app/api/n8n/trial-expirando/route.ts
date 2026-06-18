@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         dias_restantes: diasRestantes,
         doses_registradas: dosesCount ?? 0,
         peso_perdido_kg: pesoPerdido,
-        checkout: "https://pay.cakto.com.br/i75hqvn_913965",
+        checkout: `${process.env.NEXT_PUBLIC_APP_URL || 'https://momo-rust-nu.vercel.app'}/plano`,
       };
     }),
   );

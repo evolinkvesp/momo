@@ -35,8 +35,10 @@ export function StripeCheckout() {
   }
 
   return (
-    <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
-      <EmbeddedCheckout />
-    </EmbeddedCheckoutProvider>
+    <div className="w-full overflow-hidden">
+      <EmbeddedCheckoutProvider stripe={stripePromise} options={{ clientSecret }}>
+        <EmbeddedCheckout />
+      </EmbeddedCheckoutProvider>
+    </div>
   )
 }
