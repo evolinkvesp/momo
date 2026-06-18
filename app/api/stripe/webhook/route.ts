@@ -1,28 +1,49 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
-import { stripe } from '@/lib/stripe'
+import { createHmac } from 'crypto'
 import { createServiceClient } from '@/lib/supabase-server'
 
 export const runtime = 'nodejs'
 
+function verifyStripeSignature(payload: string, sig: string, secret: string): boolean {
+  const parts = sig.split(',').reduce<Record<string, string>>((acc, p) => {
+    const [k, v] = p.split('=')
+    acc[k] = v
+    return acc
+  }, {})
+  const t = parts['t']
+  const v1 = parts['v1']
+  if (!t || !v1) return false
+  const tolerance = 300 // 5 minutes
+  if (Math.abs(Date.now() / 1000 - parseInt(t)) > tolerance) return false
+  const expected = createHmac('sha256', secret).update(`${t}.${payload}`).digest('hex')
+  return expected === v1
+}
+
+async function stripeGet(path: string, key: string) {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    headers: { Authorization: `Bearer ${key}` },
+  })
+  return res.json() as Promise<any>
+}
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
   const sig = req.headers.get('stripe-signature') ?? ''
+  const secret = process.env.STRIPE_WEBHOOK_SECRET ?? ''
 
-  let event: Stripe.Event
-  try {
-    event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!)
-  } catch (err) {
-    console.error('[Stripe] Webhook signature verification failed:', err)
+  if (!verifyStripeSignature(rawBody, sig, secret)) {
+    console.error('[webhook] signature verification failed')
     return Response.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  const event = JSON.parse(rawBody)
+  const stripeKey = process.env.STRIPE_SECRET_KEY!
   const supabase = createServiceClient()
 
   switch (event.type) {
 
     case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session
+      const session = event.data.object
       if (session.mode !== 'subscription') break
 
       const email = session.customer_email
@@ -36,16 +57,16 @@ export async function POST(req: NextRequest) {
 
       if (!profile) break
 
-      const subscription = await stripe.subscriptions.retrieve(session.subscription as string) as any
+      const subscription = await stripeGet(`subscriptions/${session.subscription}`, stripeKey)
       const periodEnd = new Date(subscription.current_period_end * 1000)
 
       await supabase.from('assinaturas').upsert({
         user_id: profile.id,
         stripe_session_id: session.id,
         stripe_subscription_id: subscription.id,
-        stripe_customer_id: session.customer as string,
+        stripe_customer_id: session.customer,
         status: 'ativa',
-        valor: (subscription.items.data[0].price.unit_amount ?? 0) / 100,
+        valor: (subscription.items?.data?.[0]?.price?.unit_amount ?? 0) / 100,
         plano: 'mensal',
         proximo_vencimento: periodEnd.toISOString().split('T')[0],
       }, { onConflict: 'stripe_subscription_id' })
@@ -56,7 +77,7 @@ export async function POST(req: NextRequest) {
       }).eq('id', profile.id)
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://momo-rust-nu.vercel.app'
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
         await fetch(`${baseUrl}/api/push/send`, {
           method: 'POST',
           headers: {
@@ -71,27 +92,23 @@ export async function POST(req: NextRequest) {
           }),
         })
       } catch (e) {
-        console.error('[Stripe] Push notification failed:', e)
+        console.error('[webhook] push failed:', e)
       }
       break
     }
 
     case 'invoice.paid': {
-      const invoice = event.data.object as any
+      const invoice = event.data.object
       if (invoice.billing_reason === 'subscription_create') break
-
-      const subscriptionId = invoice.subscription as string
+      const subscriptionId = invoice.subscription
       if (!subscriptionId) break
 
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any
+      const subscription = await stripeGet(`subscriptions/${subscriptionId}`, stripeKey)
       const periodEnd = new Date(subscription.current_period_end * 1000)
 
       const { data: assinatura } = await supabase
         .from('assinaturas')
-        .update({
-          status: 'ativa',
-          proximo_vencimento: periodEnd.toISOString().split('T')[0],
-        })
+        .update({ status: 'ativa', proximo_vencimento: periodEnd.toISOString().split('T')[0] })
         .eq('stripe_subscription_id', subscriptionId)
         .select('user_id')
         .single()
@@ -106,8 +123,8 @@ export async function POST(req: NextRequest) {
     }
 
     case 'invoice.payment_failed': {
-      const invoice = event.data.object as any
-      const subscriptionId = invoice.subscription as string
+      const invoice = event.data.object
+      const subscriptionId = invoice.subscription
       if (!subscriptionId) break
 
       const { data: assinatura } = await supabase
@@ -127,8 +144,7 @@ export async function POST(req: NextRequest) {
     }
 
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object as Stripe.Subscription
-
+      const subscription = event.data.object
       const { data: assinatura } = await supabase
         .from('assinaturas')
         .update({ status: 'cancelada' })
@@ -146,12 +162,12 @@ export async function POST(req: NextRequest) {
     }
 
     case 'charge.refunded': {
-      const charge = event.data.object as any
-      const invoiceId = charge.invoice as string
+      const charge = event.data.object
+      const invoiceId = charge.invoice
       if (!invoiceId) break
 
-      const invoice = await stripe.invoices.retrieve(invoiceId) as any
-      const subscriptionId = invoice.subscription as string
+      const invoice = await stripeGet(`invoices/${invoiceId}`, stripeKey)
+      const subscriptionId = invoice.subscription
       if (!subscriptionId) break
 
       const { data: assinatura } = await supabase

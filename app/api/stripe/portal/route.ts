@@ -1,5 +1,4 @@
 import { createRouteClient } from '@/lib/supabase-server'
-import { stripe } from '@/lib/stripe'
 
 export const runtime = 'nodejs'
 
@@ -24,12 +23,27 @@ export async function POST() {
     return Response.json({ error: 'No Stripe customer found' }, { status: 404 })
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://momo-rust-nu.vercel.app'
+  const stripeKey = process.env.STRIPE_SECRET_KEY!
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: assinatura.stripe_customer_id,
-    return_url: `${baseUrl}/configuracoes/plano`,
+  const formData = new URLSearchParams()
+  formData.append('customer', assinatura.stripe_customer_id)
+  formData.append('return_url', `${baseUrl}/plano`)
+
+  const res = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${stripeKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
   })
 
-  return Response.json({ url: session.url })
+  const data = await res.json() as any
+
+  if (!res.ok) {
+    return Response.json({ error: data?.error?.message || 'Stripe error', detail: data?.error }, { status: 500 })
+  }
+
+  return Response.json({ url: data.url })
 }
