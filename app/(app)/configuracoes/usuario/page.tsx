@@ -14,7 +14,7 @@ export default async function UsuarioPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("nome, data_nascimento, sexo, altura_cm")
+    .select("nome, data_nascimento, sexo, altura_cm, telefone")
     .eq("id", session.user.id)
     .single();
 
@@ -29,6 +29,7 @@ export default async function UsuarioPage() {
         data_nascimento: profile?.data_nascimento ?? "",
         sexo: profile?.sexo ?? "",
         altura_cm: profile?.altura_cm != null ? String(profile.altura_cm) : "",
+        telefone: profile?.telefone ?? "",
       }}
     />
   );

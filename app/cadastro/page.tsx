@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, ArrowRight, Check, User, Activity, Target, Star, Bell, TrendingUp, Utensils, Package, BookOpen, ShieldCheck, Smartphone, Share2, MoreVertical, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, User, Activity, Target, Star, Bell, TrendingUp, Utensils, Package, BookOpen, ShieldCheck, Smartphone, Share2, MoreVertical, Plus, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AbacateCheckout } from '@/components/AbacateCheckout';
 
@@ -37,6 +37,7 @@ export default function CadastroPage() {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    telefone: '',
     password: '',
     data_inicio_tratamento: '',
     dose_atual_mg: '2.5',
@@ -62,6 +63,7 @@ export default function CadastroPage() {
       options: {
         data: {
           nome: formData.nome,
+          telefone: formData.telefone,
           skip_trial: 'true',
           altura_cm: Number(formData.altura_cm),
           peso_inicial: Number(formData.peso_inicial),
@@ -85,12 +87,17 @@ export default function CadastroPage() {
 
   const nextStep = async () => {
     if (step === 1) {
-      if (!formData.nome || !formData.email || !formData.password) {
-        toast.error('Preencha os dados básicos');
+      if (!formData.nome || !formData.email || !formData.telefone || !formData.password) {
+        toast.error('Preencha todos os dados');
         return;
       }
       if (!formData.email.includes('@')) {
         toast.error('Digite um e-mail válido');
+        return;
+      }
+      const digits = formData.telefone.replace(/\D/g, '');
+      if (digits.length < 10) {
+        toast.error('Digite um telefone válido com DDD');
         return;
       }
       if (formData.password.length < 6) {
@@ -176,6 +183,7 @@ export default function CadastroPage() {
               <StepHeader icon={<User className="h-5 w-5" />} title="Dados pessoais" subtitle="Comece sua jornada" />
               <DarkInput label="Nome completo" name="nome" value={formData.nome} onChange={handleChange} placeholder="Como deseja ser chamado?" />
               <DarkInput label="E-mail" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" />
+              <DarkInput label="Telefone (WhatsApp)" name="telefone" type="tel" value={formData.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
               <DarkInput label="Senha" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 6 caracteres" />
             </div>
           )}

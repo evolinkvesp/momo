@@ -13,6 +13,7 @@ interface Form {
   data_nascimento: string;
   sexo: string;
   altura_cm: string;
+  telefone: string;
 }
 
 export function UsuarioClient({
@@ -42,6 +43,7 @@ export function UsuarioClient({
           data_nascimento: form.data_nascimento || null,
           sexo: form.sexo || null,
           altura_cm: form.altura_cm ? Number(form.altura_cm) : null,
+          telefone: form.telefone.trim() || null,
         })
         .eq("id", userId);
       if (error) throw error;
@@ -109,6 +111,15 @@ export function UsuarioClient({
             value={form.altura_cm}
             onChange={(v) => set("altura_cm", v)}
             placeholder="170"
+          />
+        </Field>
+
+        <Field label="Telefone (WhatsApp)">
+          <TextInput
+            type="tel"
+            value={form.telefone}
+            onChange={(v) => set("telefone", v)}
+            placeholder="(11) 99999-9999"
           />
         </Field>
 
