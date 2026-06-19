@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Star, Calendar, CreditCard, AlertTriangle, ArrowRight, ShieldCheck, TrendingUp, Utensils, Bell, Package } from "lucide-react";
+import { Star, Calendar, CreditCard, AlertTriangle, ShieldCheck, TrendingUp, Utensils, Bell, Package } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AbacateCheckout } from "@/components/AbacateCheckout";
@@ -27,7 +27,6 @@ const SOLUCOES = [
 ];
 
 export function PlanoClient({ planoAtivo, assinatura }: PlanoClientProps) {
-  const [showCheckout, setShowCheckout] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const isPremium = planoAtivo === 'premium' && assinatura?.status === 'ativa';
@@ -231,21 +230,7 @@ export function PlanoClient({ planoAtivo, assinatura }: PlanoClientProps) {
             </div>
           </div>
 
-          {showCheckout ? (
-            <StripeCheckout />
-          ) : (
-            <button
-              onClick={() => setShowCheckout(true)}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-full text-base font-black text-white transition-all active:scale-[0.97]"
-              style={{
-                background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))",
-                boxShadow: "var(--shadow-ember)",
-              }}
-            >
-              Ativar meu acompanhamento
-              <ArrowRight size={18} />
-            </button>
-          )}
+          <AbacateCheckout />
 
           <div className="flex items-center justify-center gap-4">
             <span className="flex items-center gap-1.5 text-[11px] font-medium text-text-dim">
