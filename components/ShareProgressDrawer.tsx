@@ -34,6 +34,65 @@ interface ShareOptions {
   pesoAtual: boolean;
 }
 
+type CardTheme = "ember" | "cristal" | "noite";
+
+interface ThemeConfig {
+  accent: string;
+  glow: string;
+  glowMid: string;
+  cellBg: string;
+  cellBorder: string;
+  subtext: string;
+  dividerColor: string;
+  footerAccent: string;
+}
+
+const THEMES: Record<CardTheme, ThemeConfig> = {
+  ember: {
+    accent: "#ff6500",
+    glow: "rgba(255,101,0,0.35)",
+    glowMid: "rgba(204,60,0,0.14)",
+    cellBg: "rgba(255,255,255,0.055)",
+    cellBorder: "rgba(255,255,255,0.07)",
+    subtext: "rgba(255,255,255,0.38)",
+    dividerColor: "rgba(255,101,0,0.55)",
+    footerAccent: "rgba(255,101,0,0.55)",
+  },
+  cristal: {
+    accent: "#00d4ff",
+    glow: "rgba(0,212,255,0.30)",
+    glowMid: "rgba(0,150,200,0.10)",
+    cellBg: "rgba(0,212,255,0.06)",
+    cellBorder: "rgba(0,212,255,0.14)",
+    subtext: "rgba(200,240,255,0.42)",
+    dividerColor: "rgba(0,212,255,0.45)",
+    footerAccent: "rgba(0,212,255,0.50)",
+  },
+  noite: {
+    accent: "#a855f7",
+    glow: "rgba(168,85,247,0.30)",
+    glowMid: "rgba(120,60,200,0.10)",
+    cellBg: "rgba(168,85,247,0.07)",
+    cellBorder: "rgba(168,85,247,0.14)",
+    subtext: "rgba(220,200,255,0.42)",
+    dividerColor: "rgba(168,85,247,0.45)",
+    footerAccent: "rgba(168,85,247,0.50)",
+  },
+};
+
+const THEME_META: Record<CardTheme, { label: string }> = {
+  ember: { label: "Ember" },
+  cristal: { label: "Cristal" },
+  noite: { label: "Noite" },
+};
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export function ShareProgressDrawer({ open, onClose, data }: Props) {
   const [mounted, setMounted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -42,6 +101,7 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const previewWrapRef = useRef<HTMLDivElement>(null);
 
+  const [theme, setTheme] = useState<CardTheme>("ember");
   const [opts, setOpts] = useState<ShareOptions>({
     pesoPerdido: true,
     semanas: true,
@@ -133,37 +193,28 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
       const canvas = await renderCanvas();
       const blob = canvas ? await canvasToBlob(canvas) : null;
       if (blob && navigator.canShare) {
-        const file = new File([blob], "momo-conquista.png", {
-          type: "image/png",
-        });
+        const file = new File([blob], "momo-conquista.png", { type: "image/png" });
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: "Minha conquista no Momo",
-            text: shareText,
-            files: [file],
-          });
+          await navigator.share({ title: "Minha conquista no Momo", text: shareText, files: [file] });
           return;
         }
       }
       await navigator.clipboard.writeText(shareText);
       toast.success("Texto copiado! Cole onde quiser 📋");
     } catch (err: any) {
-      if (err?.name !== "AbortError") {
-        toast.error("Não foi possível compartilhar.");
-      }
+      if (err?.name !== "AbortError") toast.error("Não foi possível compartilhar.");
     } finally {
       setBusy(false);
     }
   }
 
   function handleWhatsApp() {
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(whatsappText)}`,
-      "_blank",
-    );
+    window.open(`https://wa.me/?text=${encodeURIComponent(whatsappText)}`, "_blank");
   }
 
   if (!mounted || !open) return null;
+
+  const th = THEMES[theme];
 
   return createPortal(
     <>
@@ -174,10 +225,7 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
         }
       `}</style>
 
-      <div
-        className="fixed inset-0 flex items-end justify-center"
-        style={{ zIndex: "var(--z-modal)" }}
-      >
+      <div className="fixed inset-0 flex items-end justify-center" style={{ zIndex: "var(--z-modal)" }}>
         {/* Backdrop */}
         <div
           className="absolute inset-0"
@@ -208,83 +256,32 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
             animation: "_spDrawerUp 0.38s cubic-bezier(0.34,1.56,0.64,1) forwards",
           }}
         >
-          {/* Top ember accent bar */}
+          {/* Top accent bar */}
           <div
             style={{
               height: 3,
-              background:
-                "linear-gradient(90deg, #ff6500, rgba(255,101,0,0.4), transparent)",
+              background: `linear-gradient(90deg, ${th.accent}, ${th.glow}, transparent)`,
               flexShrink: 0,
+              transition: "background 0.35s ease",
             }}
           />
 
           {/* Handle + header */}
           <div style={{ flexShrink: 0, padding: "10px 20px 16px" }}>
-            <div
-              style={{
-                width: 32,
-                height: 4,
-                borderRadius: 2,
-                background: "var(--color-surface-border)",
-                margin: "0 auto 16px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-              }}
-            >
+            <div style={{ width: 32, height: 4, borderRadius: 2, background: "var(--color-surface-border)", margin: "0 auto 16px" }} />
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
               <div>
-                <div
-                  style={{
-                    width: 20,
-                    height: 2,
-                    background: "#ff6500",
-                    borderRadius: 1,
-                    marginBottom: 8,
-                  }}
-                />
-                <h2
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 700,
-                    color: "var(--color-text)",
-                    fontFamily: "Syne, sans-serif",
-                    letterSpacing: "-0.04em",
-                    lineHeight: 1.1,
-                    margin: 0,
-                  }}
-                >
+                <div style={{ width: 20, height: 2, background: th.accent, borderRadius: 1, marginBottom: 8, transition: "background 0.35s ease" }} />
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-text)", fontFamily: "Syne, sans-serif", letterSpacing: "-0.04em", lineHeight: 1.1, margin: 0 }}>
                   Compartilhar conquista
                 </h2>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: "var(--color-text-dim)",
-                    fontFamily: "Outfit, sans-serif",
-                    margin: "4px 0 0",
-                  }}
-                >
+                <p style={{ fontSize: 12, color: "var(--color-text-dim)", fontFamily: "Outfit, sans-serif", margin: "4px 0 0" }}>
                   Mostre sua evolução para o mundo
                 </p>
               </div>
               <button
                 onClick={onClose}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: "var(--color-surface-border)",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--color-text-dim)",
-                  flexShrink: 0,
-                }}
+                style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-surface-border)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-dim)", flexShrink: 0 }}
                 aria-label="Fechar"
               >
                 <X size={15} />
@@ -293,38 +290,26 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
           </div>
 
           {/* Scrollable content */}
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "0 20px 36px",
-            }}
-          >
+          <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 36px" }}>
+
             {/* Card preview */}
-            <div
-              ref={previewWrapRef}
-              style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}
-            >
+            <div ref={previewWrapRef} style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
               <div
                 style={{
                   width: 400 * scale,
                   height: 500 * scale,
                   overflow: "hidden",
                   borderRadius: 24,
-                  boxShadow:
-                    "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,101,0,0.12)",
+                  boxShadow: `0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px ${th.cellBorder}`,
+                  transition: "box-shadow 0.35s ease",
                 }}
               >
-                <div
-                  style={{
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                  }}
-                >
+                <div style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}>
                   <ProgressCard
                     ref={cardRef}
                     data={data}
                     opts={opts}
+                    theme={theme}
                     pesoPerdidoStr={pesoPerdidoStr}
                     mediaStr={mediaStr}
                     imcStr={imcStr}
@@ -334,107 +319,104 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
               </div>
             </div>
 
-            {/* Personalizar section */}
+            {/* Theme picker */}
+            <div style={{ marginBottom: 18 }}>
+              <p style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--color-text-dim)", fontFamily: "Outfit, sans-serif", marginBottom: 10 }}>
+                Tema
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                {(["ember", "cristal", "noite"] as CardTheme[]).map((t) => {
+                  const tc = THEMES[t];
+                  const isActive = theme === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTheme(t)}
+                      style={{
+                        flex: 1,
+                        height: 44,
+                        borderRadius: 14,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        fontFamily: "Outfit, sans-serif",
+                        cursor: "pointer",
+                        border: isActive ? `2px solid ${tc.accent}` : "2px solid rgba(255,255,255,0.08)",
+                        background: isActive ? hexToRgba(tc.accent, 0.12) : "rgba(255,255,255,0.04)",
+                        color: isActive ? tc.accent : "rgba(255,255,255,0.42)",
+                        transition: "all 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 7,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: tc.accent,
+                          flexShrink: 0,
+                          boxShadow: isActive ? `0 0 8px ${tc.glow}` : "none",
+                          transition: "box-shadow 0.2s ease",
+                        }}
+                      />
+                      {THEME_META[t].label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Personalizar toggles */}
             <div style={{ marginBottom: 20 }}>
-              <p
-                style={{
-                  fontSize: 9,
-                  fontWeight: 900,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.22em",
-                  color: "var(--color-text-dim)",
-                  fontFamily: "Outfit, sans-serif",
-                  marginBottom: 10,
-                }}
-              >
+              <p style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.22em", color: "var(--color-text-dim)", fontFamily: "Outfit, sans-serif", marginBottom: 10 }}>
                 Personalizar card
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                <OptionPill
-                  label="Peso perdido"
-                  active={opts.pesoPerdido}
-                  onClick={() =>
-                    setOpts((o) => ({ ...o, pesoPerdido: !o.pesoPerdido }))
-                  }
-                />
-                <OptionPill
-                  label="Semanas"
-                  active={opts.semanas}
-                  onClick={() =>
-                    setOpts((o) => ({ ...o, semanas: !o.semanas }))
-                  }
-                />
-                <OptionPill
-                  label="IMC atual"
-                  active={opts.imc}
-                  onClick={() => setOpts((o) => ({ ...o, imc: !o.imc }))}
-                />
-                <OptionPill
-                  label="Gráfico"
-                  active={opts.grafico}
-                  onClick={() =>
-                    setOpts((o) => ({ ...o, grafico: !o.grafico }))
-                  }
-                />
-                <OptionPill
-                  label="Peso atual"
-                  active={opts.pesoAtual}
-                  onClick={() =>
-                    setOpts((o) => ({ ...o, pesoAtual: !o.pesoAtual }))
-                  }
-                />
+                <OptionPill label="Peso perdido" active={opts.pesoPerdido} accent={th.accent} onClick={() => setOpts((o) => ({ ...o, pesoPerdido: !o.pesoPerdido }))} />
+                <OptionPill label="Semanas" active={opts.semanas} accent={th.accent} onClick={() => setOpts((o) => ({ ...o, semanas: !o.semanas }))} />
+                <OptionPill label="IMC atual" active={opts.imc} accent={th.accent} onClick={() => setOpts((o) => ({ ...o, imc: !o.imc }))} />
+                <OptionPill label="Gráfico" active={opts.grafico} accent={th.accent} onClick={() => setOpts((o) => ({ ...o, grafico: !o.grafico }))} />
+                <OptionPill label="Peso atual" active={opts.pesoAtual} accent={th.accent} onClick={() => setOpts((o) => ({ ...o, pesoAtual: !o.pesoAtual }))} />
               </div>
             </div>
 
             {/* Action buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Primary row */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <button
                   onClick={handleSaveImage}
                   disabled={busy}
                   style={{
-                    height: 48,
-                    borderRadius: 999,
+                    height: 48, borderRadius: 999,
                     background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(255,255,255,0.1)",
-                    color: "var(--color-text)",
-                    fontSize: 12,
-                    fontWeight: 700,
+                    color: "var(--color-text)", fontSize: 12, fontWeight: 700,
                     fontFamily: "Outfit, sans-serif",
                     cursor: busy ? "not-allowed" : "pointer",
                     opacity: busy ? 0.5 : 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     transition: "transform 0.15s ease",
                   }}
                   onPointerDown={(e) => !busy && (e.currentTarget.style.transform = "scale(0.97)")}
                   onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
                 >
-                  <Download size={15} /> Salvar
+                  <Download size={15} /> Salvar PNG
                 </button>
                 <button
                   onClick={handleShare}
                   disabled={busy}
                   style={{
-                    height: 48,
-                    borderRadius: 999,
-                    background: "linear-gradient(135deg, #ff6500, #cc3f00)",
-                    border: "none",
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 700,
+                    height: 48, borderRadius: 999,
+                    background: `linear-gradient(135deg, ${th.accent}, ${hexToRgba(th.accent, 0.7)})`,
+                    border: "none", color: "#fff", fontSize: 12, fontWeight: 700,
                     fontFamily: "Outfit, sans-serif",
                     cursor: busy ? "not-allowed" : "pointer",
                     opacity: busy ? 0.5 : 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    boxShadow: "0 6px 20px rgba(255,101,0,0.35)",
-                    transition: "transform 0.15s ease",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    boxShadow: `0 6px 20px ${th.glow}`,
+                    transition: "all 0.35s ease",
                   }}
                   onPointerDown={(e) => !busy && (e.currentTarget.style.transform = "scale(0.97)")}
                   onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -443,25 +425,16 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
                 </button>
               </div>
 
-              {/* WhatsApp */}
               <button
                 onClick={handleWhatsApp}
                 disabled={busy}
                 style={{
-                  height: 48,
-                  borderRadius: 999,
-                  background: "#25D366",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 700,
+                  height: 48, borderRadius: 999, background: "#25D366",
+                  border: "none", color: "#fff", fontSize: 12, fontWeight: 700,
                   fontFamily: "Outfit, sans-serif",
                   cursor: busy ? "not-allowed" : "pointer",
                   opacity: busy ? 0.5 : 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   boxShadow: "0 6px 20px rgba(37,211,102,0.25)",
                   transition: "transform 0.15s ease",
                 }}
@@ -479,11 +452,12 @@ export function ShareProgressDrawer({ open, onClose, data }: Props) {
   );
 }
 
-/* ─── Shareable card (400×500, all inline styles for html2canvas) ─── */
+/* ─── Shareable card (400×500, transparent bg, all inline styles for html2canvas) ─── */
 
 interface ProgressCardProps {
   data: ShareProgressData;
   opts: ShareOptions;
+  theme: CardTheme;
   pesoPerdidoStr: string;
   mediaStr: string;
   imcStr: string;
@@ -491,49 +465,28 @@ interface ProgressCardProps {
 }
 
 const ProgressCard = forwardRef<HTMLDivElement, ProgressCardProps>(
-  function ProgressCard(
-    { data, opts, pesoPerdidoStr, mediaStr, imcStr, mesAno },
-    ref,
-  ) {
+  function ProgressCard({ data, opts, theme, pesoPerdidoStr, mediaStr, imcStr, mesAno }, ref) {
+    const th = THEMES[theme];
+
     const cells: { label: string; value: string }[] = [];
     if (opts.semanas) cells.push({ label: "semanas", value: `${data.semanas}` });
     if (opts.imc) cells.push({ label: "IMC atual", value: imcStr });
-    if (opts.pesoPerdido)
-      cells.push({ label: "por semana", value: `−${mediaStr}kg` });
-    if (
-      opts.pesoAtual &&
-      data.pesoInicial != null &&
-      data.pesoAtual != null
-    ) {
-      cells.push({
-        label: "evolução",
-        value: `${Math.round(data.pesoInicial)} → ${Math.round(data.pesoAtual)}kg`,
-      });
+    if (opts.pesoPerdido) cells.push({ label: "por semana", value: `−${mediaStr}kg` });
+    if (opts.pesoAtual && data.pesoInicial != null && data.pesoAtual != null) {
+      cells.push({ label: "evolução", value: `${Math.round(data.pesoInicial)} → ${Math.round(data.pesoAtual)}kg` });
     }
 
     return (
       <div
         ref={ref}
-        style={{
-          width: 400,
-          height: 500,
-          position: "relative",
-          overflow: "hidden",
-          borderRadius: 24,
-          background: "transparent",
-        }}
+        style={{ width: 400, height: 500, position: "relative", overflow: "hidden", borderRadius: 24, background: "transparent" }}
       >
-        {/* Bottom ember glow */}
+        {/* Bottom glow */}
         <div
           style={{
-            position: "absolute",
-            bottom: -60,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 520,
-            height: 320,
-            background:
-              "radial-gradient(ellipse at 50% 100%, rgba(255,101,0,0.35) 0%, rgba(204,60,0,0.14) 40%, transparent 68%)",
+            position: "absolute", bottom: -60, left: "50%", transform: "translateX(-50%)",
+            width: 520, height: 320,
+            background: `radial-gradient(ellipse at 50% 100%, ${th.glow} 0%, ${th.glowMid} 40%, transparent 68%)`,
             pointerEvents: "none",
           }}
         />
@@ -541,166 +494,61 @@ const ProgressCard = forwardRef<HTMLDivElement, ProgressCardProps>(
         {/* Top-left glow */}
         <div
           style={{
-            position: "absolute",
-            top: -40,
-            left: -40,
-            width: 200,
-            height: 200,
-            background:
-              "radial-gradient(circle at 0% 0%, rgba(255,101,0,0.1) 0%, transparent 65%)",
+            position: "absolute", top: -40, left: -40, width: 220, height: 220,
+            background: `radial-gradient(circle at 0% 0%, ${hexToRgba(th.accent, 0.1)} 0%, transparent 65%)`,
             pointerEvents: "none",
           }}
         />
 
-        {/* Subtle noise texture (SVG) */}
+        {/* Subtle noise texture */}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            opacity: 0.03,
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+            position: "absolute", inset: 0, opacity: 0.03,
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
             backgroundSize: "256px 256px",
             pointerEvents: "none",
           }}
         />
 
         {/* Content */}
-        <div
-          style={{
-            position: "relative",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            padding: "28px 30px",
-          }}
-        >
+        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", padding: "28px 30px" }}>
+
           {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 20,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
             <div>
-              <div
-                style={{
-                  fontFamily: "Syne, sans-serif",
-                  fontSize: 19,
-                  fontWeight: 800,
-                  color: "#ffffff",
-                  letterSpacing: "-0.05em",
-                  lineHeight: 1,
-                }}
-              >
+              <div style={{ fontFamily: "Syne, sans-serif", fontSize: 19, fontWeight: 800, color: "#ffffff", letterSpacing: "-0.05em", lineHeight: 1 }}>
                 momo
               </div>
-              <div
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: 10,
-                  color: "rgba(255,255,255,0.28)",
-                  marginTop: 3,
-                  letterSpacing: "0.08em",
-                }}
-              >
+              <div style={{ fontFamily: "Outfit, sans-serif", fontSize: 10, color: "rgba(255,255,255,0.28)", marginTop: 3, letterSpacing: "0.08em" }}>
                 minha jornada
               </div>
             </div>
-            <div
-              style={{
-                fontFamily: "Outfit, sans-serif",
-                fontSize: 10,
-                color: "rgba(255,255,255,0.22)",
-                letterSpacing: "0.04em",
-              }}
-            >
+            <div style={{ fontFamily: "Outfit, sans-serif", fontSize: 10, color: "rgba(255,255,255,0.22)", letterSpacing: "0.04em" }}>
               {mesAno}
             </div>
           </div>
 
           {/* Hero metric */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
             {opts.pesoPerdido ? (
               <div>
-                {/* Big number row */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    lineHeight: 1,
-                    marginBottom: 10,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "Syne, sans-serif",
-                      fontSize: 80,
-                      fontWeight: 800,
-                      color: "#ff6500",
-                      lineHeight: 0.88,
-                      letterSpacing: "-5px",
-                    }}
-                  >
+                <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 1, marginBottom: 10 }}>
+                  <span style={{ fontFamily: "Syne, sans-serif", fontSize: 80, fontWeight: 800, color: th.accent, lineHeight: 0.88, letterSpacing: "-5px" }}>
                     −
                   </span>
-                  <span
-                    style={{
-                      fontFamily: "Syne, sans-serif",
-                      fontSize: 80,
-                      fontWeight: 800,
-                      color: "#ffffff",
-                      lineHeight: 0.88,
-                      letterSpacing: "-5px",
-                      textShadow: "0 0 60px rgba(255,255,255,0.15)",
-                    }}
-                  >
+                  <span style={{ fontFamily: "Syne, sans-serif", fontSize: 80, fontWeight: 800, color: "#ffffff", lineHeight: 0.88, letterSpacing: "-5px", textShadow: "0 0 60px rgba(255,255,255,0.15)" }}>
                     {pesoPerdidoStr}
                   </span>
-                  <span
-                    style={{
-                      fontFamily: "Syne, sans-serif",
-                      fontSize: 28,
-                      fontWeight: 700,
-                      color: "rgba(255,255,255,0.45)",
-                      letterSpacing: "-1px",
-                      marginTop: 12,
-                    }}
-                  >
+                  <span style={{ fontFamily: "Syne, sans-serif", fontSize: 28, fontWeight: 700, color: "rgba(255,255,255,0.45)", letterSpacing: "-1px", marginTop: 12 }}>
                     kg
                   </span>
                 </div>
-                <div
-                  style={{
-                    fontFamily: "Outfit, sans-serif",
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.38)",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                  }}
-                >
+                <div style={{ fontFamily: "Outfit, sans-serif", fontSize: 12, color: th.subtext, letterSpacing: "0.14em", textTransform: "uppercase" }}>
                   perdidos no tratamento
                 </div>
               </div>
             ) : (
-              <div
-                style={{
-                  fontFamily: "Syne, sans-serif",
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  letterSpacing: "-0.04em",
-                }}
-              >
+              <div style={{ fontFamily: "Syne, sans-serif", fontSize: 28, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.04em" }}>
                 Minha evolução 💪
               </div>
             )}
@@ -719,33 +567,16 @@ const ProgressCard = forwardRef<HTMLDivElement, ProgressCardProps>(
                   <div
                     key={c.label}
                     style={{
-                      background: "rgba(255,255,255,0.055)",
-                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: th.cellBg,
+                      border: `1px solid ${th.cellBorder}`,
                       borderRadius: 12,
                       padding: "11px 14px",
                     }}
                   >
-                    <div
-                      style={{
-                        fontFamily: "Syne, sans-serif",
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: "#ffffff",
-                        letterSpacing: "-0.03em",
-                        lineHeight: 1,
-                      }}
-                    >
+                    <div style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.03em", lineHeight: 1 }}>
                       {c.value}
                     </div>
-                    <div
-                      style={{
-                        fontFamily: "Outfit, sans-serif",
-                        fontSize: 10,
-                        color: "rgba(255,255,255,0.32)",
-                        marginTop: 5,
-                        letterSpacing: "0.05em",
-                      }}
-                    >
+                    <div style={{ fontFamily: "Outfit, sans-serif", fontSize: 10, color: th.subtext, marginTop: 5, letterSpacing: "0.05em" }}>
                       {c.label}
                     </div>
                   </div>
@@ -758,45 +589,17 @@ const ProgressCard = forwardRef<HTMLDivElement, ProgressCardProps>(
           <div>
             {opts.grafico && data.serie.length >= 2 && (
               <div style={{ marginBottom: 14 }}>
-                <MiniChart serie={data.serie} />
+                <MiniChart serie={data.serie} accent={th.accent} />
               </div>
             )}
 
-            {/* Ember divider */}
-            <div
-              style={{
-                height: 1,
-                background:
-                  "linear-gradient(90deg, rgba(255,101,0,0.55), rgba(255,101,0,0.18), transparent)",
-                marginBottom: 12,
-              }}
-            />
+            <div style={{ height: 1, background: `linear-gradient(90deg, ${th.dividerColor}, ${th.glow}, transparent)`, marginBottom: 12 }} />
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: 10,
-                  color: "rgba(255,101,0,0.55)",
-                  letterSpacing: "0.04em",
-                  fontWeight: 600,
-                }}
-              >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontFamily: "Outfit, sans-serif", fontSize: 10, color: th.footerAccent, letterSpacing: "0.04em", fontWeight: 600 }}>
                 momo.app
               </span>
-              <span
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: 10,
-                  color: "rgba(255,255,255,0.18)",
-                }}
-              >
+              <span style={{ fontFamily: "Outfit, sans-serif", fontSize: 10, color: "rgba(255,255,255,0.18)" }}>
                 Mounjaro Tracker
               </span>
             </div>
@@ -807,9 +610,9 @@ const ProgressCard = forwardRef<HTMLDivElement, ProgressCardProps>(
   },
 );
 
-/* ─── Mini SVG chart with ember colors ─── */
+/* ─── Mini SVG chart ─── */
 
-function MiniChart({ serie }: { serie: number[] }) {
+function MiniChart({ serie, accent }: { serie: number[]; accent: string }) {
   const W = 340;
   const H = 54;
   const min = Math.min(...serie);
@@ -826,93 +629,52 @@ function MiniChart({ serie }: { serie: number[] }) {
   const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
   const last = pts[pts.length - 1];
 
+  const fill22 = hexToRgba(accent, 0.22);
+  const fill02 = hexToRgba(accent, 0.02);
+  const gradId = `spFill${accent.replace(/[^a-z0-9]/gi, "")}`;
+
   return (
-    <svg
-      width={W}
-      height={H}
-      viewBox={`0 0 ${W} ${H}`}
-      style={{ display: "block" }}
-    >
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
       <defs>
-        <linearGradient id="spEmberFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(255,101,0,0.22)" />
-          <stop offset="100%" stopColor="rgba(255,101,0,0.02)" />
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={fill22} />
+          <stop offset="100%" stopColor={fill02} />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill="url(#spEmberFill)" />
-      <path
-        d={linePath}
-        fill="none"
-        stroke="#ff6500"
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {last && (
-        <circle cx={last[0]} cy={last[1]} r={3.5} fill="#ff6500" />
-      )}
+      <path d={areaPath} fill={`url(#${gradId})`} />
+      <path d={linePath} fill="none" stroke={accent} strokeWidth={1.8} strokeLinejoin="round" strokeLinecap="round" />
+      {last && <circle cx={last[0]} cy={last[1]} r={3.5} fill={accent} />}
     </svg>
   );
 }
 
 /* ─── Option toggle pill ─── */
 
-function OptionPill({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function OptionPill({ label, active, accent, onClick }: { label: string; active: boolean; accent: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 7,
-        padding: "8px 14px",
-        borderRadius: 999,
-        fontSize: 11,
-        fontWeight: 700,
-        fontFamily: "Outfit, sans-serif",
-        letterSpacing: "0.02em",
-        cursor: "pointer",
-        border: active
-          ? "1px solid rgba(255,101,0,0.35)"
-          : "1px solid rgba(255,255,255,0.08)",
-        background: active
-          ? "rgba(255,101,0,0.12)"
-          : "rgba(255,255,255,0.04)",
-        color: active ? "#ff6500" : "rgba(255,255,255,0.42)",
+        display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 999,
+        fontSize: 11, fontWeight: 700, fontFamily: "Outfit, sans-serif", letterSpacing: "0.02em", cursor: "pointer",
+        border: active ? `1px solid ${hexToRgba(accent, 0.35)}` : "1px solid rgba(255,255,255,0.08)",
+        background: active ? hexToRgba(accent, 0.12) : "rgba(255,255,255,0.04)",
+        color: active ? accent : "rgba(255,255,255,0.42)",
         transition: "all 0.18s ease",
       }}
     >
       <span
         style={{
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          border: active ? "2px solid #ff6500" : "2px solid rgba(255,255,255,0.2)",
-          background: active ? "#ff6500" : "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
+          width: 14, height: 14, borderRadius: "50%",
+          border: active ? `2px solid ${accent}` : "2px solid rgba(255,255,255,0.2)",
+          background: active ? accent : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           transition: "all 0.18s ease",
         }}
       >
         {active && (
           <svg width="7" height="7" viewBox="0 0 7 7" fill="none">
-            <path
-              d="M1 3.5l1.8 1.8L6 1.5"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M1 3.5l1.8 1.8L6 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </span>
