@@ -29,11 +29,14 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
     telefone: initial.telefone || "",
     prazo_entrega_dias: initial.prazo_entrega_dias?.toString() || "",
     entrega_gratis_acima: initial.entrega_gratis_acima?.toString() || "",
+    chave_pix: initial.chave_pix || "",
   });
 
   const [raioEntrega, setRaioEntrega] = useState<number>(initial.raio_entrega_km || 50);
   const [cidadesEntrega, setCidadesEntrega] = useState<string[]>(initial.cidades_entrega || []);
+  const [formasPagamento, setFormasPagamento] = useState<string[]>(initial.formas_pagamento || []);
   const [novaCidade, setNovaCidade] = useState("");
+  const [novoPagamento, setNovoPagamento] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,6 +58,21 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
     setCidadesEntrega(cidadesEntrega.filter(c => c !== cidade));
   };
 
+  const addPagamento = () => {
+    const pag = novoPagamento.trim();
+    if (!pag) return;
+    if (formasPagamento.some(p => p.toLowerCase() === pag.toLowerCase())) {
+      toast.error("Forma de pagamento já adicionada");
+      return;
+    }
+    setFormasPagamento([...formasPagamento, pag]);
+    setNovoPagamento("");
+  };
+
+  const removePagamento = (pagamento: string) => {
+    setFormasPagamento(formasPagamento.filter(p => p !== pagamento));
+  };
+
   const handleSave = async () => {
     setLoading(true);
     const { error } = await supabase
@@ -68,6 +86,8 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
         entrega_gratis_acima: form.entrega_gratis_acima ? Number(form.entrega_gratis_acima) : null,
         raio_entrega_km: raioEntrega,
         cidades_entrega: cidadesEntrega,
+        chave_pix: form.chave_pix || null,
+        formas_pagamento: formasPagamento,
       })
       .eq("id", initial.id);
 
@@ -214,6 +234,62 @@ export function ConfigFornecedorClient({ initial }: { initial: any }) {
                   <button
                     type="button"
                     onClick={() => removeCidade(cidade)}
+                    className="text-text-dim hover:text-danger transition-colors p-0.5"
+                  >
+                    <X size={14} />
+                  </button>
+                </motion.span>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      {/* Payment Information Card */}
+      <div className="f-card p-6 space-y-6 shadow-card">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-ember animate-pulse" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-text-dim">Recebimentos</p>
+        </div>
+
+        <DarkField label="Chave PIX">
+          <input name="chave_pix" value={form.chave_pix} onChange={handleChange} style={inputStyle} placeholder="CPF, CNPJ, E-mail, Celular ou Aleatória" />
+        </DarkField>
+
+        <div>
+          <label className="mb-2.5 block text-[10px] font-bold uppercase tracking-widest ml-1 text-text-dim">Formas de Pagamento Aceitas</label>
+          <div className="flex gap-2">
+            <input
+              placeholder="Ex: Pix, Dinheiro, Cartão..."
+              value={novoPagamento}
+              onChange={(e) => setNovoPagamento(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addPagamento()}
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <button
+              type="button"
+              onClick={addPagamento}
+              className="h-12 w-12 rounded-2xl flex items-center justify-center active:scale-90 transition-transform shrink-0 text-ember"
+              style={{ background: "var(--color-ember-glow)" }}
+            >
+              <Plus size={20} />
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <AnimatePresence>
+              {formasPagamento.map((pagamento) => (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  key={pagamento}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-text bg-surface-mid border border-surface-border"
+                >
+                  {pagamento}
+                  <button
+                    type="button"
+                    onClick={() => removePagamento(pagamento)}
                     className="text-text-dim hover:text-danger transition-colors p-0.5"
                   >
                     <X size={14} />

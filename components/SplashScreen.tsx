@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { OrbitalLoader } from "@/components/ui/OrbitalLoader";
 
 export function SplashScreen({ isVisible }: { isVisible: boolean }) {
   return (
@@ -12,18 +13,16 @@ export function SplashScreen({ isVisible }: { isVisible: boolean }) {
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="fixed inset-0 z-[9999] bg-black overflow-hidden flex items-center justify-center"
         >
-          {/* 
-            Using a standard img tag for the splash to avoid any Next.js Image overhead 
-            and ensure it shows up immediately. object-cover ensures it fills the screen.
-          */}
-          <motion.img
-            src="/splash.gif"
-            alt="Momo"
-            className="w-full h-full object-cover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          />
+          {/* Custom Orbital Loader */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-6"
+          >
+            <OrbitalLoader className="w-24 h-24 text-ember" />
+            <h1 className="text-white font-black tracking-widest text-xl">MOMO</h1>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

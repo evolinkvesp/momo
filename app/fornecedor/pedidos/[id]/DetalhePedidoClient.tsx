@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   MessageSquare,
   ChevronLeft,
-  ArrowUpRight
+  ArrowUpRight,
+  Receipt
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -189,6 +190,36 @@ export function DetalhePedidoClient({ initialPedido, isFornecedor }: { initialPe
             </div>
           )}
         </motion.div>
+
+        {/* Comprovante de Pagamento */}
+        {pedido.comprovante_url && (
+          <motion.div 
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="f-card p-5 space-y-4 shadow-card"
+          >
+            <div className="flex items-center gap-2">
+              <Receipt size={16} className="text-ember" />
+              <h4 className="text-[11px] font-black text-text-dim uppercase tracking-widest">Pagamento</h4>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-surface-mid border border-surface-border">
+              <div>
+                <p className="text-sm font-bold text-text">Comprovante enviado</p>
+                <p className="text-[11px] font-medium text-text-dim mt-0.5">O paciente já enviou o comprovante</p>
+              </div>
+              <a 
+                href={pedido.comprovante_url} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-1.5 h-10 px-4 bg-ember/10 text-ember border border-ember/20 rounded-xl text-xs font-bold transition-all hover:bg-ember hover:text-white"
+              >
+                Ver Anexo <ArrowUpRight size={14} />
+              </a>
+            </div>
+          </motion.div>
+        )}
 
         {/* Observations */}
         <motion.div 

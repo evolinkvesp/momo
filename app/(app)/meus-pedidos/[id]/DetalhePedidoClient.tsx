@@ -15,7 +15,9 @@ import {
   X,
   Truck,
   CheckCircle2,
-  Clock
+  Clock,
+  Upload,
+  Receipt
 } from "lucide-react";
 import { 
   formatBRL, 
@@ -33,6 +35,7 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
   const [p, setPedido] = useState(pedido);
   const [confirmCode, setConfirmCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
 
   // Realtime subscription
@@ -106,6 +109,37 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
       // Realtime will update the state
     }
     setLoading(false);
+  };
+
+  const handleUploadComprovante = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setUploading(true);
+
+    try {
+      const path = `${p.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('comprovantes').upload(path, file);
+      
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('comprovantes').getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from('pedidos')
+        .update({ comprovante_url: publicUrl })
+        .eq('id', p.id);
+
+      if (updateError) throw updateError;
+      
+      toast.success("Comprovante enviado com sucesso!");
+      // Realtime update should catch the change, but let's be sure
+      setPedido(prev => ({ ...prev, comprovante_url: publicUrl }));
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao enviar o comprovante.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -252,6 +286,83 @@ export function DetalhePedidoClient({ pedido }: { pedido: any }) {
               >
                 {loading ? "Processando..." : "Confirmar recebimento"}
               </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Upload Comprovante / Pagamento Section */}
+      <AnimatePresence>
+        {p.status === 'confirmado' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="px-6 mt-6"
+          >
+            <div className="bg-surface rounded-[24px] p-5 shadow-lg shadow-black/5 border border-surface-border space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-ember/10 flex items-center justify-center text-ember shrink-0">
+                  <Receipt size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-text">Pagamento do Pedido</h3>
+                  <p className="text-[11px] font-medium text-dim mt-0.5">
+                    Realize o pagamento para liberar o envio
+                  </p>
+                </div>
+              </div>
+
+              {p.fornecedor?.chave_pix && (
+                <div className="bg-surface-mid rounded-xl p-4 border border-surface-border space-y-2">
+                  <p className="text-[10px] font-bold text-dim uppercase tracking-widest">Chave PIX do Fornecedor</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-mono font-bold text-text truncate">{p.fornecedor.chave_pix}</p>
+                    <button 
+                      onClick={() => copyToClipboard(p.fornecedor.chave_pix)}
+                      className="h-8 w-8 shrink-0 rounded-lg bg-surface flex items-center justify-center text-dim hover:text-ember transition-colors"
+                    >
+                      <Copy size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {p.fornecedor?.formas_pagamento?.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold text-dim uppercase tracking-widest mb-2">Opções aceitas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {p.fornecedor.formas_pagamento.map((forma: string) => (
+                      <span key={forma} className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-mid border border-surface-border text-text">
+                        {forma}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2">
+                {p.comprovante_url ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-500">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={16} />
+                      <span className="text-xs font-bold">Comprovante enviado</span>
+                    </div>
+                    <a href={p.comprovante_url} target="_blank" rel="noreferrer" className="text-[10px] font-bold underline">Ver anexo</a>
+                  </div>
+                ) : (
+                  <label className={`w-full h-12 flex items-center justify-center gap-2 rounded-full text-xs font-black uppercase tracking-widest transition-all cursor-pointer ${uploading ? 'bg-surface-border text-dim cursor-not-allowed' : 'bg-ember text-white shadow-lg shadow-ember/20 hover:scale-[1.02] active:scale-[0.98]'}`}>
+                    <Upload size={16} />
+                    {uploading ? "Enviando..." : "Enviar Comprovante"}
+                    <input 
+                      type="file" 
+                      accept="image/*,application/pdf" 
+                      className="hidden" 
+                      onChange={handleUploadComprovante} 
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

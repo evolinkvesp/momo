@@ -127,6 +127,28 @@ export async function POST(req: Request) {
       case "NOVO_PEDIDO":
         payloadFornecedor = PUSH_VENDAS.FORNECEDOR.NOVO_PEDIDO(nomeFarmacia, valor, produtoLabel);
         payloadPaciente = PUSH_VENDAS.ENTREGA.PEDIDO_RECEBIDO(nomePaciente, codigo);
+        
+        // Notifica o admin
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+          const { data: adminProfile } = await supabase.from("profiles").select("id").eq("email", adminEmail).maybeSingle();
+          if (adminProfile?.id) {
+            const valorFormatado = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
+            const payloadAdmin = {
+              title: "🚀 Nova Venda na Plataforma!",
+              body: `${nomeFarmacia} vendeu ${valorFormatado} pelo Momo.`,
+              url: "/admin/pedidos"
+            };
+            await enviarPush(adminProfile.id, payloadAdmin);
+            await supabase.from("notifications").insert({
+              user_id: adminProfile.id,
+              title: payloadAdmin.title,
+              body: payloadAdmin.body,
+              url: payloadAdmin.url,
+              read: false,
+            });
+          }
+        }
         break;
 
       case "PEDIDO_ACEITO":

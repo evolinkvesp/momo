@@ -100,7 +100,8 @@ export async function POST(req: NextRequest) {
         console.log('[abacate/webhook] subscription.completed: assinatura salva para user', userId)
 
         try {
-          await fetch('https://www.usemomo.online/api/push/send', {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
+          await fetch(`${baseUrl}/api/push/send`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -113,6 +114,31 @@ export async function POST(req: NextRequest) {
               url: '/',
             }),
           })
+          
+          // Notifica o admin
+          const adminEmail = process.env.ADMIN_EMAIL;
+          if (adminEmail) {
+            const { data: adminProfile } = await supabase.from('profiles').select('id, nome').eq('email', adminEmail).maybeSingle();
+            if (adminProfile?.id) {
+              // Pegar nome do usuario que assinou para mensagem mais rica
+              const { data: userProfile } = await supabase.from('profiles').select('nome').eq('id', userId).maybeSingle();
+              const nomeUser = userProfile?.nome || 'Um usuário';
+              
+              await fetch(`${baseUrl}/api/push/send`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Internal-Key': process.env.N8N_SECRET ?? '',
+                },
+                body: JSON.stringify({
+                  userId: adminProfile.id,
+                  title: '💎 Nova Assinatura!',
+                  body: `${nomeUser} acabou de assinar o plano premium!`,
+                  url: '/admin/financeiro',
+                }),
+              });
+            }
+          }
         } catch (e) {
           console.error('[abacate/webhook] push notification failed:', e)
         }
