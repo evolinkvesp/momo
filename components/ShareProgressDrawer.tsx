@@ -22,7 +22,6 @@ export interface ShareProgressData {
 }
 
 type TemplateType = "weight" | "goal" | "week" | "record" | "beforeafter";
-type BgType = "dark" | "gradient" | "mesh" | "glass" | "photo";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -31,19 +30,11 @@ const CARD_H = 640;
 const EXPORT_SCALE = 3; // 360×3=1080  640×3=1920
 
 const TEMPLATES: { key: TemplateType; emoji: string; label: string }[] = [
-  { key: "weight",      emoji: "🔥", label: "Peso perdido" },
-  { key: "goal",        emoji: "🏆", label: "Meta atingida" },
-  { key: "week",        emoji: "✅", label: "Semana" },
-  { key: "record",      emoji: "⚡", label: "Recorde" },
+  { key: "weight",      emoji: "🔥", label: "Peso perdido"   },
+  { key: "goal",        emoji: "🏆", label: "Meta atingida"  },
+  { key: "week",        emoji: "✅", label: "Semana"         },
+  { key: "record",      emoji: "⚡", label: "Recorde"        },
   { key: "beforeafter", emoji: "✨", label: "Antes e depois" },
-];
-
-const BG_OPTIONS: { key: BgType; label: string }[] = [
-  { key: "dark",     label: "Escuro"    },
-  { key: "gradient", label: "Gradiente" },
-  { key: "mesh",     label: "Mesh"      },
-  { key: "glass",    label: "Glass"     },
-  { key: "photo",    label: "📷 Foto"   },
 ];
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
@@ -66,14 +57,11 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
   const [busy, setBusy]           = useState(false);
   const [scale, setScale]         = useState(1);
   const [template, setTemplate]   = useState<TemplateType>("weight");
-  const [bgType, setBgType]       = useState<BgType>("dark");
-  const [bgPhoto, setBgPhoto]     = useState<string | null>(null);
   const [displayPeso, setDisplay] = useState(0);
 
-  const cardRef       = useRef<HTMLDivElement>(null);
-  const wrapRef       = useRef<HTMLDivElement>(null);
-  const fileRef       = useRef<HTMLInputElement>(null);
-  const rafRef        = useRef<number>(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rafRef  = useRef<number>(0);
 
   useEffect(() => setMounted(true), []);
 
@@ -143,7 +131,7 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("Story salvo! Abra a galeria e poste 📸");
+      toast.success("PNG salvo! Cole no Story como figurinha 🎯");
     } catch {
       toast.error("Não foi possível gerar a imagem.");
     } finally {
@@ -183,14 +171,6 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
       (data.imc > 0 ? `⚖️ IMC atual: *${data.imc.toFixed(1)}*\n` : "") +
       `\nAcompanho tudo pelo Momo 🌿`;
     window.open(`https://wa.me/?text=${encodeURIComponent(t)}`, "_blank");
-  }
-
-  function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { setBgPhoto(ev.target?.result as string); setBgType("photo"); };
-    reader.readAsDataURL(file);
   }
 
   if (!mounted || !open) return null;
@@ -246,7 +226,7 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
                   Compartilhar conquista
                 </h2>
                 <p style={{ margin: "3px 0 0", fontSize: 11, color: "rgba(255,255,255,0.28)", fontFamily: "Outfit,sans-serif" }}>
-                  Story 1080×1920 — Instagram · WhatsApp · TikTok
+                  PNG transparente — cole como figurinha no Story
                 </p>
               </div>
               <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.45)", flexShrink: 0 }}>
@@ -258,21 +238,20 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
           {/* Scrollable */}
           <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 48px" }}>
 
-            {/* Preview */}
+            {/* Preview — dark wrapper so white text is visible, card itself is transparent */}
             <div ref={wrapRef} style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
               <div style={{
                 width:  CARD_W * scale,
                 height: CARD_H * scale,
                 overflow: "hidden",
                 borderRadius: 22 * scale,
+                background: "linear-gradient(135deg,#0d0d0d 0%,#1a0a00 100%)",
                 boxShadow: "0 36px 100px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.07)",
               }}>
                 <div style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}>
                   <StoryCard
                     ref={cardRef}
                     template={template}
-                    bgType={bgType}
-                    bgPhoto={bgPhoto}
                     data={data}
                     displayPeso={displayPeso}
                     mesAno={mesAno}
@@ -283,28 +262,13 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
 
             {/* Template picker */}
             <SheetLabel>Formato</SheetLabel>
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 18, scrollbarWidth: "none" }}>
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none" }}>
               {TEMPLATES.map(tp => (
                 <SheetPill key={tp.key} active={template === tp.key} onClick={() => setTemplate(tp.key)}>
                   {tp.emoji} {tp.label}
                 </SheetPill>
               ))}
             </div>
-
-            {/* BG picker */}
-            <SheetLabel>Fundo</SheetLabel>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-              {BG_OPTIONS.map(bg => (
-                <SheetPill
-                  key={bg.key}
-                  active={bgType === bg.key}
-                  onClick={() => { if (bg.key === "photo") fileRef.current?.click(); else setBgType(bg.key); }}
-                >
-                  {bg.label}{bg.key === "photo" && bgPhoto ? " ✓" : ""}
-                </SheetPill>
-              ))}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhoto} />
 
             {/* Actions */}
             <button
@@ -323,7 +287,7 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
               onPointerDown={e => { if (!busy) e.currentTarget.style.transform = "scale(0.97)"; }}
               onPointerUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <Download size={16} /> Salvar Story (1080×1920)
+              <Download size={16} /> Salvar PNG transparente
             </button>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -369,55 +333,40 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
   );
 }
 
-// ── Story Card (360×640) — exported by html2canvas at 3× ──────────────────────
+// ── Story Card (360×640) — transparent PNG, exported by html2canvas at 3× ──────
 
 interface CardProps {
   template: TemplateType;
-  bgType: BgType;
-  bgPhoto: string | null;
   data: ShareProgressData;
   displayPeso: number;
   mesAno: string;
 }
 
 const StoryCard = forwardRef<HTMLDivElement, CardProps>(
-  function StoryCard({ template, bgType, bgPhoto, data, displayPeso, mesAno }, ref) {
+  function StoryCard({ template, data, displayPeso, mesAno }, ref) {
     const dias = Math.round(data.semanas * 7);
 
     return (
-      <div ref={ref} style={{ width: CARD_W, height: CARD_H, position: "relative", overflow: "hidden", fontFamily: "Syne,sans-serif" }}>
-
-        {/* Background */}
-        <BgLayer bgType={bgType} bgPhoto={bgPhoto} />
-
-        {/* Vignette */}
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 45%,transparent 22%,rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
-
-        {/* Grain */}
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.042, pointerEvents: "none",
-          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          backgroundSize: "200px 200px",
-        }} />
+      <div ref={ref} style={{ width: CARD_W, height: CARD_H, position: "relative", overflow: "hidden", fontFamily: "Syne,sans-serif", background: "transparent" }}>
 
         {/* Content */}
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "36px 28px 32px" }}>
 
           {/* Top bar */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, marginBottom: 0 }}>
-            <span style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.05em", opacity: 0.88 }}>momo</span>
-            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.12em", textTransform: "uppercase" }}>{mesAno}</span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.05em", opacity: 0.88, textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>momo</span>
+            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.12em", textTransform: "uppercase", textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{mesAno}</span>
           </div>
 
           {/* Template area */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative" }}>
 
-            {/* Hero glow (weight template) */}
+            {/* Hero glow behind the main number */}
             {template === "weight" && (
               <div style={{
                 position: "absolute", top: "42%", left: "50%", transform: "translate(-50%,-50%)",
-                width: 300, height: 300, borderRadius: "50%",
-                background: "radial-gradient(circle,rgba(255,101,0,0.24) 0%,rgba(255,101,0,0.08) 40%,transparent 70%)",
+                width: 320, height: 320, borderRadius: "50%",
+                background: "radial-gradient(circle,rgba(255,101,0,0.32) 0%,rgba(255,101,0,0.10) 45%,transparent 72%)",
                 pointerEvents: "none",
               }} />
             )}
@@ -431,10 +380,10 @@ const StoryCard = forwardRef<HTMLDivElement, CardProps>(
 
           {/* Footer */}
           <div style={{ flexShrink: 0 }}>
-            <div style={{ height: 1, background: "linear-gradient(90deg,rgba(255,101,0,0.7),rgba(255,101,0,0.2),transparent)", marginBottom: 12 }} />
+            <div style={{ height: 1, background: "linear-gradient(90deg,rgba(255,101,0,0.8),rgba(255,101,0,0.25),transparent)", marginBottom: 12 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,101,0,0.72)", letterSpacing: "0.05em" }}>momo.app</span>
-              <span style={{ fontSize: 8, color: "rgba(255,255,255,0.14)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>Mounjaro Tracker</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(255,101,0,0.85)", letterSpacing: "0.05em", textShadow: "0 0 20px rgba(255,101,0,0.6)" }}>momo.app</span>
+              <span style={{ fontSize: 8, color: "rgba(255,255,255,0.4)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.1em", textTransform: "uppercase" }}>Mounjaro Tracker</span>
             </div>
           </div>
         </div>
@@ -443,77 +392,19 @@ const StoryCard = forwardRef<HTMLDivElement, CardProps>(
   }
 );
 
-// ── Backgrounds ────────────────────────────────────────────────────────────────
-
-function BgLayer({ bgType, bgPhoto }: { bgType: BgType; bgPhoto: string | null }) {
-  const abs: React.CSSProperties = { position: "absolute", inset: 0, width: "100%", height: "100%" };
-
-  if (bgType === "photo" && bgPhoto) {
-    return (
-      <div style={abs}>
-        <img src={bgPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "blur(14px) brightness(0.32) saturate(0.65)", transform: "scale(1.1)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.38)" }} />
-      </div>
-    );
-  }
-
-  if (bgType === "gradient") {
-    return (
-      <div style={{ ...abs, background: "linear-gradient(165deg,#190900 0%,#0a0300 48%,#190800 100%)" }}>
-        <div style={{ position: "absolute", bottom: -60, left: "50%", transform: "translateX(-50%)", width: 420, height: 300, background: "radial-gradient(ellipse at 50% 100%,rgba(255,101,0,0.30) 0%,transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, background: "radial-gradient(circle,rgba(255,60,0,0.13) 0%,transparent 68%)", pointerEvents: "none" }} />
-      </div>
-    );
-  }
-
-  if (bgType === "mesh") {
-    return (
-      <div style={{
-        ...abs,
-        background: `
-          radial-gradient(at 22% 12%,rgba(255,80,0,0.42) 0px,transparent 50%),
-          radial-gradient(at 78% 8% ,rgba(180,40,0,0.24) 0px,transparent 50%),
-          radial-gradient(at  8% 58%,rgba(160,32,0,0.30) 0px,transparent 50%),
-          radial-gradient(at 82% 68%,rgba(255,85,0,0.20) 0px,transparent 50%),
-          radial-gradient(at 48% 96%,rgba(100,18,0,0.50) 0px,transparent 50%),
-          #040100
-        `,
-      }} />
-    );
-  }
-
-  if (bgType === "glass") {
-    return (
-      <div style={{ ...abs, background: "linear-gradient(148deg,#130700 0%,#040100 58%,#110500 100%)" }}>
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 308, height: 490, borderRadius: 44, background: "rgba(255,255,255,0.022)", border: "1px solid rgba(255,255,255,0.055)" }} />
-        <div style={{ position: "absolute", top: "27%", left: "50%", transform: "translateX(-50%)", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,101,0,0.17) 0%,transparent 70%)" }} />
-      </div>
-    );
-  }
-
-  // dark (default)
-  return (
-    <div style={{ ...abs, background: "#050200" }}>
-      <div style={{ position: "absolute", bottom: -55, left: "50%", transform: "translateX(-50%)", width: 400, height: 260, background: "radial-gradient(ellipse at 50% 100%,rgba(255,101,0,0.22) 0%,transparent 68%)" }} />
-      <div style={{ position: "absolute", top: -75, right: -75, width: 210, height: 210, background: "radial-gradient(circle,rgba(255,55,0,0.10) 0%,transparent 68%)" }} />
-    </div>
-  );
-}
-
 // ── Template: Peso Perdido ─────────────────────────────────────────────────────
 
 function TplWeight({ data, displayPeso, dias }: { data: ShareProgressData; displayPeso: number; dias: number }) {
   const numStr = displayPeso.toFixed(1);
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      {/* Big number */}
       <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 0.84, marginBottom: 10 }}>
-        <span style={{ fontSize: 90, fontWeight: 900, color: "#ff6500", lineHeight: 0.84, letterSpacing: "-5px" }}>−</span>
-        <span style={{ fontSize: 90, fontWeight: 900, color: "#fff",    lineHeight: 0.84, letterSpacing: "-5px", textShadow: "0 0 80px rgba(255,255,255,0.1)" }}>{numStr}</span>
-        <span style={{ fontSize: 28, fontWeight: 700, color: "rgba(255,255,255,0.36)", letterSpacing: "-1px", marginTop: 18 }}>kg</span>
+        <span style={{ fontSize: 90, fontWeight: 900, color: "#ff6500", lineHeight: 0.84, letterSpacing: "-5px", textShadow: "0 0 60px rgba(255,101,0,0.55)" }}>−</span>
+        <span style={{ fontSize: 90, fontWeight: 900, color: "#fff",    lineHeight: 0.84, letterSpacing: "-5px", textShadow: "0 2px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255,255,255,0.08)" }}>{numStr}</span>
+        <span style={{ fontSize: 28, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "-1px", marginTop: 18, textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>kg</span>
       </div>
 
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 30 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 30, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
         perdidos no tratamento
       </div>
 
@@ -536,16 +427,16 @@ function TplGoal({ data, dias }: { data: ShareProgressData; dias: number }) {
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div style={{ fontSize: 44, marginBottom: 18, lineHeight: 1 }}>🏆</div>
 
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 12 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 12, textShadow: "0 0 20px rgba(255,101,0,0.5)" }}>
         Meta atingida
       </div>
 
       {metaKg != null && (
         <>
-          <div style={{ fontSize: 72, fontWeight: 900, color: "#fff", letterSpacing: "-4px", lineHeight: 0.88, marginBottom: 8 }}>
+          <div style={{ fontSize: 72, fontWeight: 900, color: "#fff", letterSpacing: "-4px", lineHeight: 0.88, marginBottom: 8, textShadow: "0 2px 40px rgba(0,0,0,0.8)" }}>
             {metaKg.toFixed(1)}
           </div>
-          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 13, color: "rgba(255,255,255,0.28)", letterSpacing: "0.04em", marginBottom: 28 }}>
+          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 13, color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em", marginBottom: 28 }}>
             kg — peso conquistado
           </div>
         </>
@@ -567,13 +458,13 @@ function TplGoal({ data, dias }: { data: ShareProgressData; dias: number }) {
 function TplWeek({ data, dias }: { data: ShareProgressData; dias: number }) {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 14 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 14, textShadow: "0 0 20px rgba(255,101,0,0.5)" }}>
         ✅ Semana concluída
       </div>
-      <div style={{ fontSize: 82, fontWeight: 900, color: "#fff", letterSpacing: "-5px", lineHeight: 0.84, marginBottom: 10 }}>
+      <div style={{ fontSize: 82, fontWeight: 900, color: "#fff", letterSpacing: "-5px", lineHeight: 0.84, marginBottom: 10, textShadow: "0 2px 40px rgba(0,0,0,0.8)" }}>
         {data.semanas}
       </div>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.28)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 26 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.45)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 26 }}>
         semanas de tratamento
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -591,17 +482,17 @@ function TplWeek({ data, dias }: { data: ShareProgressData; dias: number }) {
 function TplRecord({ data }: { data: ShareProgressData }) {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 14 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 14, textShadow: "0 0 20px rgba(255,101,0,0.5)" }}>
         ⚡ Recorde pessoal
       </div>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.26)", marginBottom: 8, letterSpacing: "0.06em" }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 8, letterSpacing: "0.06em" }}>
         média semanal
       </div>
       <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 0.84, marginBottom: 10 }}>
-        <span style={{ fontSize: 80, fontWeight: 900, color: "#ff6500", lineHeight: 0.84, letterSpacing: "-5px" }}>−{data.mediaSemana.toFixed(1)}</span>
-        <span style={{ fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,0.32)", letterSpacing: "-1px", marginTop: 14 }}>kg</span>
+        <span style={{ fontSize: 80, fontWeight: 900, color: "#ff6500", lineHeight: 0.84, letterSpacing: "-5px", textShadow: "0 0 60px rgba(255,101,0,0.55)" }}>−{data.mediaSemana.toFixed(1)}</span>
+        <span style={{ fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: "-1px", marginTop: 14 }}>kg</span>
       </div>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.22)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 26 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.38)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 26 }}>
         por semana no tratamento
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -619,16 +510,15 @@ function TplBA({ data, dias }: { data: ShareProgressData; dias: number }) {
   const depois = data.pesoAtual   ?? 0;
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 22 }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, fontWeight: 700, color: "#ff6500", letterSpacing: "0.24em", textTransform: "uppercase", marginBottom: 22, textShadow: "0 0 20px rgba(255,101,0,0.5)" }}>
         Transformação
       </div>
 
-      {/* Before / After row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 28px 1fr", gap: 8, alignItems: "end", marginBottom: 22 }}>
         <div>
-          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 9, color: "rgba(255,255,255,0.2)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 6 }}>antes</div>
-          <div style={{ fontSize: 44, fontWeight: 900, color: "rgba(255,255,255,0.4)", letterSpacing: "-2px", lineHeight: 1 }}>{antes.toFixed(1)}</div>
-          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.18)", marginTop: 3 }}>kg</div>
+          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 6 }}>antes</div>
+          <div style={{ fontSize: 44, fontWeight: 900, color: "rgba(255,255,255,0.5)", letterSpacing: "-2px", lineHeight: 1, textShadow: "0 1px 20px rgba(0,0,0,0.6)" }}>{antes.toFixed(1)}</div>
+          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 3 }}>kg</div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", paddingBottom: 14 }}>
           <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
@@ -637,19 +527,18 @@ function TplBA({ data, dias }: { data: ShareProgressData; dias: number }) {
         </div>
         <div>
           <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 9, color: "#ff6500", letterSpacing: "0.16em", textTransform: "uppercase", marginBottom: 6 }}>depois</div>
-          <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", letterSpacing: "-2px", lineHeight: 1 }}>{depois.toFixed(1)}</div>
-          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 3 }}>kg</div>
+          <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", letterSpacing: "-2px", lineHeight: 1, textShadow: "0 2px 30px rgba(0,0,0,0.8)" }}>{depois.toFixed(1)}</div>
+          <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>kg</div>
         </div>
       </div>
 
-      {/* Delta */}
       <div style={{ marginBottom: 22 }}>
         <div style={{ display: "flex", alignItems: "flex-start", lineHeight: 0.88, marginBottom: 6 }}>
-          <span style={{ fontSize: 58, fontWeight: 900, color: "#ff6500", letterSpacing: "-3px", lineHeight: 0.88 }}>−</span>
-          <span style={{ fontSize: 58, fontWeight: 900, color: "#fff",    letterSpacing: "-3px", lineHeight: 0.88 }}>{data.pesoPerdido.toFixed(1)}</span>
-          <span style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.32)", marginTop: 13, letterSpacing: "-1px" }}>kg</span>
+          <span style={{ fontSize: 58, fontWeight: 900, color: "#ff6500", letterSpacing: "-3px", lineHeight: 0.88, textShadow: "0 0 50px rgba(255,101,0,0.5)" }}>−</span>
+          <span style={{ fontSize: 58, fontWeight: 900, color: "#fff",    letterSpacing: "-3px", lineHeight: 0.88, textShadow: "0 2px 30px rgba(0,0,0,0.8)" }}>{data.pesoPerdido.toFixed(1)}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.4)", marginTop: 13, letterSpacing: "-1px" }}>kg</span>
         </div>
-        <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, color: "rgba(255,255,255,0.26)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+        <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
           de transformação real
         </div>
       </div>
@@ -665,21 +554,21 @@ function Timeline({ from, to }: { from: number; to: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <div>
-        <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "rgba(255,255,255,0.36)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+        <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "-0.04em", lineHeight: 1, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>
           {from.toFixed(1)}
         </div>
-        <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 8, color: "rgba(255,255,255,0.18)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>
+        <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 8, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>
           início
         </div>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(255,255,255,0.1),rgba(255,101,0,0.72))" }} />
+        <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(255,255,255,0.15),rgba(255,101,0,0.85))" }} />
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
           <path d="M1 5h8M5 1l4 4-4 4" stroke="#ff6500" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <div>
-        <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+        <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "#fff", letterSpacing: "-0.04em", lineHeight: 1, textShadow: "0 1px 20px rgba(0,0,0,0.6)" }}>
           {to.toFixed(1)}
         </div>
         <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 8, color: "#ff6500", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>
@@ -692,11 +581,16 @@ function Timeline({ from, to }: { from: number; to: number }) {
 
 function StatCell({ value, label }: { value: string; label: string }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "12px 14px" }}>
-      <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 5 }}>
+    <div style={{
+      background: "rgba(0,0,0,0.45)",
+      border: "1px solid rgba(255,255,255,0.14)",
+      borderRadius: 14, padding: "12px 14px",
+      backdropFilter: "blur(0px)",
+    }}>
+      <div style={{ fontFamily: "Syne,sans-serif", fontSize: 19, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 5, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>
         {value}
       </div>
-      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 9, color: "rgba(255,255,255,0.24)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      <div style={{ fontFamily: "Outfit,sans-serif", fontSize: 9, color: "rgba(255,255,255,0.38)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
         {label}
       </div>
     </div>
@@ -707,14 +601,14 @@ function DaysPill({ dias, accent = false }: { dias: number; accent?: boolean }) 
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 9,
-      background: accent ? "rgba(255,101,0,0.1)" : "rgba(255,255,255,0.06)",
-      border: `1px solid ${accent ? "rgba(255,101,0,0.28)" : "rgba(255,255,255,0.1)"}`,
+      background: accent ? "rgba(255,101,0,0.18)" : "rgba(0,0,0,0.42)",
+      border: `1px solid ${accent ? "rgba(255,101,0,0.4)" : "rgba(255,255,255,0.16)"}`,
       borderRadius: 999, paddingLeft: 16, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
     }}>
-      <span style={{ fontFamily: "Syne,sans-serif", fontSize: 18, fontWeight: 800, color: accent ? "#ff7a1a" : "#fff", letterSpacing: "-0.03em" }}>
+      <span style={{ fontFamily: "Syne,sans-serif", fontSize: 18, fontWeight: 800, color: accent ? "#ff7a1a" : "#fff", letterSpacing: "-0.03em", textShadow: "0 1px 10px rgba(0,0,0,0.5)" }}>
         {dias}
       </span>
-      <span style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, color: accent ? "rgba(255,150,50,0.65)" : "rgba(255,255,255,0.3)", letterSpacing: "0.04em" }}>
+      <span style={{ fontFamily: "Outfit,sans-serif", fontSize: 10, color: accent ? "rgba(255,150,50,0.75)" : "rgba(255,255,255,0.42)", letterSpacing: "0.04em" }}>
         dias de jornada
       </span>
     </div>
