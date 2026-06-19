@@ -57,8 +57,8 @@ export async function subscribeToPush(userId: string): Promise<void> {
   const { error } = await supabase
     .from("push_subscriptions")
     .upsert(
-      { user_id: userId, subscription_json: JSON.stringify(sub) },
-      { onConflict: "user_id" },
+      { user_id: userId, subscription_json: JSON.stringify(sub), endpoint: sub.endpoint },
+      { onConflict: "endpoint" },
     );
 
   if (error) {
@@ -72,9 +72,12 @@ export async function unsubscribeFromPush(userId: string): Promise<void> {
     const reg = await navigator.serviceWorker.getRegistration("/");
     if (reg) {
       const sub = await reg.pushManager.getSubscription();
-      if (sub) await sub.unsubscribe();
+      if (sub) {
+        // Remove only this device's subscription
+        await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+        await sub.unsubscribe();
+      }
     }
-    await supabase.from("push_subscriptions").delete().eq("user_id", userId);
   } catch (e) {
     console.error("[Push] Error unsubscribing:", e);
   }
