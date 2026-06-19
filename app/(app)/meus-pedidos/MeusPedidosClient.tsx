@@ -1,30 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { 
-  ShoppingBag, 
-  ChevronRight, 
-  Package, 
-  Truck, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  ShoppingBag,
+  ChevronRight,
+  Package,
+  Truck,
+  CheckCircle2,
+  XCircle,
   Clock,
   ArrowLeft
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
-import { 
-  formatBRL, 
-  nomeFornecedor, 
-  iniciais, 
-  STATUS_PEDIDO, 
+import {
+  formatBRL,
+  nomeFornecedor,
+  iniciais,
+  STATUS_PEDIDO,
   TIPO_PRODUTO_LABEL,
-  type StatusPedido 
+  type StatusPedido
 } from "@/lib/fornecedores";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
+import toast from "react-hot-toast";
 
 interface PedidoComInfo {
   id: string;
@@ -46,8 +48,41 @@ interface PedidoComInfo {
   } | null;
 }
 
-export function MeusPedidosClient({ initialPedidos }: { initialPedidos: any[] }) {
-  const [pedidos] = useState<PedidoComInfo[]>(initialPedidos);
+export function MeusPedidosClient({ initialPedidos, userId }: { initialPedidos: any[]; userId: string }) {
+  const [pedidos, setPedidos] = useState<PedidoComInfo[]>(initialPedidos);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("meus-pedidos-rt")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "pedidos", filter: `paciente_id=eq.${userId}` },
+        (payload) => {
+          setPedidos((prev) =>
+            prev.map((p) => (p.id === payload.new.id ? { ...p, ...payload.new } : p))
+          );
+          const novoStatus = STATUS_PEDIDO[payload.new.status as StatusPedido];
+          if (novoStatus) {
+            toast.custom((t) => (
+              <div className={`${t.visible ? "animate-fade-up" : "animate-fade-out"} bg-surface border border-ember/30 p-4 rounded-2xl shadow-2xl flex items-center gap-3`}>
+                <div className="h-10 w-10 rounded-full bg-ember/10 flex items-center justify-center text-ember">
+                  <Package size={20} />
+                </div>
+                <div>
+                  <p className="text-text font-bold text-sm">Pedido atualizado!</p>
+                  <p className="text-muted text-xs">Status: {novoStatus.label}</p>
+                </div>
+              </div>
+            ));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   return (
     <div className="space-y-6 pb-32">

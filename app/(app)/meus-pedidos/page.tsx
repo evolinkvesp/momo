@@ -23,8 +23,9 @@ export default async function MeusPedidosPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <MeusPedidosClient 
-      initialPedidos={pedidos || []} 
+    <MeusPedidosClient
+      initialPedidos={pedidos || []}
+      userId={session.user.id}
     />
   );
 }

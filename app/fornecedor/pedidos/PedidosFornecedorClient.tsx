@@ -66,6 +66,15 @@ export function PedidosFornecedorClient({ fornecedorId }: { fornecedorId: string
           ));
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "pedidos", filter: `fornecedor_id=eq.${fornecedorId}` },
+        (payload) => {
+          setPedidos((prev) =>
+            prev.map((p) => (p.id === payload.new.id ? { ...p, ...payload.new } : p))
+          );
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
