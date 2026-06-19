@@ -97,7 +97,7 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
           {/* Top bar */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
             <img src="/logo.png" alt="" style={{ height: 28, width: 28, objectFit: "contain" }} />
-            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.32)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            <span style={{ fontSize: 9, color: "#ffffff", fontFamily: "Outfit,sans-serif", letterSpacing: "0.14em", textTransform: "uppercase" }}>
               {mesAno}
             </span>
           </div>
@@ -162,7 +162,7 @@ function TplWeight({
         <span
           style={{
             fontSize: Math.round(fs * 0.38), fontWeight: 700,
-            color: "rgba(255,255,255,0.62)", letterSpacing: "-1px",
+            color: "#ffffff", letterSpacing: "-1px",
             marginBottom: Math.round(fs * 0.07), marginLeft: 7,
             fontFamily: "Syne,sans-serif",
           }}
@@ -191,7 +191,7 @@ function TplWeight({
             animation: "spFadeUp 0.5s 0.38s ease both",
           }}
         >
-          <span style={{ fontSize: 19, fontWeight: 700, color: "rgba(255,255,255,0.58)", fontFamily: "Syne,sans-serif", flexShrink: 0 }}>
+          <span style={{ fontSize: 19, fontWeight: 700, color: "#ffffff", fontFamily: "Syne,sans-serif", flexShrink: 0 }}>
             {data.pesoInicial.toFixed(1)}kg
           </span>
           <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(255,255,255,0.1),#FF6B00 82%)" }} />
@@ -207,7 +207,7 @@ function TplWeight({
       {/* Days */}
       <span
         style={{
-          fontSize: 20, color: "rgba(255,255,255,0.65)", fontFamily: "Outfit,sans-serif",
+          fontSize: 20, color: "#ffffff", fontFamily: "Outfit,sans-serif",
           animation: "spFadeUp 0.5s 0.52s ease both",
         }}
       >
@@ -258,7 +258,7 @@ function TplGoal({ data }: { data: ShareProgressData }) {
         <span style={{ fontSize: fs, fontWeight: 900, color: "#fff", letterSpacing: "-8px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
           {str}
         </span>
-        <span style={{ fontSize: Math.round(fs * 0.36), fontWeight: 700, color: "rgba(255,255,255,0.62)", marginBottom: Math.round(fs * 0.07), marginLeft: 7, fontFamily: "Syne,sans-serif" }}>
+        <span style={{ fontSize: Math.round(fs * 0.36), fontWeight: 700, color: "#ffffff", marginBottom: Math.round(fs * 0.07), marginLeft: 7, fontFamily: "Syne,sans-serif" }}>
           kg
         </span>
       </div>
@@ -307,7 +307,7 @@ function TplRecord({ data }: { data: ShareProgressData }) {
         <span style={{ fontSize: fs, fontWeight: 900, color: "#fff", letterSpacing: "-8px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
           {str}
         </span>
-        <span style={{ fontSize: Math.round(fs * 0.36), fontWeight: 700, color: "rgba(255,255,255,0.62)", marginBottom: Math.round(fs * 0.07), marginLeft: 7, fontFamily: "Syne,sans-serif" }}>
+        <span style={{ fontSize: Math.round(fs * 0.36), fontWeight: 700, color: "#ffffff", marginBottom: Math.round(fs * 0.07), marginLeft: 7, fontFamily: "Syne,sans-serif" }}>
           kg
         </span>
       </div>
@@ -379,13 +379,13 @@ function TplBA({ data }: { data: ShareProgressData }) {
       >
         {/* Antes */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.58)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#ffffff", fontFamily: "Outfit,sans-serif", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8 }}>
             ANTES
           </span>
-          <span style={{ fontSize: 90, fontWeight: 900, color: "rgba(255,255,255,0.55)", letterSpacing: "-5px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
+          <span style={{ fontSize: 90, fontWeight: 900, color: "#ffffff", letterSpacing: "-5px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
             {Math.round(antes)}
           </span>
-          <span style={{ fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,0.45)", fontFamily: "Syne,sans-serif", marginTop: 4 }}>
+          <span style={{ fontSize: 26, fontWeight: 700, color: "#ffffff", fontFamily: "Syne,sans-serif", marginTop: 4 }}>
             kg
           </span>
         </div>
@@ -411,7 +411,7 @@ function TplBA({ data }: { data: ShareProgressData }) {
           >
             {Math.round(depois)}
           </span>
-          <span style={{ fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,0.65)", fontFamily: "Syne,sans-serif", marginTop: 4 }}>
+          <span style={{ fontSize: 26, fontWeight: 700, color: "#ffffff", fontFamily: "Syne,sans-serif", marginTop: 4 }}>
             kg
           </span>
         </div>
@@ -427,11 +427,11 @@ function TplBA({ data }: { data: ShareProgressData }) {
         <span style={{ fontSize: 60, fontWeight: 900, color: "#FF6B00", letterSpacing: "-4px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
           −{diff.toFixed(1)}
         </span>
-        <span style={{ fontSize: 24, fontWeight: 700, color: "rgba(255,107,0,0.75)", marginBottom: 8, marginLeft: 5, fontFamily: "Syne,sans-serif" }}>
+        <span style={{ fontSize: 24, fontWeight: 700, color: "#FF6B00", marginBottom: 8, marginLeft: 5, fontFamily: "Syne,sans-serif" }}>
           kg
         </span>
       </div>
-      <span style={{ fontSize: 20, color: "rgba(255,255,255,0.65)", fontFamily: "Outfit,sans-serif", letterSpacing: "0.03em" }}>
+      <span style={{ fontSize: 20, color: "#ffffff", fontFamily: "Outfit,sans-serif", letterSpacing: "0.03em" }}>
         a menos
       </span>
     </div>
@@ -464,7 +464,7 @@ function TplMilestone({ milestoneKg }: { milestoneKg: number }) {
         <span style={{ fontSize: fs, fontWeight: 900, color: "#FF6B00", letterSpacing: "-10px", lineHeight: 0.84, fontFamily: "Syne,sans-serif" }}>
           {milestoneKg}
         </span>
-        <span style={{ fontSize: Math.round(fs * 0.34), fontWeight: 900, color: "rgba(255,107,0,0.80)", letterSpacing: "-2px", marginBottom: Math.round(fs * 0.1), marginLeft: 6, fontFamily: "Syne,sans-serif" }}>
+        <span style={{ fontSize: Math.round(fs * 0.34), fontWeight: 900, color: "#FF6B00", letterSpacing: "-2px", marginBottom: Math.round(fs * 0.1), marginLeft: 6, fontFamily: "Syne,sans-serif" }}>
           KG
         </span>
       </div>
