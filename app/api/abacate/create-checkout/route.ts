@@ -42,6 +42,25 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: data?.error || 'AbacatePay error' }, { status: 500 })
     }
 
+    console.log('[abacate/create-checkout] response data:', JSON.stringify(data.data))
+
+    // Store subscription/billing ID immediately so sync can verify later
+    const subId: string = data.data?.subscriptionId ?? data.data?.id ?? ''
+    const billingId: string = data.data?.billingId ?? data.data?.billing?.id ?? ''
+    if (subId || billingId) {
+      try {
+        const svc = (await import('@/lib/supabase-server')).createServiceClient()
+        await svc.from('assinaturas').upsert({
+          user_id: user.id,
+          abacate_subscription_id: subId || null,
+          abacate_billing_id: billingId || null,
+          status: 'pending',
+        }, { onConflict: 'user_id' })
+      } catch (e: any) {
+        console.error('[abacate/create-checkout] failed to store pending sub:', e?.message)
+      }
+    }
+
     return Response.json({ url: data.data.url })
   } catch (err: any) {
     console.error('[abacate/create-checkout]', err?.message)

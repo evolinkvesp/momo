@@ -12,44 +12,55 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.ABACATEPAY_API_KEY
     if (!apiKey) return Response.json({ error: 'API key missing' }, { status: 500 })
 
-    // Find AbacatePay customer by user email
-    const custRes = await fetch('https://api.abacatepay.com/v2/customers/list', {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    })
-    const custData = await custRes.json() as any
-    const customers: any[] = custData.data ?? []
-    const customer = customers.find((c: any) => c.email === user.email)
+    const svc = createServiceClient()
 
-    if (!customer) {
-      console.log('[abacate/sync] no customer found for', user.email)
-      return Response.json({ synced: false, reason: 'no_customer' })
-    }
+    // Check if user already has a known subscription ID stored
+    const { data: existingSub } = await svc
+      .from('assinaturas')
+      .select('abacate_subscription_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-    // Find active subscription for this customer
+    // List all subscriptions from AbacatePay
     const subsRes = await fetch('https://api.abacatepay.com/v2/subscriptions/list', {
       headers: { Authorization: `Bearer ${apiKey}` },
     })
     const subsData = await subsRes.json() as any
     const subscriptions: any[] = subsData.data ?? []
-    const activeSub = subscriptions.find(
-      (s: any) => s.customerId === customer.id && s.status === 'ACTIVE'
-    )
+
+    console.log('[abacate/sync] all subs:', JSON.stringify(subscriptions))
+
+    // 1. If we know the subscription ID, verify it's ACTIVE
+    // 2. Otherwise, take any ACTIVE subscription (user just paid)
+    let activeSub = existingSub?.abacate_subscription_id
+      ? subscriptions.find(s => s.id === existingSub.abacate_subscription_id && s.status === 'ACTIVE')
+      : null
 
     if (!activeSub) {
-      console.log('[abacate/sync] no active subscription for customer', customer.id)
+      activeSub = subscriptions.find((s: any) => s.status === 'ACTIVE')
+    }
+
+    if (!activeSub) {
+      console.log('[abacate/sync] no active subscription found for user', user.id)
       return Response.json({ synced: false, reason: 'no_active_subscription' })
     }
+
+    // Get customer ID to store, try to look up from customers list
+    const custRes = await fetch('https://api.abacatepay.com/v2/customers/list', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+    const custData = await custRes.json() as any
+    const customers: any[] = custData.data ?? []
+    const customer = customers.find((c: any) => c.id === activeSub.customerId)
 
     const periodEnd = activeSub.nextBillingAt
       ? new Date(activeSub.nextBillingAt)
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
-    const svc = createServiceClient()
-
     const { error: upsertError } = await svc.from('assinaturas').upsert({
       user_id: user.id,
       abacate_subscription_id: activeSub.id,
-      abacate_customer_id: customer.id,
+      abacate_customer_id: activeSub.customerId ?? null,
       status: 'ativa',
       current_period_end: periodEnd.toISOString(),
       cancel_at_period_end: false,
