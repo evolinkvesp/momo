@@ -26,8 +26,8 @@ function formatBRL(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 }
 
-// Crimson red palette for charts
-const RED_SHADES = ["#e11d48", "#f43f5e", "#9f1239", "rgba(225,29,72,0.45)", "rgba(225,29,72,0.25)"];
+// Ember orange palette for charts
+const EMBER_SHADES = ["#ff6500", "#ff7a1a", "#cc4c00", "rgba(255,101,0,0.45)", "rgba(255,101,0,0.25)"];
 
 interface Metrics {
   mrr: number;
@@ -61,7 +61,7 @@ const item = {
 };
 
 const ALERT_STYLES = {
-  danger:  { border: "rgba(225,29,72,0.25)",  bg: "rgba(225,29,72,0.06)",  color: "#f43f5e",  iconBg: "rgba(225,29,72,0.12)" },
+  danger:  { border: "rgba(255,101,0,0.25)",  bg: "rgba(255,101,0,0.06)",  color: "#ff7a1a",  iconBg: "rgba(255,101,0,0.12)" },
   warning: { border: "rgba(251,191,36,0.22)",  bg: "rgba(251,191,36,0.05)", color: "#fbbf24",  iconBg: "rgba(251,191,36,0.10)" },
   info:    { border: "rgba(96,165,250,0.20)",  bg: "rgba(96,165,250,0.05)", color: "#60a5fa",  iconBg: "rgba(96,165,250,0.10)" },
 };
@@ -119,11 +119,11 @@ export function AdminDashboardClient({
           <div className="flex items-center gap-2.5 mb-2">
             <span
               className="h-2 w-2 rounded-full a-pulse"
-              style={{ background: "#e11d48", boxShadow: "0 0 8px rgba(225,29,72,0.8)" }}
+              style={{ background: "#ff6500", boxShadow: "0 0 8px rgba(255,101,0,0.8)" }}
             />
             <span
               className="text-[9px] font-black uppercase tracking-[0.3em]"
-              style={{ color: "rgba(225,29,72,0.7)" }}
+              style={{ color: "rgba(255,101,0,0.7)" }}
             >
               Sistema Operacional
             </span>
@@ -152,8 +152,8 @@ export function AdminDashboardClient({
           <button
             className="flex h-10 items-center gap-2 px-4 rounded-xl text-white text-[12px] font-bold transition-all hover:opacity-80 active:scale-95"
             style={{
-              background: "linear-gradient(135deg, #e11d48, #9f1239)",
-              boxShadow: "0 4px 20px rgba(225,29,72,0.30)",
+              background: "linear-gradient(135deg, #ff7a1a, #cc4c00)",
+              boxShadow: "0 4px 20px rgba(255,101,0,0.30)",
             }}
           >
             <Zap size={13} fill="white" />
@@ -194,7 +194,7 @@ export function AdminDashboardClient({
             variants={item}
             className="a-card-red p-6 relative overflow-hidden group"
             style={{ transition: "box-shadow 0.2s" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 32px rgba(225,29,72,0.12)"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 32px rgba(255,101,0,0.12)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
           >
             {/* Ghost icon */}
@@ -205,13 +205,13 @@ export function AdminDashboardClient({
             <div className="flex items-center justify-between mb-5">
               <div
                 className="h-9 w-9 rounded-xl flex items-center justify-center"
-                style={{ background: "rgba(225,29,72,0.10)", border: "1px solid rgba(225,29,72,0.20)" }}
+                style={{ background: "rgba(255,101,0,0.10)", border: "1px solid rgba(255,101,0,0.20)" }}
               >
-                <card.icon size={17} style={{ color: "#e11d48" }} strokeWidth={2.5} />
+                <card.icon size={17} style={{ color: "#ff6500" }} strokeWidth={2.5} />
               </div>
               <span
                 className="text-[10px] font-black uppercase tracking-widest"
-                style={{ color: card.trendUp ? "rgba(74,222,128,0.7)" : "rgba(225,29,72,0.6)" }}
+                style={{ color: card.trendUp ? "rgba(74,222,128,0.7)" : "rgba(255,101,0,0.6)" }}
               >
                 {card.trend}
               </span>
@@ -268,7 +268,7 @@ export function AdminDashboardClient({
         <motion.div variants={item} className="lg:col-span-8 a-card p-7">
           <div className="flex justify-between items-end mb-8">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(255,101,0,0.7)" }}>
                 Financeiro
               </p>
               <h4
@@ -283,10 +283,10 @@ export function AdminDashboardClient({
             </div>
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-              style={{ background: "rgba(225,29,72,0.08)", border: "1px solid rgba(225,29,72,0.18)" }}
+              style={{ background: "rgba(255,101,0,0.08)", border: "1px solid rgba(255,101,0,0.18)" }}
             >
-              <span className="h-2 w-2 rounded-full" style={{ background: "#e11d48" }} />
-              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(225,29,72,0.8)" }}>
+              <span className="h-2 w-2 rounded-full" style={{ background: "#ff6500" }} />
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(255,101,0,0.8)" }}>
                 Real
               </span>
             </div>
@@ -296,9 +296,9 @@ export function AdminDashboardClient({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueChart}>
                 <defs>
-                  <linearGradient id="crimsonGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#e11d48" stopOpacity={0.30} />
-                    <stop offset="100%" stopColor="#e11d48" stopOpacity={0.00} />
+                  <linearGradient id="emberGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor="#ff6500" stopOpacity={0.30} />
+                    <stop offset="100%" stopColor="#ff6500" stopOpacity={0.00} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" strokeDasharray="4 4" />
@@ -314,24 +314,24 @@ export function AdminDashboardClient({
                   tickFormatter={(v) => `R$${v}`}
                 />
                 <Tooltip
-                  cursor={{ stroke: "rgba(225,29,72,0.2)", strokeWidth: 2 }}
+                  cursor={{ stroke: "rgba(255,101,0,0.2)", strokeWidth: 2 }}
                   contentStyle={{
                     backgroundColor: "#0f0f0f",
-                    border: "1px solid rgba(225,29,72,0.20)",
+                    border: "1px solid rgba(255,101,0,0.20)",
                     borderRadius: "14px",
                     padding: "12px 16px",
                     boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
                   }}
-                  itemStyle={{ color: "#f43f5e", fontSize: "12px", fontWeight: "800" }}
+                  itemStyle={{ color: "#ff7a1a", fontSize: "12px", fontWeight: "800" }}
                   labelStyle={{ color: "rgba(255,255,255,0.35)", fontSize: "10px", textTransform: "uppercase", marginBottom: "4px", fontWeight: "bold" }}
                 />
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#e11d48"
+                  stroke="#ff6500"
                   strokeWidth={3}
-                  fill="url(#crimsonGradient)"
-                  activeDot={{ r: 7, fill: "#e11d48", stroke: "#080808", strokeWidth: 3 }}
+                  fill="url(#emberGradient)"
+                  activeDot={{ r: 7, fill: "#ff6500", stroke: "#080808", strokeWidth: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -341,7 +341,7 @@ export function AdminDashboardClient({
         {/* Plan Distribution Donut */}
         <motion.div variants={item} className="lg:col-span-4 a-card p-7 flex flex-col">
           <div className="mb-6">
-            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(255,101,0,0.7)" }}>
               Distribuição
             </p>
             <h4
@@ -376,13 +376,13 @@ export function AdminDashboardClient({
                   animationDuration={1000}
                 >
                   {planDistribution.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={RED_SHADES[index % RED_SHADES.length]} />
+                    <Cell key={`cell-${index}`} fill={EMBER_SHADES[index % EMBER_SHADES.length]} />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f0f0f",
-                    border: "1px solid rgba(225,29,72,0.20)",
+                    border: "1px solid rgba(255,101,0,0.20)",
                     borderRadius: "12px",
                   }}
                 />
@@ -398,7 +398,7 @@ export function AdminDashboardClient({
                 style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: RED_SHADES[i % RED_SHADES.length] }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: EMBER_SHADES[i % EMBER_SHADES.length] }} />
                   <span className="text-[12px] font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
                     {p.name}
                   </span>
@@ -418,9 +418,9 @@ export function AdminDashboardClient({
           <div className="flex items-center gap-3 mb-7">
             <div
               className="h-9 w-9 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(225,29,72,0.10)", border: "1px solid rgba(225,29,72,0.20)" }}
+              style={{ background: "rgba(255,101,0,0.10)", border: "1px solid rgba(255,101,0,0.20)" }}
             >
-              <Activity size={17} style={{ color: "#e11d48" }} strokeWidth={2.5} />
+              <Activity size={17} style={{ color: "#ff6500" }} strokeWidth={2.5} />
             </div>
             <div>
               <h4 className="text-[15px] font-black text-white tracking-tight">Engajamento</h4>
@@ -430,9 +430,9 @@ export function AdminDashboardClient({
 
           <div className="grid grid-cols-3 gap-3 mb-7">
             {[
-              { label: "Hoje",   val: metrics.activeUsersToday, dim: "rgba(225,29,72,0.9)" },
-              { label: "7 dias", val: metrics.activeUsers7d,    dim: "rgba(225,29,72,0.65)" },
-              { label: "30 dias",val: metrics.activeUsers30d,   dim: "rgba(225,29,72,0.40)" },
+              { label: "Hoje",   val: metrics.activeUsersToday, dim: "rgba(255,101,0,0.9)" },
+              { label: "7 dias", val: metrics.activeUsers7d,    dim: "rgba(255,101,0,0.65)" },
+              { label: "30 dias",val: metrics.activeUsers30d,   dim: "rgba(255,101,0,0.40)" },
             ].map((eng) => (
               <div
                 key={eng.label}
@@ -458,21 +458,21 @@ export function AdminDashboardClient({
                   dy={10}
                 />
                 <Tooltip
-                  cursor={{ fill: "rgba(225,29,72,0.05)" }}
+                  cursor={{ fill: "rgba(255,101,0,0.05)" }}
                   contentStyle={{
                     backgroundColor: "#0f0f0f",
-                    border: "1px solid rgba(225,29,72,0.20)",
+                    border: "1px solid rgba(255,101,0,0.20)",
                     borderRadius: "12px",
                     padding: "10px 14px",
                   }}
-                  itemStyle={{ color: "#f43f5e", fontSize: "12px", fontWeight: "800" }}
+                  itemStyle={{ color: "#ff7a1a", fontSize: "12px", fontWeight: "800" }}
                   labelStyle={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}
                 />
                 <Bar dataKey="value" radius={[5, 5, 0, 0]} barSize={20}>
                   {growthChart.map((_, index) => (
                     <Cell
                       key={`bar-${index}`}
-                      fill={index === growthChart.length - 1 ? "#e11d48" : "rgba(225,29,72,0.30)"}
+                      fill={index === growthChart.length - 1 ? "#ff6500" : "rgba(255,101,0,0.30)"}
                     />
                   ))}
                 </Bar>
@@ -488,7 +488,7 @@ export function AdminDashboardClient({
             style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
           >
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(225,29,72,0.7)" }}>
+              <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: "rgba(255,101,0,0.7)" }}>
                 Assinantes
               </p>
               <h4 className="text-[15px] font-black text-white tracking-tight mt-0.5">Últimos Registros</h4>
@@ -510,12 +510,12 @@ export function AdminDashboardClient({
                 <div className="flex items-center gap-3">
                   <div
                     className="h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-black shrink-0"
-                    style={{ background: "rgba(225,29,72,0.10)", color: "#e11d48", border: "1px solid rgba(225,29,72,0.18)" }}
+                    style={{ background: "rgba(255,101,0,0.10)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.18)" }}
                   >
                     {customer.nome.substring(0, 1).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-[13px] font-bold text-white leading-tight group-hover:text-[#f43f5e] transition-colors">
+                    <p className="text-[13px] font-bold text-white leading-tight group-hover:text-[#ff7a1a] transition-colors">
                       {customer.nome}
                     </p>
                     <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.25)" }}>
@@ -545,7 +545,7 @@ export function AdminDashboardClient({
           <div className="px-7 py-4 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
             <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.15)" }}>
               <ShieldCheck size={11} />
-              Transações processadas via Stripe
+              Transações processadas via AbacatePay
             </div>
           </div>
         </motion.div>

@@ -40,7 +40,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
           <div className="flex items-center gap-2.5 mb-1">
             <div
               className="h-7 w-7 rounded-lg flex items-center justify-center text-[11px] font-black"
-              style={{ background: "linear-gradient(135deg, #e11d48, #9f1239)", color: "white", boxShadow: "0 4px 12px rgba(225,29,72,0.35)" }}
+              style={{ background: "linear-gradient(135deg, #ff7a1a, #cc4c00)", color: "white", boxShadow: "0 4px 12px rgba(255,101,0,0.35)" }}
             >
               A
             </div>
@@ -55,7 +55,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
             Command Center
           </p>
           {/* Red separator */}
-          <div className="mt-4 h-px" style={{ background: "linear-gradient(to right, rgba(225,29,72,0.4), transparent)" }} />
+          <div className="mt-4 h-px" style={{ background: "linear-gradient(to right, rgba(255,101,0,0.4), transparent)" }} />
         </div>
 
         {/* Nav items */}
@@ -72,9 +72,9 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
                 style={
                   active
                     ? {
-                        background: "rgba(225,29,72,0.10)",
-                        color: "#f43f5e",
-                        borderLeft: "2px solid #e11d48",
+                        background: "rgba(255,101,0,0.10)",
+                        color: "#ff7a1a",
+                        borderLeft: "2px solid #ff6500",
                         paddingLeft: "10px",
                       }
                     : {
@@ -101,7 +101,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
                 {isFornecedores && pendingCount > 0 && (
                   <span
                     className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
-                    style={{ background: "#e11d48", color: "white" }}
+                    style={{ background: "#ff6500", color: "white" }}
                   >
                     {pendingCount > 99 ? "99+" : pendingCount}
                   </span>
@@ -116,7 +116,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
           <div className="flex items-center gap-2.5 px-2">
             <div
               className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black"
-              style={{ background: "rgba(225,29,72,0.10)", color: "#e11d48", border: "1px solid rgba(225,29,72,0.18)" }}
+              style={{ background: "rgba(255,101,0,0.10)", color: "#ff6500", border: "1px solid rgba(255,101,0,0.18)" }}
             >
               R
             </div>
@@ -147,7 +147,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
               key={navItem.href}
               href={navItem.href}
               className="flex flex-col items-center gap-1 px-2 py-1 relative transition-colors"
-              style={{ color: active ? "#e11d48" : "rgba(255,255,255,0.25)" }}
+              style={{ color: active ? "#ff6500" : "rgba(255,255,255,0.25)" }}
             >
               <Icon size={20} strokeWidth={active ? 2.5 : 1.6} />
               <span className="text-[9px] font-black uppercase tracking-widest">
@@ -156,7 +156,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
               {isFornecedores && pendingCount > 0 && (
                 <span
                   className="absolute top-0 right-1 h-4 w-4 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none"
-                  style={{ background: "#e11d48" }}
+                  style={{ background: "#ff6500" }}
                 >
                   {pendingCount > 9 ? "9+" : pendingCount}
                 </span>
