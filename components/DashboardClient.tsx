@@ -108,6 +108,8 @@ export function DashboardClient({
     pesoAtual: lastWeight?.peso_kg ?? null,
     mediaSemana: pesoPerdido / semanasShare,
     serie: [...(weights || [])].reverse().map((w) => w.peso_kg).filter(Boolean),
+    nome: profile?.nome ?? undefined,
+    pesoMeta: profile?.peso_meta ?? null,
   };
 
   const doseColor =

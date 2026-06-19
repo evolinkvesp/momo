@@ -244,6 +244,8 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
     pesoAtual: pesoAtual ?? null,
     mediaSemana: mediaSemana < 0 ? -mediaSemana : 0,
     serie: serieCompleta,
+    nome: profile?.nome ?? undefined,
+    pesoMeta: profile?.peso_meta ?? null,
   };
 
   const currentIMCRealTime = useMemo(() => {
