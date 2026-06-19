@@ -129,12 +129,12 @@ export function AdminDashboardClient({
             </span>
           </div>
           <h1
-            className="text-[36px] font-black leading-none tracking-[-0.04em] a-text-gradient"
+            className="text-[28px] md:text-[36px] font-black leading-none tracking-[-0.04em] a-text-gradient"
             style={{ fontFamily: "var(--font-syne, sans-serif)" }}
           >
             Command Center
           </h1>
-          <p className="mt-1.5 text-[13px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+          <p className="mt-1.5 text-[12px] md:text-[13px]" style={{ color: "rgba(255,255,255,0.28)" }}>
             {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
@@ -192,7 +192,7 @@ export function AdminDashboardClient({
           <motion.div
             key={card.label}
             variants={item}
-            className="a-card-red p-6 relative overflow-hidden group"
+            className="a-card-red p-5 md:p-6 relative overflow-hidden group"
             style={{ transition: "box-shadow 0.2s" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 32px rgba(255,101,0,0.12)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
@@ -234,7 +234,7 @@ export function AdminDashboardClient({
       </div>
 
       {/* ── Ticket Médio + Usuários Ativos — mini row ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         {[
           { label: "Ticket Médio", value: formatBRL(metrics.ticketMedio), icon: TrendingUp },
           { label: "Ativos 7d",    value: metrics.activeUsers7d,           icon: Activity },
@@ -292,7 +292,7 @@ export function AdminDashboardClient({
             </div>
           </div>
 
-          <div className="h-[280px] w-full">
+          <div className="h-[200px] md:h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueChart}>
                 <defs>
@@ -442,7 +442,7 @@ export function AdminDashboardClient({
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: "rgba(255,255,255,0.20)" }}>
                   {eng.label}
                 </p>
-                <p className="text-[26px] font-black text-white tracking-tight leading-none">{eng.val}</p>
+                <p className="text-[20px] md:text-[26px] font-black text-white tracking-tight leading-none">{eng.val}</p>
                 <div className="h-0.5 w-6 rounded-full mt-3" style={{ background: eng.dim }} />
               </div>
             ))}
@@ -484,7 +484,7 @@ export function AdminDashboardClient({
         {/* Recent Customers */}
         <motion.div variants={item} className="a-card overflow-hidden flex flex-col">
           <div
-            className="px-7 py-5 flex justify-between items-center"
+            className="px-4 md:px-7 py-5 flex justify-between items-center"
             style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
           >
             <div>
@@ -502,7 +502,7 @@ export function AdminDashboardClient({
             {recentCustomers.map((customer, i) => (
               <div
                 key={i}
-                className="px-7 py-4 flex items-center justify-between cursor-pointer group transition-colors"
+                className="px-4 md:px-7 py-4 flex items-center justify-between cursor-pointer group transition-colors"
                 style={{ "--hover-bg": "rgba(255,255,255,0.015)" } as React.CSSProperties}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.015)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
@@ -542,10 +542,10 @@ export function AdminDashboardClient({
             ))}
           </div>
 
-          <div className="px-7 py-4 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-            <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.15)" }}>
+          <div className="px-4 md:px-7 py-4 mt-auto" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+            <div className="flex items-center justify-center md:justify-start gap-2 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.15)" }}>
               <ShieldCheck size={11} />
-              Transações processadas via AbacatePay
+              Transações processadas
             </div>
           </div>
         </motion.div>

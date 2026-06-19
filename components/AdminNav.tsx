@@ -132,10 +132,12 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
 
       {/* ── Mobile Bottom Nav ────────────────────────── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center pt-2 pb-6 px-1"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center pt-3 pb-8 px-2"
         style={{
-          background: "#0a0a0a",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(10, 10, 10, 0.65)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderTop: "1px solid rgba(255,255,255,0.1)",
         }}
       >
         {navItems.slice(0, 5).map((navItem) => {

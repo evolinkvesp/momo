@@ -6,50 +6,52 @@
 
 [data-portal="admin"] {
   /* ── Core surface ── */
-  --a-bg:          #080808;
-  --a-bg2:         #0f0f0f;
-  --a-bg3:         #161616;
-  --a-bg4:         #1c1c1c;
+  --a-bg:          #000000;
+  --a-bg2:         rgba(20, 20, 20, 0.6);
+  --a-bg3:         rgba(30, 30, 30, 0.4);
+  --a-bg4:         rgba(40, 40, 40, 0.3);
 
   /* ── Borders ── */
-  --a-border:      rgba(255,255,255,0.06);
-  --a-border2:     rgba(255,255,255,0.10);
-  --a-border-red:  rgba(255,101,0,0.18);
+  --a-border:      rgba(255,255,255,0.08);
+  --a-border2:     rgba(255,255,255,0.12);
+  --a-border-red:  rgba(255,101,0,0.25);
 
   /* ── Text ── */
   --a-text:        #ffffff;
-  --a-text2:       rgba(255,255,255,0.45);
-  --a-text3:       rgba(255,255,255,0.20);
+  --a-text2:       rgba(255,255,255,0.55);
+  --a-text3:       rgba(255,255,255,0.30);
 
   /* ── Accent — ember orange ── */
   --a-red:         #ff6500;
-  --a-red-light:   #ff7a1a;
+  --a-red-light:   #ff8a33;
   --a-red-dim:     #cc4c00;
-  --a-red-bg:      rgba(255,101,0,0.08);
-  --a-red-bg2:     rgba(255,101,0,0.14);
-  --a-red-bd:      rgba(255,101,0,0.22);
-  --a-red-glow:    rgba(255,101,0,0.30);
+  --a-red-bg:      rgba(255,101,0,0.10);
+  --a-red-bg2:     rgba(255,101,0,0.18);
+  --a-red-bd:      rgba(255,101,0,0.30);
+  --a-red-glow:    rgba(255,101,0,0.40);
 
   /* ── Status semantic ── */
   --a-green:       #4ade80;
-  --a-green-bg:    rgba(74,222,128,0.08);
-  --a-green-bd:    rgba(74,222,128,0.18);
+  --a-green-bg:    rgba(74,222,128,0.10);
+  --a-green-bd:    rgba(74,222,128,0.25);
   --a-blue:        #60a5fa;
-  --a-blue-bg:     rgba(96,165,250,0.08);
-  --a-blue-bd:     rgba(96,165,250,0.18);
+  --a-blue-bg:     rgba(96,165,250,0.10);
+  --a-blue-bd:     rgba(96,165,250,0.25);
   --a-yellow:      #fbbf24;
-  --a-yellow-bg:   rgba(251,191,36,0.08);
-  --a-yellow-bd:   rgba(251,191,36,0.18);
+  --a-yellow-bg:   rgba(251,191,36,0.10);
+  --a-yellow-bd:   rgba(251,191,36,0.25);
 
   /* ── Radius ── */
-  --a-radius:      14px;
-  --a-radius-lg:   22px;
+  --a-radius:      16px;
+  --a-radius-lg:   24px;
 
   /* ── Shadows ── */
-  --a-shadow:      0 2px 20px rgba(0,0,0,0.7);
-  --a-shadow-red:  0 8px 32px rgba(255,101,0,0.25);
+  --a-shadow:      0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  --a-shadow-red:  0 8px 32px rgba(255,101,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
 
   background-color: var(--a-bg);
+  background-image: radial-gradient(circle at 50% -20%, rgba(255,101,0,0.08), transparent 40%);
+  background-attachment: fixed;
   color: var(--a-text);
   font-family: var(--font-outfit, system-ui, sans-serif);
 }
@@ -59,37 +61,49 @@
    ════════════════════════ */
 .a-card {
   background: var(--a-bg2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--a-border);
   border-radius: var(--a-radius);
   box-shadow: var(--a-shadow);
 }
 .a-card-lg {
   background: var(--a-bg2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--a-border);
   border-radius: var(--a-radius-lg);
   box-shadow: var(--a-shadow);
 }
 .a-card-red {
   background: var(--a-bg2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--a-border);
   border-top: 2px solid var(--a-red);
   border-radius: var(--a-radius);
   box-shadow: var(--a-shadow);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.a-card-red:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--a-shadow-red);
 }
 .a-glass {
   background: var(--a-bg3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--a-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--a-border2);
+  box-shadow: var(--a-shadow);
 }
 .a-text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.45) 100%);
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.6) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .a-red-gradient {
-  background: linear-gradient(135deg, #ff7a1a 0%, #cc4c00 100%);
+  background: linear-gradient(135deg, #ff8a33 0%, #ff6500 50%, #cc4c00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
