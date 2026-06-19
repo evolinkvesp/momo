@@ -148,6 +148,15 @@ function TplWeight({
       >
         <span
           style={{
+            fontSize: fs, fontWeight: 900, color: "#FF6B00",
+            letterSpacing: "-6px", lineHeight: 0.84,
+            fontFamily: "Syne,sans-serif",
+          }}
+        >
+          −
+        </span>
+        <span
+          style={{
             fontSize: fs, fontWeight: 900, color: "#fff",
             letterSpacing: "-6px", lineHeight: 0.84,
             fontFamily: "Syne,sans-serif",
@@ -217,7 +226,7 @@ function TplWeight({
 
 function TplGoal({ data }: { data: ShareProgressData }) {
   const raw  = data.pesoMeta ?? data.pesoAtual;
-  const str  = raw != null ? Math.round(raw).toString() : "—";
+  const str  = raw != null ? Math.floor(raw).toString() : "—";
   const fs   = pesoFontSize(str);
 
   return (
@@ -266,7 +275,7 @@ function TplGoal({ data }: { data: ShareProgressData }) {
 
 function TplRecord({ data }: { data: ShareProgressData }) {
   const raw = data.pesoAtual;
-  const str = raw != null ? Math.round(raw).toString() : "—";
+  const str = raw != null ? Math.floor(raw).toString() : "—";
   const fs  = pesoFontSize(str);
 
   return (
