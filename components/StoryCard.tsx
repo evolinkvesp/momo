@@ -33,23 +33,92 @@ export const TEMPLATES: { key: TemplateType; emoji: string; label: string }[] = 
   { key: "milestone",   emoji: "🏆", label: "Milestone"      },
 ];
 
+// ── Color themes ───────────────────────────────────────────────────────────────
+
+export interface ColorTheme {
+  key: string;
+  label: string;
+  main: string;       // cor principal (números, títulos)
+  soft: string;       // cor suave (labels, unidades)
+  light: string;      // efeitos decorativos (sparkles, raios)
+  divider: string;    // separadores
+  accent: string;     // badge do logo
+}
+
+export const COLOR_THEMES: ColorTheme[] = [
+  {
+    key: "gold",
+    label: "Dourado",
+    main: "#B8862B",
+    soft: "#D4AE5A",
+    light: "#E5C87A",
+    divider: "#E0D0A8",
+    accent: "#C8952E",
+  },
+  {
+    key: "ember",
+    label: "Laranja",
+    main: "#CC5500",
+    soft: "#E07020",
+    light: "#FF9F50",
+    divider: "#EECCAA",
+    accent: "#FF6500",
+  },
+  {
+    key: "rose",
+    label: "Rosa",
+    main: "#B5436E",
+    soft: "#D4608A",
+    light: "#F0A0B8",
+    divider: "#E8C8D4",
+    accent: "#E0507A",
+  },
+  {
+    key: "ocean",
+    label: "Azul",
+    main: "#2B6CB0",
+    soft: "#4A90D9",
+    light: "#7BBAF5",
+    divider: "#B0D0E8",
+    accent: "#3182CE",
+  },
+  {
+    key: "emerald",
+    label: "Verde",
+    main: "#276749",
+    soft: "#48BB78",
+    light: "#68D391",
+    divider: "#B2DFC5",
+    accent: "#38A169",
+  },
+  {
+    key: "purple",
+    label: "Roxo",
+    main: "#6B46C1",
+    soft: "#9B6FE0",
+    light: "#C4A5F0",
+    divider: "#D8C8E8",
+    accent: "#805AD5",
+  },
+  {
+    key: "dark",
+    label: "Escuro",
+    main: "#1A1A1A",
+    soft: "#555555",
+    light: "#888888",
+    divider: "#CCCCCC",
+    accent: "#333333",
+  },
+];
+
 // ── Constants ──────────────────────────────────────────────────────────────────
-// Mantém o mesmo aspect ratio original que cabia na tela
+
 export const CARD_W = 360;
 export const CARD_H = 640;
 
-// ── Palette — cores 100% sólidas, sem rgba/opacity ─────────────────────────────
-
-const GOLD       = "#C8952E";   // dourado principal
-const GOLD_SOFT  = "#D4AE5A";   // dourado labels — sólido, legível
-const GOLD_NUM   = "#B8862B";   // dourado números — sólido, contraste forte
-const GOLD_LIGHT = "#E5C87A";   // sparkles / efeitos decorativos
-const DIVIDER_C  = "#E0D0A8";   // cor do divisor — sólida
-
 // ── Sparkle SVG ────────────────────────────────────────────────────────────────
-// Sem animation de opacity — apenas transform pra html2canvas não quebrar
 
-function Sparkle({ x, y, size = 14 }: { x: number; y: number; size?: number }) {
+function Sparkle({ x, y, size = 14, color }: { x: number; y: number; size?: number; color: string }) {
   return (
     <svg
       width={size} height={size}
@@ -61,20 +130,19 @@ function Sparkle({ x, y, size = 14 }: { x: number; y: number; size?: number }) {
     >
       <path
         d="M12 0C12 0 13.5 8.5 12 12C10.5 15.5 12 24 12 24C12 24 13.5 15.5 12 12C10.5 8.5 12 0 12 0Z"
-        fill={GOLD_LIGHT}
+        fill={color}
       />
       <path
         d="M0 12C0 12 8.5 10.5 12 12C15.5 13.5 24 12 24 12C24 12 15.5 10.5 12 12C8.5 13.5 0 12 0 12Z"
-        fill={GOLD_LIGHT}
+        fill={color}
       />
     </svg>
   );
 }
 
-// ── Light rays (bottom decorations) ────────────────────────────────────────────
-// Sem opacity em animation — apenas transform
+// ── Light rays ─────────────────────────────────────────────────────────────────
 
-function LightRays() {
+function LightRays({ color }: { color: string }) {
   return (
     <div
       style={{
@@ -85,7 +153,6 @@ function LightRays() {
         pointerEvents: "none",
       }}
     >
-      {/* Diagonal streaks — cor sólida, sem opacity animada */}
       {[
         { rotate: -35, left: "10%", bottom: 10, w: 250 },
         { rotate: -25, left: "20%", bottom: 40, w: 180 },
@@ -100,7 +167,7 @@ function LightRays() {
             bottom: s.bottom,
             width: s.w,
             height: 2,
-            background: `linear-gradient(90deg, transparent, ${GOLD_LIGHT}, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
             transform: `rotate(${s.rotate}deg)`,
             transformOrigin: "left center",
             animation: "spRayShimmer 4s ease-in-out infinite",
@@ -108,7 +175,6 @@ function LightRays() {
         />
       ))}
 
-      {/* Particle dots — cor sólida */}
       {[
         { x: "22%", y: 35, size: 3 },
         { x: "38%", y: 70, size: 2 },
@@ -126,7 +192,7 @@ function LightRays() {
             width: p.size,
             height: p.size,
             borderRadius: "50%",
-            background: GOLD_LIGHT,
+            background: color,
             animation: "spDotFloat 3s ease-in-out infinite",
           }}
         />
@@ -137,25 +203,22 @@ function LightRays() {
 
 // ── Momo Logo Badge ────────────────────────────────────────────────────────────
 
-function MomoLogoBadge() {
+function MomoLogoBadge({ accentColor }: { accentColor: string }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
       alignItems: "center", gap: 6,
     }}>
-      {/* Ring + logo */}
       <div style={{
         position: "relative",
         width: 64, height: 64,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        {/* Gold ring border */}
         <div style={{
           position: "absolute", inset: -3,
           borderRadius: "50%",
-          border: `2px solid ${GOLD_LIGHT}`,
+          border: `2px solid ${accentColor}`,
         }} />
-        {/* Logo circle */}
         <div style={{
           position: "relative",
           width: 56, height: 56,
@@ -171,11 +234,10 @@ function MomoLogoBadge() {
         </div>
       </div>
 
-      {/* Brand name */}
       <span style={{
         fontSize: 12,
         fontWeight: 800,
-        color: GOLD,
+        color: accentColor,
         letterSpacing: "0.22em",
         fontFamily: "Syne,sans-serif",
       }}>
@@ -185,13 +247,13 @@ function MomoLogoBadge() {
   );
 }
 
-// ── Divider — cor sólida ───────────────────────────────────────────────────────
+// ── Divider ────────────────────────────────────────────────────────────────────
 
-function GoldDivider({ width = 140 }: { width?: number }) {
+function GoldDivider({ width = 140, color }: { width?: number; color: string }) {
   return (
     <div style={{
       width, height: 1, margin: "0 auto",
-      background: DIVIDER_C,
+      background: color,
     }} />
   );
 }
@@ -203,13 +265,16 @@ interface CardProps {
   data: ShareProgressData;
   displayPeso: number;
   mesAno: string;
+  colorTheme?: ColorTheme;
 }
 
 export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
-  function StoryCard({ template, data, displayPeso, mesAno }, ref) {
+  function StoryCard({ template, data, displayPeso, mesAno, colorTheme }, ref) {
+    const ct = colorTheme ?? COLOR_THEMES[0]; // fallback dourado
     const dias        = Math.round(data.semanas * 7);
     const milestoneKg = Math.floor(data.pesoPerdido / 5) * 5;
     const caloriasEconomizadas = Math.round(data.pesoPerdido * 7700);
+    const firstName = data.nome?.split(" ")[0] || "";
 
     return (
       <div
@@ -221,11 +286,7 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
           // SEM background — PNG transparente para figurinha no Story
         }}
       >
-        {/*
-          REGRA CRÍTICA para html2canvas:
-          Nenhuma animação usa opacity — apenas transform.
-          Isso garante que no momento da captura tudo está 100% visível.
-        */}
+        {/* Animações — sem opacity, só transform (html2canvas safe) */}
         <style>{`
           @keyframes spSparkle {
             0%, 100% { transform: scale(0.85); }
@@ -254,13 +315,13 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
           }
         `}</style>
 
-        {/* Sparkle decorations */}
-        <Sparkle x={210} y={60} size={18} />
-        <Sparkle x={245} y={38} size={13} />
-        <Sparkle x={275} y={72} size={10} />
+        {/* Sparkles */}
+        <Sparkle x={210} y={60} size={18} color={ct.light} />
+        <Sparkle x={245} y={38} size={13} color={ct.light} />
+        <Sparkle x={275} y={72} size={10} color={ct.light} />
 
-        {/* Light rays at the bottom */}
-        <LightRays />
+        {/* Light rays */}
+        <LightRays color={ct.light} />
 
         {/* Content */}
         <div style={{
@@ -271,6 +332,26 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
           padding: "32px 24px 24px",
         }}>
 
+          {/* Nome do usuário no topo (dados reais do banco) */}
+          {firstName && (
+            <div style={{
+              flexShrink: 0,
+              marginBottom: 12,
+              textAlign: "center",
+            }}>
+              <span style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: ct.soft,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                fontFamily: "Outfit,sans-serif",
+              }}>
+                {firstName}
+              </span>
+            </div>
+          )}
+
           {/* Hero — template content */}
           <div style={{
             flex: 1,
@@ -278,17 +359,17 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
             justifyContent: "center", alignItems: "center",
             width: "100%",
           }}>
-            {template === "weight"      && <TplWeight data={data} displayPeso={displayPeso} dias={dias} calorias={caloriasEconomizadas} />}
-            {template === "goal"        && <TplGoal data={data} calorias={caloriasEconomizadas} />}
-            {template === "record"      && <TplRecord data={data} calorias={caloriasEconomizadas} />}
-            {template === "streak"      && <TplStreak dias={dias} calorias={caloriasEconomizadas} />}
-            {template === "beforeafter" && <TplBA data={data} dias={dias} calorias={caloriasEconomizadas} />}
-            {template === "milestone"   && <TplMilestone milestoneKg={milestoneKg} calorias={caloriasEconomizadas} />}
+            {template === "weight"      && <TplWeight data={data} displayPeso={displayPeso} dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "goal"        && <TplGoal data={data} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "record"      && <TplRecord data={data} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "streak"      && <TplStreak dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "beforeafter" && <TplBA data={data} dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "milestone"   && <TplMilestone milestoneKg={milestoneKg} calorias={caloriasEconomizadas} ct={ct} />}
           </div>
 
           {/* Bottom logo */}
           <div style={{ flexShrink: 0, marginTop: 8 }}>
-            <MomoLogoBadge />
+            <MomoLogoBadge accentColor={ct.accent} />
           </div>
         </div>
       </div>
@@ -313,12 +394,14 @@ function MetricSection({
   unit,
   emoji,
   valueFontSize = 64,
+  ct,
 }: {
   label: string;
   value: string;
   unit?: string;
   emoji?: string;
   valueFontSize?: number;
+  ct: ColorTheme;
 }) {
   return (
     <div style={{
@@ -328,7 +411,7 @@ function MetricSection({
       <span style={{
         fontSize: 11,
         fontWeight: 700,
-        color: GOLD_SOFT,
+        color: ct.soft,
         letterSpacing: "0.20em",
         textTransform: "uppercase",
         fontFamily: "Outfit,sans-serif",
@@ -343,7 +426,7 @@ function MetricSection({
         <span style={{
           fontSize: valueFontSize,
           fontWeight: 900,
-          color: GOLD_NUM,
+          color: ct.main,
           letterSpacing: "0.01em",
           lineHeight: 1,
           fontFamily: "Syne,sans-serif",
@@ -354,7 +437,7 @@ function MetricSection({
           <span style={{
             fontSize: Math.max(18, valueFontSize * 0.32),
             fontWeight: 700,
-            color: GOLD_SOFT,
+            color: ct.soft,
             letterSpacing: "0.06em",
             textTransform: "uppercase",
             fontFamily: "Syne,sans-serif",
@@ -370,9 +453,9 @@ function MetricSection({
 // ── Template: Peso Perdido ─────────────────────────────────────────────────────
 
 function TplWeight({
-  data, displayPeso, dias, calorias,
+  data, displayPeso, dias, calorias, ct,
 }: {
-  data: ShareProgressData; displayPeso: number; dias: number; calorias: number;
+  data: ShareProgressData; displayPeso: number; dias: number; calorias: number; ct: ColorTheme;
 }) {
   const numStr = displayPeso.toFixed(1);
 
@@ -382,38 +465,18 @@ function TplWeight({
       alignItems: "center", gap: 24,
       width: "100%",
     }}>
-      <MetricSection
-        label="Peso perdido"
-        value={`-${numStr}`}
-        unit="KG"
-        valueFontSize={68}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Tempo de jornada"
-        value={String(dias)}
-        unit="DIAS"
-        valueFontSize={54}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={38}
-      />
+      <MetricSection label="Peso perdido" value={`-${numStr}`} unit="KG" valueFontSize={68} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Tempo de jornada" value={String(dias)} unit="DIAS" valueFontSize={54} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={38} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Meta Alcançada ───────────────────────────────────────────────────
 
-function TplGoal({ data, calorias }: { data: ShareProgressData; calorias: number }) {
+function TplGoal({ data, calorias, ct }: { data: ShareProgressData; calorias: number; ct: ColorTheme }) {
   const raw = data.pesoMeta ?? data.pesoAtual;
   const str = raw != null ? Math.floor(raw).toString() : "—";
 
@@ -423,47 +486,25 @@ function TplGoal({ data, calorias }: { data: ShareProgressData; calorias: number
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <div style={{
-        display: "flex", flexDirection: "column",
-        alignItems: "center", gap: 6,
-      }}>
-        <span style={{ fontSize: 38, lineHeight: 1 }}>
-          🎯
-        </span>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 38, lineHeight: 1 }}>🎯</span>
         <span style={{
-          fontSize: 30, fontWeight: 900, color: GOLD,
-          letterSpacing: "0.06em", lineHeight: 1,
-          fontFamily: "Syne,sans-serif",
-        }}>
-          META BATIDA
-        </span>
+          fontSize: 30, fontWeight: 900, color: ct.accent,
+          letterSpacing: "0.06em", lineHeight: 1, fontFamily: "Syne,sans-serif",
+        }}>META BATIDA</span>
       </div>
-
-      <MetricSection
-        label="Peso alcançado"
-        value={str}
-        unit="KG"
-        valueFontSize={68}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={36}
-      />
+      <MetricSection label="Peso alcançado" value={str} unit="KG" valueFontSize={68} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Novo Recorde ─────────────────────────────────────────────────────
 
-function TplRecord({ data, calorias }: { data: ShareProgressData; calorias: number }) {
-  const raw = data.pesoAtual;
-  const str = raw != null ? Math.floor(raw).toString() : "—";
+function TplRecord({ data, calorias, ct }: { data: ShareProgressData; calorias: number; ct: ColorTheme }) {
+  const menorPeso = data.serie.length > 0 ? Math.min(...data.serie) : data.pesoAtual;
+  const str = menorPeso != null ? menorPeso.toFixed(1) : "—";
 
   return (
     <div style={{
@@ -471,78 +512,40 @@ function TplRecord({ data, calorias }: { data: ShareProgressData; calorias: numb
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <div style={{
-        display: "flex", flexDirection: "column",
-        alignItems: "center", gap: 6,
-      }}>
-        <span style={{ fontSize: 38, lineHeight: 1 }}>
-          🏆
-        </span>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 38, lineHeight: 1 }}>🏆</span>
         <span style={{
-          fontSize: 30, fontWeight: 900, color: GOLD,
-          letterSpacing: "0.06em", lineHeight: 1,
-          fontFamily: "Syne,sans-serif",
-        }}>
-          MEU RECORDE
-        </span>
+          fontSize: 30, fontWeight: 900, color: ct.accent,
+          letterSpacing: "0.06em", lineHeight: 1, fontFamily: "Syne,sans-serif",
+        }}>MEU RECORDE</span>
       </div>
-
-      <MetricSection
-        label="Menor peso"
-        value={str}
-        unit="KG"
-        valueFontSize={68}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={36}
-      />
+      <MetricSection label="Menor peso" value={str} unit="KG" valueFontSize={68} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Sequência ────────────────────────────────────────────────────────
 
-function TplStreak({ dias, calorias }: { dias: number; calorias: number }) {
+function TplStreak({ dias, calorias, ct }: { dias: number; calorias: number; ct: ColorTheme }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <span style={{ fontSize: 42, lineHeight: 1 }}>
-        🔥
-      </span>
-
-      <MetricSection
-        label="Dias sem parar"
-        value={String(dias)}
-        unit="DIAS"
-        valueFontSize={68}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={36}
-      />
+      <span style={{ fontSize: 42, lineHeight: 1 }}>🔥</span>
+      <MetricSection label="Dias sem parar" value={String(dias)} unit="DIAS" valueFontSize={68} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Antes e Agora ────────────────────────────────────────────────────
 
-function TplBA({ data, dias, calorias }: { data: ShareProgressData; dias: number; calorias: number }) {
+function TplBA({ data, dias, calorias, ct }: { data: ShareProgressData; dias: number; calorias: number; ct: ColorTheme }) {
   const antes  = data.pesoInicial ?? 0;
   const depois = data.pesoAtual   ?? 0;
   const diff   = data.pesoPerdido;
@@ -553,104 +556,68 @@ function TplBA({ data, dias, calorias }: { data: ShareProgressData; dias: number
       alignItems: "center", gap: 18,
       width: "100%",
     }}>
-      {/* Before / After side by side */}
-      <div style={{
-        display: "flex", gap: 24, alignItems: "center",
-      }}>
+      <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
         {/* Antes */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <span style={{
-            fontSize: 10, fontWeight: 700, color: GOLD_SOFT,
+            fontSize: 10, fontWeight: 700, color: ct.soft,
             letterSpacing: "0.20em", textTransform: "uppercase",
             fontFamily: "Outfit,sans-serif", marginBottom: 4,
           }}>ANTES</span>
           <span style={{
-            fontSize: 48, fontWeight: 900, color: GOLD_NUM,
-            letterSpacing: "0.01em", lineHeight: 1,
-            fontFamily: "Syne,sans-serif",
+            fontSize: 48, fontWeight: 900, color: ct.main,
+            letterSpacing: "0.01em", lineHeight: 1, fontFamily: "Syne,sans-serif",
           }}>{Math.round(antes)}</span>
           <span style={{
-            fontSize: 16, fontWeight: 700, color: GOLD_SOFT,
+            fontSize: 16, fontWeight: 700, color: ct.soft,
             fontFamily: "Syne,sans-serif", marginTop: 2,
           }}>kg</span>
         </div>
 
         {/* Arrow */}
         <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-          <path d="M4 14h20M18 8l6 6-6 6" stroke={GOLD} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 14h20M18 8l6 6-6 6" stroke={ct.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
 
         {/* Agora */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <span style={{
-            fontSize: 10, fontWeight: 700, color: GOLD,
+            fontSize: 10, fontWeight: 700, color: ct.accent,
             letterSpacing: "0.20em", textTransform: "uppercase",
             fontFamily: "Outfit,sans-serif", marginBottom: 4,
           }}>AGORA</span>
           <span style={{
-            fontSize: 48, fontWeight: 900, color: GOLD,
-            letterSpacing: "0.01em", lineHeight: 1,
-            fontFamily: "Syne,sans-serif",
+            fontSize: 48, fontWeight: 900, color: ct.accent,
+            letterSpacing: "0.01em", lineHeight: 1, fontFamily: "Syne,sans-serif",
           }}>{Math.round(depois)}</span>
           <span style={{
-            fontSize: 16, fontWeight: 700, color: GOLD,
+            fontSize: 16, fontWeight: 700, color: ct.accent,
             fontFamily: "Syne,sans-serif", marginTop: 2,
           }}>kg</span>
         </div>
       </div>
 
-      <GoldDivider width={180} />
-
-      {/* Diff */}
-      <MetricSection
-        label="Peso perdido"
-        value={`-${diff.toFixed(1)}`}
-        unit="KG"
-        valueFontSize={44}
-      />
-
-      <GoldDivider width={120} />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={30}
-      />
+      <GoldDivider width={180} color={ct.divider} />
+      <MetricSection label="Peso perdido" value={`-${diff.toFixed(1)}`} unit="KG" valueFontSize={44} ct={ct} />
+      <GoldDivider width={120} color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={30} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Milestone ────────────────────────────────────────────────────────
 
-function TplMilestone({ milestoneKg, calorias }: { milestoneKg: number; calorias: number }) {
+function TplMilestone({ milestoneKg, calorias, ct }: { milestoneKg: number; calorias: number; ct: ColorTheme }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <span style={{ fontSize: 38, lineHeight: 1 }}>
-        🏆
-      </span>
-
-      <MetricSection
-        label="KG vencidos"
-        value={String(milestoneKg)}
-        unit="KG"
-        valueFontSize={68}
-      />
-
-      <GoldDivider />
-
-      <MetricSection
-        label="Calorias economizadas"
-        value={formatKcal(calorias)}
-        unit="kcal"
-        emoji="🔥"
-        valueFontSize={36}
-      />
+      <span style={{ fontSize: 38, lineHeight: 1 }}>🏆</span>
+      <MetricSection label="KG vencidos" value={String(milestoneKg)} unit="KG" valueFontSize={68} ct={ct} />
+      <GoldDivider color={ct.divider} />
+      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
     </div>
   );
 }

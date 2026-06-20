@@ -13,7 +13,7 @@ export default async function SaudePage() {
   const [profileResult, medicoesResult, sintomasResult] = await Promise.all([
     supabase
       .from('profiles')
-      .select('altura_cm, data_inicio_tratamento, peso_meta, peso_inicial')
+      .select('nome, altura_cm, data_inicio_tratamento, peso_meta, peso_inicial')
       .eq('id', session.user.id)
       .single(),
     supabase
