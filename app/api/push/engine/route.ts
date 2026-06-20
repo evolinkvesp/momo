@@ -13,7 +13,7 @@ export const runtime = "nodejs";
  * Chamado pelo Vercel Cron (Authorization: Bearer <CRON_SECRET>) ou
  * manualmente com ?secret=<N8N_SECRET> para compatibilidade.
  *
- * Schedule em vercel.json: "0 8,9,10,12,14,19,20,21 * * *"
+ * Schedule em vercel.json: "0 */4 * * *"
  * Cobre todos os horários: dose, peso, estoque, trial, dieta, hidratação,
  * marcos de peso, streak, onboarding, primeiro mês, consulta médica, pós-entrega.
  */
@@ -48,13 +48,13 @@ export async function GET(req: Request) {
 
       // ── DOSE ──────────────────────────────────────────
       if (conf.lembrete_dose && conf.dia_semana_dose === currentDay) {
-        if (currentHour === 8) {
+        if (currentHour >= 8) {
           if (await notSentTodayWithTag(supabase, userId, "dose-hoje", hojeStr)) {
             await send(userId, { ...NOTIFICACOES.DOSES.DOSE_HOJE(nome), tag: "dose-hoje" });
             logs.push(`${userId}:DOSE_HOJE`);
           }
         }
-        if (currentHour === 20) {
+        if (currentHour >= 20) {
           const { data: dose } = await supabase
             .from("doses").select("id").eq("user_id", userId)
             .gte("data_aplicacao", hojeStr).maybeSingle();
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
 
       // ── DOSE AMANHÃ ────────────────────────────────────
       const diaAmanha = (currentDay + 1) % 7;
-      if (conf.lembrete_dose && conf.dia_semana_dose === diaAmanha && currentHour === 19) {
+      if (conf.lembrete_dose && conf.dia_semana_dose === diaAmanha && currentHour >= 16) {
         if (await notSentTodayWithTag(supabase, userId, "dose-amanha", hojeStr)) {
           await send(userId, { ...NOTIFICACOES.DOSES.PROXIMA_DOSE_AMANHA(nome), tag: "dose-amanha" });
           logs.push(`${userId}:DOSE_AMANHA`);
@@ -75,7 +75,7 @@ export async function GET(req: Request) {
       }
 
       // ── DOSE ATRASADA ──────────────────────────────────
-      if (currentHour === 9) {
+      if (currentHour >= 8) {
         const { data: lastDose } = await supabase
           .from("doses").select("data_aplicacao").eq("user_id", userId)
           .order("data_aplicacao", { ascending: false }).limit(1).maybeSingle();
@@ -98,12 +98,12 @@ export async function GET(req: Request) {
       const lastWDate = lastWeight ? parseISO(lastWeight.data_medicao) : parseISO(profile.created_at);
       const daysSinceWeight = differenceInDays(agora, lastWDate);
 
-      if (currentDay === 1 && currentHour === 8 && daysSinceWeight >= 7) {
+      if (currentDay === 1 && currentHour >= 8 && daysSinceWeight >= 7) {
         if (await notSentTodayWithTag(supabase, userId, "pesar-hoje", hojeStr)) {
           await send(userId, { ...NOTIFICACOES.PROGRESSO.PESAR_HOJE(nome), tag: "pesar-hoje" });
           logs.push(`${userId}:PESAR_HOJE`);
         }
-      } else if (currentHour === 10 && daysSinceWeight >= 10) {
+      } else if (currentHour >= 8 && daysSinceWeight >= 10) {
         if (await notSentTodayWithTag(supabase, userId, "pesar-atrasado", hojeStr)) {
           await send(userId, { ...NOTIFICACOES.PROGRESSO.PESAR_ATRASADO(nome, daysSinceWeight), tag: "pesar-atrasado" });
           logs.push(`${userId}:PESAR_ATRASADO`);
@@ -111,7 +111,7 @@ export async function GET(req: Request) {
       }
 
       // ── ESTOQUE ────────────────────────────────────────
-      if (conf.alerta_estoque && currentHour === 10) {
+      if (conf.alerta_estoque && currentHour >= 8) {
         if (await notSentTodayWithTag(supabase, userId, "estoque-check", hojeStr)) {
           const [{ data: ampolas }, { count: dosesUsadas }] = await Promise.all([
             supabase.from("estoque_ampolas").select("quantidade").eq("user_id", userId),
@@ -130,7 +130,7 @@ export async function GET(req: Request) {
       }
 
       // ── TRIAL ─────────────────────────────────────────
-      if (profile.plano_ativo === "trial" && profile.trial_expira_em && currentHour === 9) {
+      if (profile.plano_ativo === "trial" && profile.trial_expira_em && currentHour >= 8) {
         const daysLeft = differenceInDays(parseISO(profile.trial_expira_em), agora);
         if (daysLeft === 2 && await notSentTodayWithTag(supabase, userId, "trial-2d", hojeStr)) {
           await send(userId, { ...NOTIFICACOES.ENGAJAMENTO.TRIAL_EXPIRA_2DIAS(nome), tag: "trial-2d" });
@@ -142,7 +142,7 @@ export async function GET(req: Request) {
       }
 
       // ── DIETA ─────────────────────────────────────────
-      if (conf.dicas_dieta && (currentDay === 2 || currentDay === 5) && currentHour === 12) {
+      if (conf.dicas_dieta && (currentDay === 2 || currentDay === 5) && currentHour >= 12) {
         if (await notSentTodayWithTag(supabase, userId, "dica-dieta", hojeStr)) {
           const { count: totalDoses } = await supabase
             .from("doses").select("id", { count: "exact", head: true }).eq("user_id", userId);
@@ -158,7 +158,7 @@ export async function GET(req: Request) {
       }
 
       // ── HIDRATAÇÃO ─────────────────────────────────────
-      if ([1, 3, 5].includes(currentDay) && currentHour === 14) {
+      if ([1, 3, 5].includes(currentDay) && currentHour >= 12) {
         if (await notSentTodayWithTag(supabase, userId, "hidratacao", hojeStr)) {
           await send(userId, { ...NOTIFICACOES.DIETA.HIDRATACAO(nome), tag: "hidratacao" });
           logs.push(`${userId}:HIDRATACAO`);
@@ -259,7 +259,7 @@ export async function GET(req: Request) {
       }
 
       // ── STREAK SEMANAL ─────────────────────────────────
-      if (currentHour === 9 && conf.lembrete_dose) {
+      if (currentHour >= 8 && conf.lembrete_dose) {
         const { count: totalDosesS } = await supabase
           .from("doses").select("id", { count: "exact", head: true }).eq("user_id", userId);
         const dosesS = totalDosesS || 0;
@@ -275,7 +275,7 @@ export async function GET(req: Request) {
       }
 
       // ── PRIMEIRO MÊS ───────────────────────────────────
-      if (currentHour === 9 && differenceInDays(agora, parseISO(profile.created_at)) === 30) {
+      if (currentHour >= 8 && differenceInDays(agora, parseISO(profile.created_at)) === 30) {
         const { count: cMes } = await supabase.from("notifications")
           .select("id", { count: "exact", head: true }).eq("user_id", userId).eq("tag", "primeiro-mes");
         if (cMes === 0) {
@@ -321,7 +321,7 @@ export async function GET(req: Request) {
       }
 
       // ── CONSULTA MÉDICO (mensal, 2ª feira) ────────────
-      if (currentDay === 1 && currentHour === 10 && differenceInDays(agora, parseISO(profile.created_at)) >= 30) {
+      if (currentDay === 1 && currentHour >= 8 && differenceInDays(agora, parseISO(profile.created_at)) >= 30) {
         const umMesAtras = new Date(agora.getTime() - 28 * 24 * 3600 * 1000);
         const { count: cConsulta } = await supabase.from("notifications")
           .select("id", { count: "exact", head: true }).eq("user_id", userId).eq("tag", "consulta-medico")
@@ -350,7 +350,7 @@ export async function GET(req: Request) {
     }
 
     // ── FORNECEDORES: Resumo diário (21h) + Estoque baixo (10h) ──────
-    if (currentHour === 21 || currentHour === 10) {
+    if (currentHour >= 8) {
       const { data: fornecedores } = await supabase
         .from("fornecedores")
         .select("id, nome_fantasia, user_id")
@@ -361,7 +361,7 @@ export async function GET(req: Request) {
         if (!forn.user_id) continue;
 
         // Resumo do dia às 21h
-        if (currentHour === 21) {
+        if (currentHour >= 20) {
           if (await notSentTodayWithTag(supabase, forn.user_id, "resumo-dia", hojeStr)) {
             const { data: pedidosDia } = await supabase
               .from("pedidos")
@@ -383,8 +383,8 @@ export async function GET(req: Request) {
           }
         }
 
-        // Estoque baixo de produtos às 10h
-        if (currentHour === 10) {
+        // Estoque baixo de produtos (a partir das 8h)
+        if (currentHour >= 8) {
           const { data: produtos } = await supabase
             .from("fornecedor_produtos")
             .select("id, dose_mg, tipo_produto, estoque_disponivel")
