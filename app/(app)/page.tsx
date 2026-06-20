@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const [profileResult, dosesResult, weightsResult, ampolasResult] = await Promise.all([
     supabase
       .from('profiles')
-      .select('nome, dose_atual_mg, data_inicio_tratamento, peso_meta, plano_ativo, trial_expira_em, peso_inicial, altura_cm, imc')
+      .select('nome, dose_atual_mg, data_inicio_tratamento, peso_meta, plano_ativo, trial_expira_em, peso_inicial, altura_cm')
       .eq('id', session.user.id)
       .single(),
 
