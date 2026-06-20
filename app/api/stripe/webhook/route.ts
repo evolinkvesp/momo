@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
           ((subscription as any).trial_end ?? (subscription as any).current_period_end) * 1000
         )
 
+        const planoTipo: string = session.metadata?.plano ?? 'mensal'
+
         await supabase.from('assinaturas').upsert({
           user_id: userId,
           stripe_session_id: session.id,
@@ -45,6 +47,7 @@ export async function POST(req: NextRequest) {
           status: isTrial ? 'trial' : 'ativa',
           current_period_end: periodEnd.toISOString(),
           cancel_at_period_end: false,
+          plano_tipo: planoTipo,
         }, { onConflict: 'user_id' })
 
         await supabase.from('profiles').update({

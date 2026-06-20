@@ -65,10 +65,8 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         style={{
           width: CARD_W, height: CARD_H,
-          position: "relative", overflow: "hidden",
+          position: "relative",
           fontFamily: "Syne,sans-serif",
-          background: "linear-gradient(135deg,#0d0d0d 0%,#1a0a00 100%)",
-          borderRadius: 20,
         }}
       >
         {/* Animações sem opacity — texto sempre visível independente do frame capturado */}

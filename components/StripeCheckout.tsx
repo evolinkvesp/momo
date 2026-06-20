@@ -6,19 +6,30 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-export function StripeCheckout() {
+interface Props {
+  plan?: 'mensal' | 'trimestral'
+}
+
+export function StripeCheckout({ plan = 'mensal' }: Props) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/stripe/create-checkout', { method: 'POST' })
+    setClientSecret(null)
+    setError(null)
+
+    fetch('/api/stripe/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    })
       .then(r => r.json())
       .then(data => {
         if (data.clientSecret) setClientSecret(data.clientSecret)
         else setError(data.error || 'Não foi possível iniciar o pagamento.')
       })
       .catch(() => setError('Erro ao conectar com o servidor.'))
-  }, [])
+  }, [plan])
 
   if (error) return <p className="py-4 text-center text-sm text-danger">{error}</p>
 
