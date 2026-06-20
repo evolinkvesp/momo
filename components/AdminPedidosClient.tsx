@@ -54,19 +54,19 @@ export function AdminPedidosClient({ pedidos: initial }: { pedidos: Pedido[] }) 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[24px] font-black text-white tracking-tight">Pedidos</h1>
-        <p className="text-[rgba(255,255,255,0.35)] text-[13px] mt-0.5">{pedidos.length} total</p>
+        <h1 className="text-[24px] font-black text-text tracking-tight">Pedidos</h1>
+        <p className="text-text-muted text-[13px] mt-0.5">{pedidos.length} total</p>
       </div>
 
       <div className="flex gap-2">
-        {FILTROS.map((f) => <button key={f.key} onClick={() => setFiltro(f.key)} className={`a-tab ${filtro === f.key ? "active" : ""}`}>{f.label}</button>)}
+        {FILTROS.map((f) => <button key={f.key} onClick={() => setFiltro(f.key)} className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${filtro === f.key ? "bg-[#ff6500]/10 border-[#ff6500]/30 text-[#ff6500]" : "bg-surface border-surface-border text-text-muted hover:text-text hover:bg-surface-hover"}`}>{f.label}</button>)}
       </div>
 
       <div className="space-y-4">
         {filtered.length === 0 && (
-          <div className="text-center py-16 a-card">
-            <ShoppingBag size={32} className="mx-auto mb-3 text-[rgba(255,255,255,0.12)]" />
-            <p className="text-[rgba(255,255,255,0.25)] text-[13px]">Nenhum pedido encontrado</p>
+          <div className="text-center py-16 bg-surface border border-surface-border rounded-2xl">
+            <ShoppingBag size={32} className="mx-auto mb-3 text-text-muted" />
+            <p className="text-text-muted text-[13px]">Nenhum pedido encontrado</p>
           </div>
         )}
 
@@ -77,45 +77,45 @@ export function AdminPedidosClient({ pedidos: initial }: { pedidos: Pedido[] }) 
           const fornecedorNome = p.fornecedor?.nome_fantasia || p.fornecedor?.razao_social || "–";
 
           return (
-            <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.04, 0.3) }} className="a-card-lg p-5 space-y-4">
+            <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.04, 0.3) }} className="bg-surface border border-surface-border rounded-3xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[13px] font-black text-white font-mono">{p.codigo}</p>
-                  <p className="text-[11px] text-[rgba(255,255,255,0.35)] mt-0.5">{format(new Date(p.created_at), "dd 'de' MMM yyyy, HH:mm", { locale: ptBR })}</p>
+                  <p className="text-[13px] font-black text-text font-mono">{p.codigo}</p>
+                  <p className="text-[11px] text-text-muted mt-0.5">{format(new Date(p.created_at), "dd 'de' MMM yyyy, HH:mm", { locale: ptBR })}</p>
                 </div>
                 <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full shrink-0" style={{ background: `${color}18`, color }}>{p.status}</span>
               </div>
 
               <div className="flex items-center gap-2 text-[12px]">
-                <span className="text-white font-semibold truncate max-w-[120px]">{p.paciente?.nome || p.paciente?.email || "Paciente"}</span>
-                <span className="text-[rgba(255,255,255,0.2)]">→</span>
-                <span className="text-[rgba(255,255,255,0.55)] truncate">{fornecedorNome}</span>
+                <span className="text-text font-semibold truncate max-w-[120px]">{p.paciente?.nome || p.paciente?.email || "Paciente"}</span>
+                <span className="text-text-muted">→</span>
+                <span className="text-text-muted truncate">{fornecedorNome}</span>
               </div>
 
               <div className="flex items-center justify-between text-[13px]">
-                <span className="text-[rgba(255,255,255,0.5)]">{prodLabel}</span>
-                <span className="font-bold text-white">{formatBRL(p.preco_total || 0)}</span>
+                <span className="text-text-muted">{prodLabel}</span>
+                <span className="font-bold text-text">{formatBRL(p.preco_total || 0)}</span>
               </div>
 
               {(p.cancelamento_motivo || p.observacoes_paciente) && (
                 <div className="bg-[rgba(239,68,68,0.06)] border border-[rgba(239,68,68,0.12)] rounded-xl p-3">
                   <p className="text-[11px] font-bold text-[#ef4444] uppercase mb-1">{p.cancelamento_motivo ? "Motivo do cancelamento" : "Observação do paciente"}</p>
-                  <p className="text-[12px] text-[rgba(255,255,255,0.55)]">{p.cancelamento_motivo || p.observacoes_paciente}</p>
+                  <p className="text-[12px] text-text-muted">{p.cancelamento_motivo || p.observacoes_paciente}</p>
                 </div>
               )}
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <button onClick={() => handleAction(p.id, "forcar_entregue")} disabled={!!isLoading || p.status === "entregue"} className="a-btn-green text-[12px] py-2 flex items-center gap-1.5">
+                <button onClick={() => handleAction(p.id, "forcar_entregue")} disabled={!!isLoading || p.status === "entregue"} className="bg-emerald-500 hover:bg-emerald-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 text-[12px] flex items-center gap-1.5">
                   <Check size={13} />Forçar entregue
                 </button>
-                <button onClick={() => handleAction(p.id, "reembolso")} disabled={!!isLoading} className="a-btn-red text-[12px] py-2 flex items-center gap-1.5">
+                <button onClick={() => handleAction(p.id, "reembolso")} disabled={!!isLoading} className="bg-red-500 hover:bg-red-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 text-[12px] flex items-center gap-1.5">
                   <RefreshCw size={13} />Reembolso
                 </button>
-                <button onClick={() => setMediacao({ id: p.id, codigo: p.codigo })} disabled={!!isLoading} className="a-btn-ghost text-[12px] py-2 flex items-center gap-1.5">
+                <button onClick={() => setMediacao({ id: p.id, codigo: p.codigo })} disabled={!!isLoading} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 text-[12px] flex items-center gap-1.5">
                   <AlertTriangle size={13} />Mediar
                 </button>
-                {p.paciente?.email && <a href={`mailto:${p.paciente.email}?subject=Pedido ${p.codigo}`} className="a-btn-ghost text-[12px] py-2 flex items-center gap-1.5"><Mail size={13} />Paciente</a>}
-                {p.fornecedor?.email_contato && <a href={`mailto:${p.fornecedor.email_contato}?subject=Pedido ${p.codigo}`} className="a-btn-ghost text-[12px] py-2 flex items-center gap-1.5"><Mail size={13} />Fornecedor</a>}
+                {p.paciente?.email && <a href={`mailto:${p.paciente.email}?subject=Pedido ${p.codigo}`} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 text-[12px] flex items-center gap-1.5"><Mail size={13} />Paciente</a>}
+                {p.fornecedor?.email_contato && <a href={`mailto:${p.fornecedor.email_contato}?subject=Pedido ${p.codigo}`} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 text-[12px] flex items-center gap-1.5"><Mail size={13} />Fornecedor</a>}
               </div>
             </motion.div>
           );
@@ -150,12 +150,12 @@ function MediacaoModal({ pedido, mensagem, setMensagem, onClose, onConfirm }: an
   return createPortal(
     <div className="fixed inset-0 flex items-end md:items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ zIndex: "var(--z-modal)" }}>
       <div className="absolute inset-0" onClick={onClose} />
-      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative a-card-lg p-6 w-full max-w-md space-y-4">
-        <h3 className="text-xl font-black text-white">Mediar pedido {pedido.codigo}</h3>
-        <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} placeholder="Descreva a decisão ou instrução de mediação..." className="a-input resize-none h-28" />
+      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative bg-surface border border-surface-border rounded-3xl p-6 w-full max-w-md space-y-4">
+        <h3 className="text-xl font-black text-text">Mediar pedido {pedido.codigo}</h3>
+        <textarea value={mensagem} onChange={(e) => setMensagem(e.target.value)} placeholder="Descreva a decisão ou instrução de mediação..." className="w-full bg-surface-mid border border-surface-border rounded-xl text-text text-sm px-4 py-3 outline-none focus:border-[#ff6500] focus:ring-1 focus:ring-[#ff6500] transition-all resize-none h-28" />
         <div className="flex gap-3">
-          <button onClick={onClose} className="a-btn-ghost flex-1">Cancelar</button>
-          <button onClick={onConfirm} disabled={!mensagem.trim()} className="a-btn-blue flex-1">
+          <button onClick={onClose} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex-1">Cancelar</button>
+          <button onClick={onConfirm} disabled={!mensagem.trim()} className="bg-blue-500 hover:bg-blue-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex-1">
             Registrar mediação
           </button>
         </div>

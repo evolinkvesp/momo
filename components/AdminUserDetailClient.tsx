@@ -15,25 +15,25 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/usuarios" className="flex items-center gap-2 text-[rgba(255,255,255,0.4)] hover:text-white text-[13px] font-semibold transition-colors">
+      <Link href="/admin/usuarios" className="flex items-center gap-2 text-text-muted hover:text-text text-[13px] font-semibold transition-colors">
         <ArrowLeft size={15} />Voltar para usuários
       </Link>
 
-      <div className="a-card-lg p-5">
+      <div className="bg-surface border border-surface-border rounded-3xl p-5">
         <div className="flex items-start gap-4">
-          <div className="h-14 w-14 rounded-full bg-[rgba(255,255,255,0.06)] flex items-center justify-center shrink-0">
-            <span className="text-[18px] font-black text-[rgba(255,255,255,0.5)]">
+          <div className="h-14 w-14 rounded-full bg-surface-mid flex items-center justify-center shrink-0">
+            <span className="text-[18px] font-black text-text-muted">
               {(usuario.nome || "?").split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase()}
             </span>
           </div>
           <div className="flex-1">
-            <h1 className="text-[20px] font-black text-white">{usuario.nome || "Sem nome"}</h1>
-            <p className="text-[13px] text-[rgba(255,255,255,0.4)]">{usuario.email}</p>
+            <h1 className="text-[20px] font-black text-text">{usuario.nome || "Sem nome"}</h1>
+            <p className="text-[13px] text-text-muted">{usuario.email}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-              <span className={usuario.plano_ativo === "premium" ? "a-badge-green" : usuario.plano_ativo === "trial" ? "a-badge-yellow" : "a-badge-gray"}>
+              <span className={usuario.plano_ativo === "premium" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : usuario.plano_ativo === "trial" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : "bg-surface-mid text-text-muted border border-surface-border px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"}>
                 {(usuario.plano_ativo || "–").toUpperCase()}
               </span>
-              <span className="text-[11px] text-[rgba(255,255,255,0.3)]">Desde {format(new Date(usuario.created_at), "dd/MM/yyyy")}</span>
+              <span className="text-[11px] text-text-muted">Desde {format(new Date(usuario.created_at), "dd/MM/yyyy")}</span>
             </div>
           </div>
         </div>
@@ -46,17 +46,17 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
           { label: "Início trat.", value: usuario.data_inicio_tratamento ? format(new Date(usuario.data_inicio_tratamento), "MM/yyyy") : "–", icon: Calendar },
           { label: "Total pedidos", value: pedidos.length.toString(), icon: ShoppingBag },
         ].map((item) => (
-          <div key={item.label} className="a-card p-4">
-            <item.icon size={14} className="text-[rgba(255,255,255,0.3)] mb-2" />
-            <p className="text-[10px] font-bold text-[rgba(255,255,255,0.28)] uppercase tracking-wide">{item.label}</p>
-            <p className="text-[20px] font-black text-white mt-0.5 tracking-tight">{item.value}</p>
+          <div key={item.label} className="bg-surface border border-surface-border rounded-2xl p-4">
+            <item.icon size={14} className="text-text-muted mb-2" />
+            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wide">{item.label}</p>
+            <p className="text-[20px] font-black text-text mt-0.5 tracking-tight">{item.value}</p>
           </div>
         ))}
       </div>
 
       {pesoData.length > 1 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="a-card p-5">
-          <div className="flex items-center gap-2 mb-4"><Weight size={14} className="text-[rgba(255,255,255,0.3)]" /><h4 className="text-[13px] font-bold text-white">Evolução do peso</h4></div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-surface border border-surface-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4"><Weight size={14} className="text-text-muted" /><h4 className="text-[13px] font-bold text-text">Evolução do peso</h4></div>
           <div className="h-[120px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={pesoData}>
@@ -73,13 +73,13 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
       )}
 
       {doses.length > 0 && (
-        <div className="a-card-lg p-5">
-          <h4 className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"><Syringe size={14} className="text-[rgba(255,255,255,0.3)]" />Últimas doses</h4>
+        <div className="bg-surface border border-surface-border rounded-3xl p-5">
+          <h4 className="text-[13px] font-bold text-text mb-4 flex items-center gap-2"><Syringe size={14} className="text-text-muted" />Últimas doses</h4>
           <div className="space-y-2">
             {doses.map((d) => (
-              <div key={d.id} className="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                <div><p className="text-[13px] font-semibold text-white">{d.dose_mg} mg</p><p className="text-[11px] text-[rgba(255,255,255,0.35)]">{d.local_aplicacao || d.lado_corpo || "–"}</p></div>
-                <p className="text-[11px] text-[rgba(255,255,255,0.3)]">{format(new Date(d.data_aplicacao), "dd/MM/yyyy")}</p>
+              <div key={d.id} className="flex items-center justify-between py-2 border-b border-surface-border last:border-0">
+                <div><p className="text-[13px] font-semibold text-text">{d.dose_mg} mg</p><p className="text-[11px] text-text-muted">{d.local_aplicacao || d.lado_corpo || "–"}</p></div>
+                <p className="text-[11px] text-text-muted">{format(new Date(d.data_aplicacao), "dd/MM/yyyy")}</p>
               </div>
             ))}
           </div>
@@ -87,15 +87,15 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
       )}
 
       {assinaturas.length > 0 && (
-        <div className="a-card-lg p-5">
-          <h4 className="text-[13px] font-bold text-white mb-4">Histórico de assinaturas</h4>
+        <div className="bg-surface border border-surface-border rounded-3xl p-5">
+          <h4 className="text-[13px] font-bold text-text mb-4">Histórico de assinaturas</h4>
           <div className="space-y-2">
             {assinaturas.map((a, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                <div><p className="text-[13px] font-semibold text-white">Mensal</p><p className="text-[11px] text-[rgba(255,255,255,0.35)]">Desde {format(new Date(a.criado_em), "dd/MM/yyyy")}</p></div>
+              <div key={i} className="flex items-center justify-between py-2 border-b border-surface-border last:border-0">
+                <div><p className="text-[13px] font-semibold text-text">Mensal</p><p className="text-[11px] text-text-muted">Desde {format(new Date(a.criado_em), "dd/MM/yyyy")}</p></div>
                 <div className="text-right">
-                  <p className="text-[13px] font-bold text-white">{formatBRL(29.9)}</p>
-                  <span className={a.status === "ativa" ? "a-badge-green" : a.status === "cancelada" ? "a-badge-red" : "a-badge-gray"}>{a.status?.toUpperCase() || "–"}</span>
+                  <p className="text-[13px] font-bold text-text">{formatBRL(29.9)}</p>
+                  <span className={a.status === "ativa" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : a.status === "cancelada" ? "bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : "bg-surface-mid text-text-muted border border-surface-border px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"}>{a.status?.toUpperCase() || "–"}</span>
                 </div>
               </div>
             ))}
@@ -104,16 +104,16 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
       )}
 
       {pedidos.length > 0 && (
-        <div className="a-card-lg p-5">
-          <h4 className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"><ShoppingBag size={14} className="text-[rgba(255,255,255,0.3)]" />Pedidos</h4>
+        <div className="bg-surface border border-surface-border rounded-3xl p-5">
+          <h4 className="text-[13px] font-bold text-text mb-4 flex items-center gap-2"><ShoppingBag size={14} className="text-text-muted" />Pedidos</h4>
           <div className="space-y-2">
             {pedidos.map((p) => {
               const color = STATUS_COLOR[p.status] || "#ffffff";
               return (
-                <div key={p.id} className="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                  <div><p className="text-[13px] font-semibold text-white">{p.codigo}</p><p className="text-[11px] text-[rgba(255,255,255,0.35)]">{format(new Date(p.created_at), "dd/MM/yyyy")}</p></div>
+                <div key={p.id} className="flex items-center justify-between py-2 border-b border-surface-border last:border-0">
+                  <div><p className="text-[13px] font-semibold text-text">{p.codigo}</p><p className="text-[11px] text-text-muted">{format(new Date(p.created_at), "dd/MM/yyyy")}</p></div>
                   <div className="text-right">
-                    <p className="text-[13px] font-bold text-white">{formatBRL(p.preco_total || 0)}</p>
+                    <p className="text-[13px] font-bold text-text">{formatBRL(p.preco_total || 0)}</p>
                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: `${color}18`, color }}>{p.status}</span>
                   </div>
                 </div>
@@ -124,18 +124,18 @@ export function AdminUserDetailClient({ usuario, doses, medicoes, pedidos, assin
       )}
 
       {avaliacoes.length > 0 && (
-        <div className="a-card-lg p-5">
-          <h4 className="text-[13px] font-bold text-white mb-4 flex items-center gap-2"><Star size={14} className="text-[rgba(255,255,255,0.3)]" />Avaliações deixadas</h4>
+        <div className="bg-surface border border-surface-border rounded-3xl p-5">
+          <h4 className="text-[13px] font-bold text-text mb-4 flex items-center gap-2"><Star size={14} className="text-text-muted" />Avaliações deixadas</h4>
           <div className="space-y-3">
             {avaliacoes.map((a, i) => (
-              <div key={i} className="bg-[rgba(255,255,255,0.03)] rounded-xl p-3">
+              <div key={i} className="bg-surface-mid rounded-xl p-3">
                 <div className="flex items-center gap-1 mb-1">
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <Star key={idx} size={11} fill={idx < a.nota ? "#fbbf24" : "transparent"} stroke={idx < a.nota ? "#fbbf24" : "rgba(255,255,255,0.2)"} />
                   ))}
-                  <span className="text-[10px] text-[rgba(255,255,255,0.3)] ml-1">{format(new Date(a.created_at), "dd/MM/yyyy")}</span>
+                  <span className="text-[10px] text-text-muted ml-1">{format(new Date(a.created_at), "dd/MM/yyyy")}</span>
                 </div>
-                {a.comentario && <p className="text-[12px] text-[rgba(255,255,255,0.55)]">{a.comentario}</p>}
+                {a.comentario && <p className="text-[12px] text-text-muted">{a.comentario}</p>}
               </div>
             ))}
           </div>

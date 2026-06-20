@@ -31,12 +31,14 @@ function isExpired(u: Usuario) {
   return false;
 }
 
+const badgeBase = "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border";
+
 function planoBadge(u: Usuario) {
-  if (u.plano_ativo === "bloqueado") return { label: "BLOQUEADO", cls: "a-badge-red" };
-  if (isExpired(u)) return { label: "EXPIRADO", cls: "a-badge-gray" };
-  if (u.plano_ativo === "premium") return { label: "PREMIUM", cls: "a-badge-green" };
-  if (u.plano_ativo === "trial") return { label: "TRIAL", cls: "a-badge-yellow" };
-  return { label: u.plano_ativo?.toUpperCase() || "–", cls: "a-badge-gray" };
+  if (u.plano_ativo === "bloqueado") return { label: "BLOQUEADO", cls: `${badgeBase} bg-red-500/10 text-red-500 border-red-500/20` };
+  if (isExpired(u)) return { label: "EXPIRADO", cls: `${badgeBase} bg-surface-mid text-text-muted border-surface-border` };
+  if (u.plano_ativo === "premium") return { label: "PREMIUM", cls: `${badgeBase} bg-emerald-500/10 text-emerald-500 border-emerald-500/20` };
+  if (u.plano_ativo === "trial") return { label: "TRIAL", cls: `${badgeBase} bg-amber-500/10 text-amber-500 border-amber-500/20` };
+  return { label: u.plano_ativo?.toUpperCase() || "–", cls: `${badgeBase} bg-surface-mid text-text-muted border-surface-border` };
 }
 
 function iniciais(nome: string | null) {
@@ -82,38 +84,57 @@ export function AdminUsuariosClient({ usuarios: initial }: { usuarios: Usuario[]
   }
 
   return (
-    <div className="space-y-6" onClick={() => setActionMenu(null)}>
-      <div className="flex justify-between items-end">
+    <div className="space-y-6 max-w-7xl mx-auto" onClick={() => setActionMenu(null)}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-[24px] font-black text-white tracking-tight">Usuários & Fornecedores</h1>
-          <p className="text-[rgba(255,255,255,0.35)] text-[13px] mt-0.5">{usuarios.length} registros no total</p>
+          <h1 className="text-3xl font-bold text-text tracking-tight">Usuários & Fornecedores</h1>
+          <p className="text-text-muted text-sm mt-1">{usuarios.length} registros no total</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-6 bg-surface border border-surface-border px-5 py-3 rounded-2xl">
           <div className="text-right">
-             <p className="text-[10px] font-bold text-ember uppercase tracking-widest">Pacientes</p>
-             <p className="text-lg font-black text-white">{usuarios.filter(u => !u.is_fornecedor).length}</p>
+             <p className="text-[10px] font-bold text-[#ff6500] uppercase tracking-widest">Pacientes</p>
+             <p className="text-xl font-black text-text leading-none mt-1">{usuarios.filter(u => !u.is_fornecedor).length}</p>
           </div>
+          <div className="w-px bg-surface-border" />
           <div className="text-right">
-             <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Fornecedores</p>
-             <p className="text-lg font-black text-white">{usuarios.filter(u => u.is_fornecedor).length}</p>
+             <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Fornecedores</p>
+             <p className="text-xl font-black text-text leading-none mt-1">{usuarios.filter(u => u.is_fornecedor).length}</p>
           </div>
         </div>
       </div>
 
       <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.3)]" />
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou email..." className="a-input pl-10" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+        <input 
+          type="text" 
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)} 
+          placeholder="Buscar por nome ou email..." 
+          className="w-full bg-surface border border-surface-border rounded-xl text-text text-sm pl-11 pr-4 py-3.5 outline-none focus:border-[#ff6500] focus:ring-1 focus:ring-[#ff6500] transition-all shadow-sm" 
+        />
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {FILTROS.map((f) => <button key={f.key} onClick={() => setFiltro(f.key)} className={`a-tab ${filtro === f.key ? "active" : ""}`}>{f.label}</button>)}
+      <div className="flex gap-2.5 flex-wrap">
+        {FILTROS.map((f) => (
+          <button 
+            key={f.key} 
+            onClick={() => setFiltro(f.key)} 
+            className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+              filtro === f.key 
+                ? "bg-[#ff6500]/10 border-[#ff6500]/30 text-[#ff6500]" 
+                : "bg-surface border-surface-border text-text-muted hover:text-text hover:bg-surface-hover"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-16 a-card">
-            <Users size={32} className="mx-auto mb-3 text-[rgba(255,255,255,0.12)]" />
-            <p className="text-[rgba(255,255,255,0.25)] text-[13px]">Nenhum registro encontrado</p>
+          <div className="text-center py-16 bg-surface border border-surface-border rounded-2xl">
+            <Users size={40} className="mx-auto mb-4 text-text-dim" />
+            <p className="text-text-muted text-sm font-medium">Nenhum registro encontrado</p>
           </div>
         )}
 
@@ -123,55 +144,67 @@ export function AdminUsuariosClient({ usuarios: initial }: { usuarios: Usuario[]
           const isLoading = loading?.startsWith(u.id);
 
           return (
-            <motion.div key={u.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3) }} className="a-card px-4 py-3 flex items-center gap-3 group hover:border-[rgba(255,255,255,0.15)] transition-all">
-              <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 border ${u.is_fornecedor ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-ember/10 border-forest/20 text-ember'}`}>
-                {u.is_fornecedor ? <Store size={16} /> : <UserIcon size={16} />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-[13px] font-semibold text-white truncate">{u.nome || "Sem nome"}</p>
-                  {u.is_fornecedor && <span className="text-[8px] font-black bg-blue-500 text-white px-1 rounded leading-tight tracking-widest uppercase">FORNECEDOR</span>}
-                  <span className={badge.cls}>{badge.label}</span>
+            <motion.div 
+              key={u.id} 
+              initial={{ opacity: 0, y: 8 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: Math.min(i * 0.03, 0.3) }} 
+              className="bg-surface border border-surface-border rounded-2xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4 group hover:shadow-md transition-all relative"
+            >
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 border ${u.is_fornecedor ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : 'bg-[#ff6500]/10 border-[#ff6500]/20 text-[#ff6500]'}`}>
+                  {u.is_fornecedor ? <Store size={20} /> : <UserIcon size={20} />}
                 </div>
-                <p className="text-[11px] text-[rgba(255,255,255,0.35)] truncate">{u.email}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                    <p className="text-sm font-bold text-text truncate">{u.nome || "Sem nome"}</p>
+                    {u.is_fornecedor && <span className="text-[9px] font-black bg-blue-500/10 border border-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded leading-tight tracking-widest uppercase">Fornecedor</span>}
+                    <span className={badge.cls}>{badge.label}</span>
+                  </div>
+                  <p className="text-xs text-text-muted truncate">{u.email}</p>
+                </div>
               </div>
-              <div className="hidden md:block text-right shrink-0">
-                <p className="text-[11px] text-[rgba(255,255,255,0.3)]">{format(new Date(u.created_at), "dd/MM/yyyy")}</p>
-                {!u.is_fornecedor && u.ultima_dose && <p className="text-[10px] text-[rgba(255,255,255,0.2)]">Dose: {formatDistanceToNow(new Date(u.ultima_dose), { locale: ptBR, addSuffix: true })}</p>}
-              </div>
-              <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-                <button onClick={() => setActionMenu(isMenuOpen ? null : u.id)} className="h-8 w-8 rounded-full flex items-center justify-center text-[rgba(255,255,255,0.3)] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-all" disabled={!!isLoading}>
-                  <MoreVertical size={16} />
-                </button>
-                <AnimatePresence>
-                  {isMenuOpen && (
-                    <motion.div initial={{ opacity: 0, scale: 0.9, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -8 }} className="absolute right-0 top-10 z-50 w-56 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-2xl shadow-2xl overflow-hidden">
-                      <Link href={`/admin/usuarios/${u.id}`} className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-white hover:bg-[rgba(255,255,255,0.05)] transition-colors">
-                        <ChevronRight size={14} className="text-[rgba(255,255,255,0.4)]" />Ver perfil completo
-                      </Link>
-                      {!u.is_fornecedor && (
-                        <>
-                          <button onClick={() => handleAction(u.id, "dar_premium")} className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] text-[#4ade80] hover:bg-[rgba(74,222,128,0.06)] transition-colors">
-                            <Crown size={14} />Dar premium grátis (30d)
+
+              <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full pt-3 sm:pt-0 border-t sm:border-t-0 border-surface-border mt-1 sm:mt-0">
+                <div className="text-left sm:text-right shrink-0">
+                  <p className="text-[11px] font-semibold text-text-dim">Registro: {format(new Date(u.created_at), "dd MMM yyyy", { locale: ptBR })}</p>
+                  {!u.is_fornecedor && u.ultima_dose && <p className="text-[11px] font-medium text-text-muted mt-0.5">Última dose: {formatDistanceToNow(new Date(u.ultima_dose), { locale: ptBR, addSuffix: true })}</p>}
+                </div>
+                <div className="relative shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setActionMenu(isMenuOpen ? null : u.id)} className="h-9 w-9 rounded-full flex items-center justify-center text-text-muted hover:text-text hover:bg-surface-mid transition-all border border-transparent hover:border-surface-border" disabled={!!isLoading}>
+                    <MoreVertical size={18} />
+                  </button>
+                  <AnimatePresence>
+                    {isMenuOpen && (
+                      <motion.div initial={{ opacity: 0, scale: 0.95, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -8 }} className="absolute right-0 top-12 z-50 w-60 bg-surface border border-surface-border rounded-2xl shadow-xl overflow-hidden py-1">
+                        <Link href={`/admin/usuarios/${u.id}`} className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text hover:bg-surface-hover transition-colors">
+                          <ChevronRight size={16} className="text-text-muted" /> Ver Perfil Completo
+                        </Link>
+                        {!u.is_fornecedor && (
+                          <>
+                            <div className="h-px bg-surface-border my-1 mx-3" />
+                            <button onClick={() => handleAction(u.id, "dar_premium")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-emerald-500 hover:bg-emerald-500/10 transition-colors">
+                              <Crown size={16} /> Premium Grátis (30d)
+                            </button>
+                            <button onClick={() => handleAction(u.id, "resetar_trial")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-amber-500 hover:bg-amber-500/10 transition-colors">
+                              <RotateCcw size={16} /> Resetar Trial (7d)
+                            </button>
+                          </>
+                        )}
+                        <div className="h-px bg-surface-border my-1 mx-3" />
+                        {u.plano_ativo !== "bloqueado" ? (
+                          <button onClick={() => handleAction(u.id, "bloquear")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-colors">
+                            <ShieldOff size={16} /> Bloquear Conta
                           </button>
-                          <button onClick={() => handleAction(u.id, "resetar_trial")} className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] text-[#fbbf24] hover:bg-[rgba(251,191,36,0.06)] transition-colors">
-                            <RotateCcw size={14} />Resetar trial (7d)
+                        ) : (
+                          <button onClick={() => handleAction(u.id, "desbloquear")} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-emerald-500 hover:bg-emerald-500/10 transition-colors">
+                            <Shield size={16} /> Desbloquear Conta
                           </button>
-                        </>
-                      )}
-                      <div className="border-t border-[rgba(255,255,255,0.06)]" />
-                      {u.plano_ativo !== "bloqueado" ? (
-                        <button onClick={() => handleAction(u.id, "bloquear")} className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] text-[#ef4444] hover:bg-[rgba(239,68,68,0.06)] transition-colors">
-                          <ShieldOff size={14} />Bloquear conta
-                        </button>
-                      ) : (
-                        <button onClick={() => handleAction(u.id, "desbloquear")} className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] text-[#4ade80] hover:bg-[rgba(74,222,128,0.06)] transition-colors">
-                          <Shield size={14} />Desbloquear conta
-                        </button>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </motion.div>
           );

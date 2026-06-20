@@ -59,17 +59,17 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[24px] font-black text-white tracking-tight">Fornecedores</h1>
-          <p className="text-[rgba(255,255,255,0.35)] text-[13px] mt-0.5">{fornecedores.length} cadastrados</p>
+          <h1 className="text-[24px] font-black text-text tracking-tight">Fornecedores</h1>
+          <p className="text-text-muted text-[13px] mt-0.5">{fornecedores.length} cadastrados</p>
         </div>
-        {pendingCount > 0 && <span className="a-badge-red text-[12px] py-1 px-3">{pendingCount} pendente{pendingCount > 1 ? "s" : ""}</span>}
+        {pendingCount > 0 && <span className="bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest text-[12px] py-1 px-3">{pendingCount} pendente{pendingCount > 1 ? "s" : ""}</span>}
       </div>
 
       <div className="flex gap-2 flex-wrap">
         {TABS.map((t) => {
           const count = t.key === "todos" ? fornecedores.length : fornecedores.filter((f) => f.status === t.key).length;
           return (
-            <button key={t.key} onClick={() => setTab(t.key)} className={`a-tab ${tab === t.key ? "active" : ""} flex items-center gap-1.5`}>
+            <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${tab === t.key ? "bg-[#ff6500]/10 border-[#ff6500]/30 text-[#ff6500]" : "bg-surface border-surface-border text-text-muted hover:text-text hover:bg-surface-hover"} flex items-center gap-1.5`}>
               {t.label}
               {count > 0 && (
                 <span className="text-[10px] font-black rounded-full px-1.5 py-0.5 leading-none"
@@ -84,9 +84,9 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
 
       <div className="space-y-4">
         {filtered.length === 0 && (
-          <div className="text-center py-16 a-card">
-            <Building2 size={32} className="mx-auto mb-3 text-[rgba(255,255,255,0.15)]" />
-            <p className="text-[rgba(255,255,255,0.25)] text-[13px]">Nenhum fornecedor nesta categoria</p>
+          <div className="text-center py-16 bg-surface border border-surface-border rounded-2xl">
+            <Building2 size={32} className="mx-auto mb-3 text-text-muted" />
+            <p className="text-text-muted text-[13px]">Nenhum fornecedor nesta categoria</p>
           </div>
         )}
 
@@ -96,51 +96,51 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
             const produtosAtivos = f.fornecedor_produtos.filter((p) => p.ativo);
             const doses = Array.from(new Set(f.fornecedor_produtos.map((p) => `${p.dose_mg}mg`))).join(", ");
             const isLoading = loading?.startsWith(f.id);
-            const statusBadge = f.status === "ativo" ? "a-badge-green" : f.status === "pendente" ? "a-badge-yellow" : f.status === "suspenso" ? "a-badge-red" : "a-badge-gray";
+            const statusBadge = f.status === "ativo" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : f.status === "pendente" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : f.status === "suspenso" ? "bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : "bg-surface-mid text-text-muted border border-surface-border px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest";
             const statusLabel = { ativo: "ATIVO", pendente: "PENDENTE", suspenso: "SUSPENSO", reprovado: "REPROVADO" }[f.status] || f.status.toUpperCase();
 
             return (
-              <motion.div key={f.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ delay: i * 0.04 }} className="a-card-lg p-5 space-y-4">
+              <motion.div key={f.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ delay: i * 0.04 }} className="bg-surface border border-surface-border rounded-3xl p-5 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-[16px] font-bold text-white">{nome}</h3>
+                      <h3 className="text-[16px] font-bold text-text">{nome}</h3>
                       <span className={statusBadge}>{statusLabel}</span>
                     </div>
-                    <p className="text-[11px] text-[rgba(255,255,255,0.28)] mt-0.5">Cadastrado em {format(new Date(f.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}</p>
+                    <p className="text-[11px] text-text-muted mt-0.5">Cadastrado em {format(new Date(f.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-[12px]">
-                  <div className="flex items-center gap-1.5 text-[rgba(255,255,255,0.5)]"><Building2 size={12} />{TIPO_LABEL[f.tipo] || f.tipo}</div>
-                  {(f.endereco_cidade || f.endereco_estado) && <div className="flex items-center gap-1.5 text-[rgba(255,255,255,0.5)]"><MapPin size={12} />{[f.endereco_cidade, f.endereco_estado].filter(Boolean).join(", ")}</div>}
-                  {f.raio_entrega_km && <div className="flex items-center gap-1.5 text-[rgba(255,255,255,0.5)]"><MapPin size={12} />Raio {f.raio_entrega_km}km</div>}
+                  <div className="flex items-center gap-1.5 text-text-muted"><Building2 size={12} />{TIPO_LABEL[f.tipo] || f.tipo}</div>
+                  {(f.endereco_cidade || f.endereco_estado) && <div className="flex items-center gap-1.5 text-text-muted"><MapPin size={12} />{[f.endereco_cidade, f.endereco_estado].filter(Boolean).join(", ")}</div>}
+                  {f.raio_entrega_km && <div className="flex items-center gap-1.5 text-text-muted"><MapPin size={12} />Raio {f.raio_entrega_km}km</div>}
                 </div>
 
                 <div className="flex items-center gap-4 text-[12px]">
-                  <span className="flex items-center gap-1.5 text-[rgba(255,255,255,0.5)]"><Package size={12} />{produtosAtivos.length} produto{produtosAtivos.length !== 1 ? "s" : ""}</span>
-                  {doses && <span className="text-[rgba(255,255,255,0.35)]">{doses}</span>}
+                  <span className="flex items-center gap-1.5 text-text-muted"><Package size={12} />{produtosAtivos.length} produto{produtosAtivos.length !== 1 ? "s" : ""}</span>
+                  {doses && <span className="text-text-muted">{doses}</span>}
                 </div>
 
                 {(f.avaliacao_media || f.total_pedidos) && (
                   <div className="flex items-center gap-4 text-[12px]">
                     {f.avaliacao_media && <span className="flex items-center gap-1 text-[#fbbf24]"><Star size={11} fill="#fbbf24" />{f.avaliacao_media.toFixed(1)}</span>}
-                    {f.total_pedidos !== null && <span className="text-[rgba(255,255,255,0.35)]">{f.total_pedidos} pedidos</span>}
+                    {f.total_pedidos !== null && <span className="text-text-muted">{f.total_pedidos} pedidos</span>}
                   </div>
                 )}
 
                 {f.status === "pendente" && (
-                  <div className="border-t border-[rgba(255,255,255,0.06)] pt-4 space-y-3">
-                    <p className="text-[11px] font-bold text-[rgba(255,255,255,0.3)] uppercase tracking-wider">Dados para análise</p>
+                  <div className="border-t border-surface-border pt-4 space-y-3">
+                    <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Dados para análise</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px]">
-                      <div className="bg-[rgba(255,255,255,0.03)] rounded-xl px-3 py-2">
-                        <p className="text-[rgba(255,255,255,0.3)] text-[10px] font-bold uppercase mb-1">CNPJ</p>
+                      <div className="bg-surface-mid rounded-xl px-3 py-2">
+                        <p className="text-text-muted text-[10px] font-bold uppercase mb-1">CNPJ</p>
                         <a href={`https://www.receita.fazenda.gov.br/pessoajuridica/cnpj/cnpjreva/cnpjrevafrm.asp?cnpj=${f.cnpj.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] flex items-center gap-1 hover:underline font-mono">
                           {f.cnpj} <ExternalLink size={10} />
                         </a>
                       </div>
-                      <div className="bg-[rgba(255,255,255,0.03)] rounded-xl px-3 py-2">
-                        <p className="text-[rgba(255,255,255,0.3)] text-[10px] font-bold uppercase mb-1">Contato</p>
+                      <div className="bg-surface-mid rounded-xl px-3 py-2">
+                        <p className="text-text-muted text-[10px] font-bold uppercase mb-1">Contato</p>
                         <div className="flex gap-3">
                           <a href={`mailto:${f.email_contato}`} className="text-[#60a5fa] flex items-center gap-1 hover:underline"><Mail size={10} /> Email</a>
                           {(f.telefone || f.whatsapp) && <a href={`tel:${f.whatsapp || f.telefone}`} className="text-[#4ade80] flex items-center gap-1 hover:underline"><Phone size={10} /> Tel</a>}
@@ -148,24 +148,24 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
                       </div>
                     </div>
                     {f.fornecedor_produtos.length > 0 && (
-                      <div className="bg-[rgba(255,255,255,0.03)] rounded-xl px-3 py-3">
-                        <p className="text-[rgba(255,255,255,0.3)] text-[10px] font-bold uppercase mb-2">Produtos cadastrados</p>
+                      <div className="bg-surface-mid rounded-xl px-3 py-3">
+                        <p className="text-text-muted text-[10px] font-bold uppercase mb-2">Produtos cadastrados</p>
                         <div className="space-y-1.5">
                           {f.fornecedor_produtos.slice(0, 4).map((p) => (
                             <div key={p.id} className="flex items-center justify-between text-[12px]">
-                              <span className="text-[rgba(255,255,255,0.55)]">{TIPO_PRODUTO_LABEL[p.tipo_produto] || p.tipo_produto} · {p.dose_mg}mg</span>
-                              <span className="text-white font-semibold">{formatBRL(p.preco_promocional || p.preco)}</span>
+                              <span className="text-text-muted">{TIPO_PRODUTO_LABEL[p.tipo_produto] || p.tipo_produto} · {p.dose_mg}mg</span>
+                              <span className="text-text font-semibold">{formatBRL(p.preco_promocional || p.preco)}</span>
                             </div>
                           ))}
-                          {f.fornecedor_produtos.length > 4 && <p className="text-[rgba(255,255,255,0.25)] text-[11px]">+{f.fornecedor_produtos.length - 4} mais...</p>}
+                          {f.fornecedor_produtos.length > 4 && <p className="text-text-muted text-[11px]">+{f.fornecedor_produtos.length - 4} mais...</p>}
                         </div>
                       </div>
                     )}
                     <div className="flex gap-3 pt-1">
-                      <button onClick={() => handleAction(f.id, "aprovar")} disabled={!!isLoading} className="a-btn-green flex items-center gap-2 flex-1 justify-center">
+                      <button onClick={() => handleAction(f.id, "aprovar")} disabled={!!isLoading} className="bg-emerald-500 hover:bg-emerald-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 flex-1 justify-center">
                         <Check size={14} />{isLoading ? "Aprovando..." : "Aprovar fornecedor"}
                       </button>
-                      <button onClick={() => setRejectModal({ id: f.id, nome })} disabled={!!isLoading} className="a-btn-red flex items-center gap-2 flex-1 justify-center">
+                      <button onClick={() => setRejectModal({ id: f.id, nome })} disabled={!!isLoading} className="bg-red-500 hover:bg-red-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 flex-1 justify-center">
                         <X size={14} />Reprovar
                       </button>
                     </div>
@@ -173,16 +173,16 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
                 )}
 
                 {f.status === "ativo" && (
-                  <div className="border-t border-[rgba(255,255,255,0.06)] pt-4">
-                    <button onClick={() => handleAction(f.id, "suspender")} disabled={!!isLoading} className="a-btn-red flex items-center gap-2 text-[12px] py-2">
+                  <div className="border-t border-surface-border pt-4">
+                    <button onClick={() => handleAction(f.id, "suspender")} disabled={!!isLoading} className="bg-red-500 hover:bg-red-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 text-[12px] py-2">
                       <AlertTriangle size={13} />{isLoading ? "Suspendendo..." : "Suspender fornecedor"}
                     </button>
                   </div>
                 )}
 
                 {(f.status === "suspenso" || f.status === "reprovado") && (
-                  <div className="border-t border-[rgba(255,255,255,0.06)] pt-4">
-                    <button onClick={() => handleAction(f.id, "reativar")} disabled={!!isLoading} className="a-btn-green flex items-center gap-2 text-[12px] py-2">
+                  <div className="border-t border-surface-border pt-4">
+                    <button onClick={() => handleAction(f.id, "reativar")} disabled={!!isLoading} className="bg-emerald-500 hover:bg-emerald-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 text-[12px] py-2">
                       <RefreshCw size={13} />{isLoading ? "Reativando..." : "Reativar fornecedor"}
                     </button>
                   </div>
@@ -221,15 +221,15 @@ function RejectModal({ fornecedor, motivo, setMotivo, onClose, onConfirm }: any)
   return createPortal(
     <div className="fixed inset-0 flex items-end md:items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style={{ zIndex: "var(--z-modal)" }}>
       <div className="absolute inset-0" onClick={onClose} />
-      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative a-card-lg p-6 w-full max-w-md space-y-4">
+      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative bg-surface border border-surface-border rounded-3xl p-6 w-full max-w-md space-y-4">
         <div>
-          <h3 className="text-xl font-black text-white">Reprovar {fornecedor.nome}</h3>
-          <p className="text-sm text-[rgba(255,255,255,0.4)] mt-0.5">Informe o motivo da reprovação.</p>
+          <h3 className="text-xl font-black text-text">Reprovar {fornecedor.nome}</h3>
+          <p className="text-sm text-text-muted mt-0.5">Informe o motivo da reprovação.</p>
         </div>
-        <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex: CNPJ inválido, documentação incompleta..." className="a-input resize-none h-28" />
+        <textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex: CNPJ inválido, documentação incompleta..." className="w-full bg-surface-mid border border-surface-border rounded-xl text-text text-sm px-4 py-3 outline-none focus:border-[#ff6500] focus:ring-1 focus:ring-[#ff6500] transition-all resize-none h-28" />
         <div className="flex gap-3">
-          <button onClick={onClose} className="a-btn-ghost flex-1">Cancelar</button>
-          <button onClick={onConfirm} disabled={!motivo.trim()} className="a-btn-red flex-1">Confirmar reprovação</button>
+          <button onClick={onClose} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex-1">Cancelar</button>
+          <button onClick={onConfirm} disabled={!motivo.trim()} className="bg-red-500 hover:bg-red-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex-1">Confirmar reprovação</button>
         </div>
       </motion.div>
     </div>,

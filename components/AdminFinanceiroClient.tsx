@@ -37,8 +37,8 @@ export function AdminFinanceiroClient({ premiumCount, assinaturasAtivas, mrrData
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[24px] font-black text-white tracking-tight">Financeiro</h1>
-          <p className="text-[rgba(255,255,255,0.35)] text-[13px] mt-0.5">Visão financeira completa</p>
+          <h1 className="text-[24px] font-black text-text tracking-tight">Financeiro</h1>
+          <p className="text-text-muted text-[13px] mt-0.5">Visão financeira completa</p>
         </div>
         <button onClick={() => {
           const rows = assinaturasAtivas.map((a) => ({
@@ -49,26 +49,26 @@ export function AdminFinanceiroClient({ premiumCount, assinaturasAtivas, mrrData
             proximo_venc: a.current_period_end ? format(new Date(a.current_period_end), "dd/MM/yyyy") : "",
           }));
           downloadCSV(rows, `momo-financeiro-${format(new Date(), "yyyyMM")}.csv`);
-        }} className="a-btn-ghost flex items-center gap-2">
+        }} className="bg-transparent hover:bg-surface-hover text-text-muted hover:text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2">
           <Download size={14} />Exportar CSV
         </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {metricas.map((m, i) => (
-          <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className="a-card p-4">
+          <motion.div key={m.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className="bg-surface border border-surface-border rounded-2xl p-4">
             <div className="h-[30px] w-[30px] rounded-[10px] flex items-center justify-center mb-3" style={{ background: `${m.color}18` }}>
               <m.icon size={16} strokeWidth={2.5} style={{ color: m.color }} />
             </div>
-            <p className="text-[10px] font-bold text-[rgba(255,255,255,0.28)] uppercase tracking-wide">{m.label}</p>
-            <p className="text-[20px] font-black text-white mt-0.5 tracking-tight leading-tight">{m.value}</p>
-            <p className="text-[11px] text-[rgba(255,255,255,0.25)] mt-1">{m.sub}</p>
+            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wide">{m.label}</p>
+            <p className="text-[20px] font-black text-text mt-0.5 tracking-tight leading-tight">{m.value}</p>
+            <p className="text-[11px] text-text-muted mt-1">{m.sub}</p>
           </motion.div>
         ))}
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="a-card-lg p-5">
-        <h4 className="text-[13px] font-bold text-white mb-4">MRR — últimos 12 meses</h4>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-surface border border-surface-border rounded-3xl p-5">
+        <h4 className="text-[13px] font-bold text-text mb-4">MRR — últimos 12 meses</h4>
         <div className="h-[160px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={mrrData} barSize={20}>
@@ -82,28 +82,28 @@ export function AdminFinanceiroClient({ premiumCount, assinaturasAtivas, mrrData
         </div>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="a-card-lg p-5">
-        <h4 className="text-[13px] font-bold text-white mb-4">Assinaturas ativas ({assinaturasAtivas.length})</h4>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-surface border border-surface-border rounded-3xl p-5">
+        <h4 className="text-[13px] font-bold text-text mb-4">Assinaturas ativas ({assinaturasAtivas.length})</h4>
         {assinaturasAtivas.length === 0 ? (
-          <p className="text-[rgba(255,255,255,0.2)] text-[13px] text-center py-8">Nenhuma assinatura ativa</p>
+          <p className="text-text-muted text-[13px] text-center py-8">Nenhuma assinatura ativa</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
-                <tr className="border-b border-[rgba(255,255,255,0.06)]">
+                <tr className="border-b border-surface-border">
                   {["Usuário", "Valor", "Desde", "Próx. vencto", "Status"].map((h) => (
-                    <th key={h} className="text-left text-[10px] font-bold text-[rgba(255,255,255,0.28)] uppercase tracking-wider pb-3 px-1">{h}</th>
+                    <th key={h} className="text-left text-[10px] font-bold text-text-muted uppercase tracking-wider pb-3 px-1">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {assinaturasAtivas.map((a, i) => (
-                  <tr key={i} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                    <td className="py-3 px-1"><p className="text-white font-semibold truncate max-w-[140px]">{a.profiles?.nome || "–"}</p><p className="text-[rgba(255,255,255,0.3)] truncate max-w-[140px]">{a.profiles?.email || "–"}</p></td>
-                    <td className="py-3 px-1 font-bold text-white">{formatBRL(PRECO_PLANO)}</td>
-                    <td className="py-3 px-1 text-[rgba(255,255,255,0.4)]">{a.criado_em ? format(new Date(a.criado_em), "dd/MM/yyyy") : "–"}</td>
-                    <td className="py-3 px-1 text-[rgba(255,255,255,0.4)]">{a.current_period_end ? format(new Date(a.current_period_end), "dd/MM/yyyy") : "–"}</td>
-                    <td className="py-3 px-1"><span className={a.status === "ativa" ? "a-badge-green" : a.status === "cancelada" ? "a-badge-red" : "a-badge-gray"}>{a.status?.toUpperCase() || "–"}</span></td>
+                  <tr key={i} className="border-b border-surface-border hover:bg-surface-mid transition-colors">
+                    <td className="py-3 px-1"><p className="text-text font-semibold truncate max-w-[140px]">{a.profiles?.nome || "–"}</p><p className="text-text-muted truncate max-w-[140px]">{a.profiles?.email || "–"}</p></td>
+                    <td className="py-3 px-1 font-bold text-text">{formatBRL(PRECO_PLANO)}</td>
+                    <td className="py-3 px-1 text-text-muted">{a.criado_em ? format(new Date(a.criado_em), "dd/MM/yyyy") : "–"}</td>
+                    <td className="py-3 px-1 text-text-muted">{a.current_period_end ? format(new Date(a.current_period_end), "dd/MM/yyyy") : "–"}</td>
+                    <td className="py-3 px-1"><span className={a.status === "ativa" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : a.status === "cancelada" ? "bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : "bg-surface-mid text-text-muted border border-surface-border px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"}>{a.status?.toUpperCase() || "–"}</span></td>
                   </tr>
                 ))}
               </tbody>

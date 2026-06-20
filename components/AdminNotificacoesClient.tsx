@@ -81,12 +81,12 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
   return (
     <div className="space-y-8 pb-20">
       <div>
-        <h1 className="text-[28px] font-black text-white tracking-tight leading-none">Centro de Notificações</h1>
-        <p className="text-[rgba(255,255,255,0.35)] text-[14px] mt-2 font-medium">Gerencie templates e automações de push</p>
+        <h1 className="text-[28px] font-black text-text tracking-tight leading-none">Centro de Notificações</h1>
+        <p className="text-text-muted text-[14px] mt-2 font-medium">Gerencie templates e automações de push</p>
       </div>
 
       {/* Tabs das Categorias */}
-      <div className="flex p-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] rounded-[20px] gap-1 overflow-x-auto no-scrollbar">
+      <div className="flex p-1 bg-surface-mid border border-surface-border rounded-[20px] gap-1 overflow-x-auto no-scrollbar">
         {CATEGORIAS.map((cat) => (
           <button
             key={cat.key}
@@ -94,7 +94,7 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
             className={`flex items-center gap-2 px-5 py-3 rounded-[16px] text-[13px] font-bold transition-all whitespace-nowrap ${
               activeTab === cat.key 
               ? "bg-surface text-black shadow-lg" 
-              : "text-white/40 hover:text-white/60 hover:bg-surface/5"
+              : "text-text/40 hover:text-text/60 hover:bg-surface/5"
             }`}
           >
             <cat.icon size={16} className={activeTab === cat.key ? "text-text" : cat.color} />
@@ -120,10 +120,10 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
                 const timing = (TIMING_NOTIFICACOES as any)[`${activeTab}.${key}`];
 
                 return (
-                  <div key={key} className="a-card p-5 flex flex-col justify-between group">
+                  <div key={key} className="bg-surface border border-surface-border rounded-2xl p-5 flex flex-col justify-between group">
                     <div>
                       <div className="flex justify-between items-start mb-4">
-                        <div className="h-8 w-8 rounded-lg bg-surface/5 flex items-center justify-center text-white/40 group-hover:text-white transition-colors">
+                        <div className="h-8 w-8 rounded-lg bg-surface/5 flex items-center justify-center text-text/40 group-hover:text-text transition-colors">
                           <Bell size={16} />
                         </div>
                         <div className="flex items-center gap-2">
@@ -134,34 +134,34 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
                       </div>
 
                       {/* iPhone Style Preview */}
-                      <div className="bg-[#1a1a1a] rounded-2xl p-4 mb-4 border border-white/5 shadow-inner">
+                      <div className="bg-[#1a1a1a] rounded-2xl p-4 mb-4 border border-surface-border shadow-inner">
                         <div className="flex items-start gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-[#22c55e] flex items-center justify-center text-white shrink-0 shadow-lg">
+                          <div className="h-8 w-8 rounded-lg bg-[#22c55e] flex items-center justify-center text-text shrink-0 shadow-lg">
                             <span className="text-[10px] font-black">M</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold text-white leading-tight">{preview.title}</p>
-                            <p className="text-[11px] text-white/50 mt-1 leading-snug line-clamp-2">{preview.body}</p>
+                            <p className="text-[12px] font-bold text-text leading-tight">{preview.title}</p>
+                            <p className="text-[11px] text-text/50 mt-1 leading-snug line-clamp-2">{preview.body}</p>
                           </div>
                         </div>
                       </div>
 
-                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-1">Descrição</p>
-                      <p className="text-[11px] text-white/40 mb-4">{preview.desc || "Template de engajamento personalizado."}</p>
+                      <p className="text-[10px] font-bold text-text/20 uppercase tracking-widest mb-1">Descrição</p>
+                      <p className="text-[11px] text-text/40 mb-4">{preview.desc || "Template de engajamento personalizado."}</p>
 
                       <div className="space-y-2 mb-6">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-text/30 uppercase">
                           <Clock size={12} />
-                          Horário: <span className="text-white/60">{timing?.hora ? `${timing.hora}:00` : "Dinâmico"}</span>
+                          Horário: <span className="text-text/60">{timing?.hora ? `${timing.hora}:00` : "Dinâmico"}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-text/30 uppercase">
                           <Zap size={12} />
-                          Gatilho: <span className="text-white/60">{timing?.condicao || "Ação do usuário"}</span>
+                          Gatilho: <span className="text-text/60">{timing?.condicao || "Ação do usuário"}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 pt-4 border-t border-white/5">
+                    <div className="flex gap-2 pt-4 border-t border-surface-border">
                       <button 
                         onClick={() => handleDisparar(key, activeTab)}
                         disabled={!!sending}
@@ -170,7 +170,7 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
                         {sending === key ? <Clock size={14} className="animate-spin" /> : <Send size={14} />}
                         Disparar agora
                       </button>
-                      <button className="h-10 w-10 rounded-xl bg-surface/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+                      <button className="h-10 w-10 rounded-xl bg-surface/5 border border-surface-border flex items-center justify-center text-text/40 hover:text-text transition-colors">
                         <Info size={14} />
                       </button>
                     </div>
@@ -184,16 +184,16 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
         {/* Sidebar: Automação e Histórico */}
         <div className="lg:col-span-4 space-y-6">
           {/* Status n8n */}
-          <div className="a-card p-6 border-l-4 border-l-green-500">
-            <h4 className="text-[14px] font-bold text-white flex items-center gap-2">
+          <div className="bg-surface border border-surface-border rounded-2xl p-6 border-l-4 border-l-green-500">
+            <h4 className="text-[14px] font-bold text-text flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               Motor de Automação
             </h4>
-            <p className="text-[11px] text-white/30 mt-1 mb-4">Sincronizado com n8n (momo-rust-nu)</p>
+            <p className="text-[11px] text-text/30 mt-1 mb-4">Sincronizado com n8n (momo-rust-nu)</p>
             
             <div className="space-y-3">
               <label className="flex items-center justify-between p-3 rounded-xl bg-surface/[0.02] border border-white/[0.04]">
-                <span className="text-[11px] font-bold text-white/60 uppercase">Envio Automático</span>
+                <span className="text-[11px] font-bold text-text/60 uppercase">Envio Automático</span>
                 <div className="h-5 w-10 bg-green-500 rounded-full relative">
                   <div className="absolute right-1 top-1 h-3 w-3 bg-surface rounded-full" />
                 </div>
@@ -208,23 +208,23 @@ export function AdminNotificacoesClient({ historico: initialHistorico }: { histo
           </div>
 
           {/* Histórico Recente */}
-          <div className="a-card p-0 overflow-hidden">
-            <div className="p-5 border-b border-white/5 bg-surface/[0.01]">
-               <h4 className="text-[12px] font-bold text-white/60 uppercase tracking-widest">Logs de Disparo</h4>
+          <div className="bg-surface border border-surface-border rounded-2xl p-0 overflow-hidden">
+            <div className="p-5 border-b border-surface-border bg-surface/[0.01]">
+               <h4 className="text-[12px] font-bold text-text/60 uppercase tracking-widest">Logs de Disparo</h4>
             </div>
             <div className="divide-y divide-white/[0.02]">
               {historico.length === 0 ? (
-                <div className="p-10 text-center text-white/20 text-[11px] font-medium">Nenhum log disponível</div>
+                <div className="p-10 text-center text-text/20 text-[11px] font-medium">Nenhum log disponível</div>
               ) : (
                 historico.map((h) => (
                   <div key={h.id} className="p-4 hover:bg-surface/[0.01] transition-colors">
                     <div className="flex justify-between items-start mb-1">
-                      <p className="text-[12px] font-bold text-white truncate max-w-[150px]">{h.titulo}</p>
+                      <p className="text-[12px] font-bold text-text truncate max-w-[150px]">{h.titulo}</p>
                       <span className="text-[10px] font-black text-green-500">{h.total_enviado} envios</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <p className="text-[10px] text-white/30 uppercase font-bold tracking-tighter">{h.segmento}</p>
-                      <p className="text-[10px] text-white/20 font-mono">{format(new Date(h.criado_em), "HH:mm dd/MM")}</p>
+                      <p className="text-[10px] text-text/30 uppercase font-bold tracking-tighter">{h.segmento}</p>
+                      <p className="text-[10px] text-text/20 font-mono">{format(new Date(h.criado_em), "HH:mm dd/MM")}</p>
                     </div>
                   </div>
                 ))

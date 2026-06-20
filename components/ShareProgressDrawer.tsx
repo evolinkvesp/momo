@@ -9,10 +9,12 @@ import { ptBR } from "date-fns/locale";
 import {
   StoryCard,
   TEMPLATES,
+  COLOR_THEMES,
   CARD_W,
   CARD_H,
   type ShareProgressData,
   type TemplateType,
+  type ColorTheme,
 } from "./StoryCard";
 
 // Re-export para backward compat (DashboardClient, SaudeClient importam daqui)
@@ -37,12 +39,13 @@ interface DrawerProps {
 }
 
 export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
-  const [mounted, setMounted]     = useState(false);
-  const [visible, setVisible]     = useState(false);
-  const [busy, setBusy]           = useState(false);
-  const [scale, setScale]         = useState(1);
-  const [template, setTemplate]   = useState<TemplateType>("weight");
-  const [displayPeso, setDisplay] = useState(0);
+  const [mounted, setMounted]         = useState(false);
+  const [visible, setVisible]         = useState(false);
+  const [busy, setBusy]               = useState(false);
+  const [scale, setScale]             = useState(1);
+  const [template, setTemplate]       = useState<TemplateType>("weight");
+  const [displayPeso, setDisplay]     = useState(0);
+  const [colorTheme, setColorTheme]   = useState<ColorTheme>(COLOR_THEMES[0]);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -222,6 +225,7 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
                     data={data}
                     displayPeso={displayPeso}
                     mesAno={mesAno}
+                    colorTheme={colorTheme}
                   />
                 </div>
               </div>
@@ -229,13 +233,82 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
 
             {/* Template picker */}
             <SheetLabel>Formato</SheetLabel>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingBottom: 4, marginBottom: 24 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingBottom: 4, marginBottom: 20 }}>
               {TEMPLATES.map(tp => (
                 <SheetPill key={tp.key} active={template === tp.key} onClick={() => setTemplate(tp.key)}>
                   {tp.emoji} {tp.label}
                 </SheetPill>
               ))}
             </div>
+
+            {/* Color picker */}
+            <SheetLabel>Cor da fonte</SheetLabel>
+            <div style={{ display: "flex", gap: 10, paddingBottom: 4, marginBottom: 24, overflowX: "auto" }}>
+              {COLOR_THEMES.map(ct => (
+                <button
+                  key={ct.key}
+                  onClick={() => setColorTheme(ct)}
+                  style={{
+                    flexShrink: 0,
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", gap: 5,
+                    cursor: "pointer",
+                    background: "none", border: "none", padding: 0,
+                  }}
+                >
+                  <div style={{
+                    width: 36, height: 36,
+                    borderRadius: "50%",
+                    background: ct.main,
+                    border: colorTheme.key === ct.key
+                      ? "3px solid #fff"
+                      : "2px solid rgba(255,255,255,0.1)",
+                    boxShadow: colorTheme.key === ct.key
+                      ? `0 0 0 2px ${ct.accent}, 0 4px 12px rgba(0,0,0,0.3)`
+                      : "none",
+                    transition: "all 0.2s ease",
+                    transform: colorTheme.key === ct.key ? "scale(1.1)" : "scale(1)",
+                  }} />
+                  <span style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: colorTheme.key === ct.key ? "#fff" : "rgba(255,255,255,0.3)",
+                    fontFamily: "Outfit,sans-serif",
+                    letterSpacing: "0.05em",
+                    transition: "color 0.2s ease",
+                  }}>
+                    {ct.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Dados reais do usuário — info card */}
+            {data.nome && (
+              <div style={{
+                marginBottom: 20,
+                padding: "12px 16px",
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}>
+                <p style={{
+                  margin: 0, fontSize: 10, fontWeight: 700,
+                  color: "rgba(255,255,255,0.25)", fontFamily: "Outfit,sans-serif",
+                  letterSpacing: "0.15em", textTransform: "uppercase",
+                  marginBottom: 6,
+                }}>
+                  Dados do seu perfil
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  <InfoTag label="Nome" value={data.nome.split(" ")[0]} />
+                  {data.pesoInicial != null && <InfoTag label="Início" value={`${data.pesoInicial.toFixed(1)} kg`} />}
+                  {data.pesoAtual != null && <InfoTag label="Atual" value={`${data.pesoAtual.toFixed(1)} kg`} />}
+                  {data.pesoPerdido > 0 && <InfoTag label="Perdido" value={`${data.pesoPerdido.toFixed(1)} kg`} />}
+                  {data.pesoMeta != null && <InfoTag label="Meta" value={`${data.pesoMeta} kg`} />}
+                </div>
+              </div>
+            )}
 
             {/* Action */}
             <button
@@ -261,6 +334,35 @@ export function ShareProgressDrawer({ open, onClose, data }: DrawerProps) {
       </div>
     </>,
     document.body,
+  );
+}
+
+// ── Info Tag (dados reais do banco) ────────────────────────────────────────────
+
+function InfoTag({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 4,
+      padding: "4px 10px",
+      borderRadius: 999,
+      background: "rgba(255,101,0,0.08)",
+      border: "1px solid rgba(255,101,0,0.15)",
+    }}>
+      <span style={{
+        fontSize: 9, fontWeight: 700,
+        color: "rgba(255,255,255,0.35)",
+        fontFamily: "Outfit,sans-serif",
+      }}>
+        {label}:
+      </span>
+      <span style={{
+        fontSize: 11, fontWeight: 800,
+        color: "#ff7a1a",
+        fontFamily: "Outfit,sans-serif",
+      }}>
+        {value}
+      </span>
+    </div>
   );
 }
 
@@ -293,4 +395,3 @@ function SheetPill({ children, active, onClick }: { children: React.ReactNode; a
     </button>
   );
 }
-

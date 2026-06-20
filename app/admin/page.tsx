@@ -179,6 +179,7 @@ export default async function AdminDashboardPage() {
       growthChart={growthChart}
       planDistribution={planDist}
       recentCustomers={profiles.slice(0, 5).map(p => ({
+        id: p.id,
         nome: p.nome || 'Sem nome',
         email: p.email,
         plano: p.plano_ativo,

@@ -6,10 +6,9 @@ export const metadata: Metadata = {
 import { redirect } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { AdminNav } from "@/components/AdminNav";
-import "./admin.css";
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0d",
+  themeColor: "#000000",
 };
 
 export const dynamic = "force-dynamic";
