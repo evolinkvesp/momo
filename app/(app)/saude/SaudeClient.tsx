@@ -239,6 +239,7 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
   const shareData = {
     pesoPerdido: deltaPeso < 0 ? -deltaPeso : 0,
     semanas: semanasTratamento,
+    dias: Math.max(1, diasTratamento),
     imc: imcAtual,
     pesoInicial: pesoInicial ?? null,
     pesoAtual: pesoAtual ?? null,

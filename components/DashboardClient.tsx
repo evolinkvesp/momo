@@ -100,13 +100,16 @@ export function DashboardClient({
   const alturaM = (profile?.altura_cm || 0) / 100;
   const imcShare = lastWeight?.peso_kg && alturaM > 0 ? lastWeight.peso_kg / (alturaM * alturaM) : 0;
   const firstWeight = weights?.[weights.length - 1];
+  const startDate = profile?.data_inicio_tratamento ? new Date(profile.data_inicio_tratamento) : new Date();
+  const diasTratamento = Math.max(1, differenceInDays(new Date(), startDate));
   const shareData = {
     pesoPerdido,
     semanas: semanasShare,
+    dias: diasTratamento,
     imc: imcShare,
     pesoInicial: firstWeight?.peso_kg ?? profile?.peso_inicial ?? null,
     pesoAtual: lastWeight?.peso_kg ?? null,
-    mediaSemana: pesoPerdido / semanasShare,
+    mediaSemana: semanasShare > 0 ? pesoPerdido / semanasShare : 0,
     serie: [...(weights || [])].reverse().map((w) => w.peso_kg).filter(Boolean),
     nome: profile?.nome ?? undefined,
     pesoMeta: profile?.peso_meta ?? null,

@@ -7,6 +7,7 @@ import { forwardRef } from "react";
 export interface ShareProgressData {
   pesoPerdido: number;
   semanas: number;
+  dias: number;
   imc: number;
   pesoInicial: number | null;
   pesoAtual: number | null;
@@ -279,9 +280,9 @@ interface CardProps {
 export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
   function StoryCard({ template, data, displayPeso, mesAno, colorTheme }, ref) {
     const ct = colorTheme ?? COLOR_THEMES[0]; // fallback dourado
-    const dias        = Math.round(data.semanas * 7);
+    const dias        = data.dias;
     const milestoneKg = Math.floor(data.pesoPerdido / 5) * 5;
-    const caloriasEconomizadas = Math.round(data.pesoPerdido * 7700);
+    const mediaStr    = data.mediaSemana > 0 ? data.mediaSemana.toFixed(2) : "—";
     const firstName = data.nome?.split(" ")[0] || "";
 
     return (
@@ -367,12 +368,12 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
             justifyContent: "center", alignItems: "center",
             width: "100%",
           }}>
-            {template === "weight"      && <TplWeight data={data} displayPeso={displayPeso} dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
-            {template === "goal"        && <TplGoal data={data} calorias={caloriasEconomizadas} ct={ct} />}
-            {template === "record"      && <TplRecord data={data} calorias={caloriasEconomizadas} ct={ct} />}
-            {template === "streak"      && <TplStreak dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
-            {template === "beforeafter" && <TplBA data={data} dias={dias} calorias={caloriasEconomizadas} ct={ct} />}
-            {template === "milestone"   && <TplMilestone milestoneKg={milestoneKg} calorias={caloriasEconomizadas} ct={ct} />}
+            {template === "weight"      && <TplWeight data={data} displayPeso={displayPeso} dias={dias} mediaStr={mediaStr} ct={ct} />}
+            {template === "goal"        && <TplGoal data={data} mediaStr={mediaStr} ct={ct} />}
+            {template === "record"      && <TplRecord data={data} mediaStr={mediaStr} ct={ct} />}
+            {template === "streak"      && <TplStreak dias={dias} mediaStr={mediaStr} ct={ct} />}
+            {template === "beforeafter" && <TplBA data={data} dias={dias} mediaStr={mediaStr} ct={ct} />}
+            {template === "milestone"   && <TplMilestone milestoneKg={milestoneKg} mediaStr={mediaStr} ct={ct} />}
             {template === "imc"         && <TplImc data={data} ct={ct} />}
             {template === "weekly"      && <TplWeekly data={data} ct={ct} />}
             {template === "halfway"     && <TplHalfway data={data} ct={ct} />}
@@ -388,15 +389,6 @@ export const StoryCard = forwardRef<HTMLDivElement, CardProps>(
     );
   }
 );
-
-// ── Formatters ─────────────────────────────────────────────────────────────────
-
-function formatKcal(n: number): string {
-  if (n >= 1000) {
-    return n.toLocaleString("pt-BR");
-  }
-  return String(n);
-}
 
 // ── MetricSection — sem opacity em nada ────────────────────────────────────────
 
@@ -465,9 +457,9 @@ function MetricSection({
 // ── Template: Peso Perdido ─────────────────────────────────────────────────────
 
 function TplWeight({
-  data, displayPeso, dias, calorias, ct,
+  data, displayPeso, dias, mediaStr, ct,
 }: {
-  data: ShareProgressData; displayPeso: number; dias: number; calorias: number; ct: ColorTheme;
+  data: ShareProgressData; displayPeso: number; dias: number; mediaStr: string; ct: ColorTheme;
 }) {
   const numStr = displayPeso.toFixed(1);
 
@@ -479,18 +471,18 @@ function TplWeight({
     }}>
       <MetricSection label="Peso perdido" value={`-${numStr}`} unit="KG" valueFontSize={68} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Tempo de jornada" value={String(dias)} unit="DIAS" valueFontSize={54} ct={ct} />
+      <MetricSection label="Dias de tratamento" value={String(dias)} unit="DIAS" valueFontSize={54} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={38} ct={ct} />
+      <MetricSection label="Média semanal" value={`-${mediaStr}`} unit="KG/SEM" emoji="📈" valueFontSize={38} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Meta Alcançada ───────────────────────────────────────────────────
 
-function TplGoal({ data, calorias, ct }: { data: ShareProgressData; calorias: number; ct: ColorTheme }) {
+function TplGoal({ data, mediaStr, ct }: { data: ShareProgressData; mediaStr: string; ct: ColorTheme }) {
   const raw = data.pesoMeta ?? data.pesoAtual;
-  const str = raw != null ? Math.floor(raw).toString() : "—";
+  const str = raw != null ? raw.toFixed(1) : "—";
 
   return (
     <div style={{
@@ -507,14 +499,14 @@ function TplGoal({ data, calorias, ct }: { data: ShareProgressData; calorias: nu
       </div>
       <MetricSection label="Peso alcançado" value={str} unit="KG" valueFontSize={68} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
+      <MetricSection label="Total perdido" value={`-${data.pesoPerdido.toFixed(1)}`} unit="KG" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Novo Recorde ─────────────────────────────────────────────────────
 
-function TplRecord({ data, calorias, ct }: { data: ShareProgressData; calorias: number; ct: ColorTheme }) {
+function TplRecord({ data, mediaStr, ct }: { data: ShareProgressData; mediaStr: string; ct: ColorTheme }) {
   const menorPeso = data.serie.length > 0 ? Math.min(...data.serie) : data.pesoAtual;
   const str = menorPeso != null ? menorPeso.toFixed(1) : "—";
 
@@ -533,31 +525,31 @@ function TplRecord({ data, calorias, ct }: { data: ShareProgressData; calorias: 
       </div>
       <MetricSection label="Menor peso" value={str} unit="KG" valueFontSize={68} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
+      <MetricSection label="Média semanal" value={`-${mediaStr}`} unit="KG/SEM" emoji="📈" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Sequência ────────────────────────────────────────────────────────
 
-function TplStreak({ dias, calorias, ct }: { dias: number; calorias: number; ct: ColorTheme }) {
+function TplStreak({ dias, mediaStr, ct }: { dias: number; mediaStr: string; ct: ColorTheme }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <span style={{ fontSize: 42, lineHeight: 1 }}>🔥</span>
-      <MetricSection label="Dias sem parar" value={String(dias)} unit="DIAS" valueFontSize={68} ct={ct} />
+      <span style={{ fontSize: 42, lineHeight: 1 }}>🗓️</span>
+      <MetricSection label="Dias em tratamento" value={String(dias)} unit="DIAS" valueFontSize={68} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
+      <MetricSection label="Média semanal" value={`-${mediaStr}`} unit="KG/SEM" emoji="📈" valueFontSize={36} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Antes e Agora ────────────────────────────────────────────────────
 
-function TplBA({ data, dias, calorias, ct }: { data: ShareProgressData; dias: number; calorias: number; ct: ColorTheme }) {
+function TplBA({ data, dias, mediaStr, ct }: { data: ShareProgressData; dias: number; mediaStr: string; ct: ColorTheme }) {
   const antes  = data.pesoInicial ?? 0;
   const depois = data.pesoAtual   ?? 0;
   const diff   = data.pesoPerdido;
@@ -612,24 +604,24 @@ function TplBA({ data, dias, calorias, ct }: { data: ShareProgressData; dias: nu
       <GoldDivider width={180} color={ct.divider} />
       <MetricSection label="Peso perdido" value={`-${diff.toFixed(1)}`} unit="KG" valueFontSize={44} ct={ct} />
       <GoldDivider width={120} color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={30} ct={ct} />
+      <MetricSection label="Dias de tratamento" value={String(dias)} unit="DIAS" valueFontSize={30} ct={ct} />
     </div>
   );
 }
 
 // ── Template: Milestone ────────────────────────────────────────────────────────
 
-function TplMilestone({ milestoneKg, calorias, ct }: { milestoneKg: number; calorias: number; ct: ColorTheme }) {
+function TplMilestone({ milestoneKg, mediaStr, ct }: { milestoneKg: number; mediaStr: string; ct: ColorTheme }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column",
       alignItems: "center", gap: 22,
       width: "100%",
     }}>
-      <span style={{ fontSize: 38, lineHeight: 1 }}>🏆</span>
+      <span style={{ fontSize: 38, lineHeight: 1 }}>🏅</span>
       <MetricSection label="KG vencidos" value={String(milestoneKg)} unit="KG" valueFontSize={68} ct={ct} />
       <GoldDivider color={ct.divider} />
-      <MetricSection label="Calorias economizadas" value={formatKcal(calorias)} unit="kcal" emoji="🔥" valueFontSize={36} ct={ct} />
+      <MetricSection label="Média semanal" value={`-${mediaStr}`} unit="KG/SEM" emoji="📈" valueFontSize={36} ct={ct} />
     </div>
   );
 }
