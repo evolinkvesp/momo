@@ -112,10 +112,26 @@ export function DietaClient({
 
   useEffect(() => { setFavoritos(getFavoritos()); }, []);
 
-  const hoje = useMemo(() => new Date().toISOString().split("T")[0], []);
+  function hojeEmBrasilia() {
+    return new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+  }
+
+  const [hoje, setHoje] = useState(hojeEmBrasilia);
+
+  // Atualiza "hoje" quando o dia virar (checa a cada minuto)
+  useEffect(() => {
+    const id = setInterval(() => {
+      const atual = hojeEmBrasilia();
+      setHoje((prev) => (prev !== atual ? atual : prev));
+    }, 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const refeicoesHoje = useMemo(
-    () => refeicoes.filter((r) => r.criado_em?.split("T")[0] === hoje),
+    () => refeicoes.filter((r) => {
+      if (!r.criado_em) return false;
+      return new Date(r.criado_em).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }) === hoje;
+    }),
     [refeicoes, hoje]
   );
 
@@ -137,29 +153,31 @@ export function DietaClient({
     Math.round((totaisHoje.calorias / (plano?.caloriasMax || 2000)) * 100)
   );
 
-  // 7-day protein bar chart
+  // 7-day protein bar chart (all dates in Brasília timezone)
   const chartData7d = useMemo(() => {
     const days: Record<string, { proteinas: number; date: string }> = {};
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().split("T")[0];
-      const label = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+      const key = d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+      const label = d.toLocaleDateString("pt-BR", { weekday: "short", timeZone: "America/Sao_Paulo" }).replace(".", "");
       days[key] = { proteinas: 0, date: label };
     }
     for (const r of refeicoes) {
-      const day = r.criado_em?.split("T")[0];
-      if (day && days[day]) days[day].proteinas += r.proteinas;
+      if (!r.criado_em) continue;
+      const day = new Date(r.criado_em).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+      if (days[day]) days[day].proteinas += r.proteinas;
     }
     return Object.values(days);
   }, [refeicoes]);
 
-  // Past 7 days (excluding today) grouped by date
+  // Past 7 days (excluding today) grouped by date in Brasília timezone
   const historico = useMemo(() => {
     const map: Record<string, Refeicao[]> = {};
     for (const r of refeicoes) {
-      const day = r.criado_em?.split("T")[0];
-      if (day && day !== hoje) {
+      if (!r.criado_em) continue;
+      const day = new Date(r.criado_em).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+      if (day !== hoje) {
         if (!map[day]) map[day] = [];
         map[day].push(r);
       }

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     if (cached?.receitas) {
       const ageDays = (Date.now() - new Date(cached.gerado_em).getTime()) / 86_400_000;
-      if (ageDays < 7) {
+      if (ageDays < 1) {
         return NextResponse.json({ receitas: cached.receitas });
       }
     }
@@ -53,9 +53,9 @@ export async function POST(req: Request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const faseMap: Record<number, string> = {
-    1: "Fase 1 - Adaptação (2.5-5mg): refeições pequenas, fácil digestão, evitar náusea, 1600-1800 kcal/dia",
-    2: "Fase 2 - Aceleração (7.5-10mg): alta proteína, déficit calórico, 1400-1600 kcal/dia",
-    3: "Fase 3 - Otimização (12.5-15mg): máximo resultado, preservar músculo, 1200-1400 kcal/dia",
+    1: "Fase 1 — Adaptação (2.5–5 mg): porções pequenas, digestão fácil, evitar náusea e saciedade precoce, meta 1600–1800 kcal/dia. Priorizar alimentos macios, cozidos, sem fritura pesada.",
+    2: "Fase 2 — Aceleração (7.5–10 mg): alta proteína (≥120 g/dia), déficit calórico moderado, meta 1400–1600 kcal/dia. Evitar carboidratos simples, priorizar proteínas magras.",
+    3: "Fase 3 — Otimização (12.5–15 mg): máximo resultado, preservar massa muscular, meta 1200–1400 kcal/dia. Refeições densas em proteína, baixíssimo carboidrato, gorduras boas.",
   };
   const faseTexto = faseMap[fase] ?? faseMap[1];
   const restricoesTexto = restricoes.length > 0 ? restricoes.join(", ") : "nenhuma";
@@ -67,14 +67,24 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content:
-            "Você é nutricionista especializado em pacientes com Mounjaro (tirzepatida). Retorne apenas JSON válido.",
+          content: `Você é nutricionista brasileiro especializado em pacientes usando Mounjaro (tirzepatida).
+Crie receitas 100% brasileiras usando ingredientes facilmente encontrados em qualquer supermercado do Brasil.
+Use linguagem brasileira natural. Retorne apenas JSON válido sem comentários.`,
         },
         {
           role: "user",
-          content: `Gere 8 receitas para paciente em: ${faseTexto}
+          content: `Gere 8 receitas brasileiras para paciente em: ${faseTexto}
 Dose atual: ${dose_mg ?? "—"} mg
 Restrições alimentares: ${restricoesTexto}
+
+REGRAS OBRIGATÓRIAS:
+- Use exclusivamente ingredientes comuns no Brasil: frango, carne bovina, tilápia, atum, ovos, queijo minas, ricota, iogurte natural, feijão, lentilha, grão-de-bico, arroz integral, batata-doce, mandioca, couve, brócolis, abobrinha, tomate, cebola, alho, tapioca, aveia, whey protein, leite desnatado
+- Inspire-se em pratos brasileiros reais: frango xadrez light, caldo verde com frango, omelete de forno, filé de tilápia ao molho de limão, carne moída com legumes, feijão tropeiro light, vitamina proteica, panqueca de aveia, moqueca leve, arroz de forno, frango ensopado, sopa de legumes com frango
+- NÃO use: quinoa, kale, tahini, hummus, edamame, tofu, miso, alimentos importados difíceis de achar
+- Cada receita deve ter nome em português informal brasileiro (ex: "Frango Grelhado com Couve Refogada", não "Chicken Salad")
+- dica_mounjaro: dica prática específica para quem usa o remédio (ex: "Coma devagar — o Mounjaro já reduz sua fome, não force mais do que conseguir")
+- Distribua os tipos: 2 cafés da manhã, 3 almoços/jantares, 3 lanches
+- Varie as proteínas entre frango, peixe, carne, ovos e laticínios
 
 Retorne JSON com este formato exato:
 {
@@ -92,15 +102,13 @@ Retorne JSON com este formato exato:
       "dificuldade": "facil",
       "dica_mounjaro": "Dica curta específica para quem usa Mounjaro",
       "ingredientes": ["200g frango desfiado", "2 ovos", "sal a gosto"],
-      "modo_preparo": ["Aqueça a frigideira.", "Adicione os ingredientes.", "Cozinhe por 10 min."],
-      "beneficios": ["Rico em proteína", "Baixo carboidrato"]
+      "modo_preparo": ["Aqueça a frigideira.", "Adicione os ingredientes.", "Cozinhe por 10 min."]
     }
   ]
 }
 
-Tipos possíveis: cafe, almoco, jantar, lanche
-Emojis por tipo: cafe=☕🥞🍳, almoco=🍗🥗🍲, jantar=🐟🥩🍜, lanche=🥜🍎🧀
-Crie receitas reais, saborosas, típicas da culinária brasileira e adequadas ao Mounjaro.`,
+Tipos: cafe, almoco, jantar, lanche
+Emojis por tipo: cafe=☕🍳🥞, almoco=🍗🥘🍲, jantar=🐟🥩🍜, lanche=🧀🥜🍌`,
         },
       ],
     });
