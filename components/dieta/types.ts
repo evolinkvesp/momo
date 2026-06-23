@@ -62,9 +62,17 @@ export function saveFavoritos(favs: FavoritoRefeicao[]) {
 }
 
 export function detectarIngredientesIG(receita: ReceitaIA): { ingrediente: string; substituto?: string }[] {
-  const texto = (receita.ingredientes ?? []).join(' ').toLowerCase();
+  const ingredientesNormalizados = (receita.ingredientes ?? [])
+    .join(' ')
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ');  // normalize punctuation to spaces
+
   return ALIMENTOS_ALTO_IG
-    .filter(alimento => texto.includes(alimento.toLowerCase()))
+    .filter(alimento => {
+      // Check word boundary: alimento must appear as whole word(s)
+      const regex = new RegExp(`\\b${alimento.toLowerCase().replace(/\s+/g, '\\s+')}\\b`);
+      return regex.test(ingredientesNormalizados);
+    })
     .map(ingrediente => ({
       ingrediente,
       substituto: Object.entries(SUBSTITUICOES_IG).find(([k]) =>

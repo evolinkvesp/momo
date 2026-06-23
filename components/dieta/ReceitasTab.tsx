@@ -52,10 +52,14 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
   }
 
   async function carregarFavoritos(uid: string) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('receitas_favoritas')
       .select('receita_id, receita_data')
       .eq('user_id', uid);
+    if (error) {
+      console.error('[ReceitasTab] carregarFavoritos:', error);
+      return;
+    }
     if (data) {
       setFavIds(new Set(data.map((f: { receita_id: string }) => f.receita_id)));
       setReceitasFavoritas(data.map((f: { receita_data: ReceitaIA }) => f.receita_data as ReceitaIA));
@@ -64,20 +68,32 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
 
   async function toggleFavorito(receita: ReceitaIA) {
     if (!userId) return;
+    const prevFavIds = new Set(favIds);
+    const prevFavoritas = [...receitasFavoritas];
     if (favIds.has(receita.id)) {
-      await supabase.from('receitas_favoritas')
-        .delete().eq('user_id', userId).eq('receita_id', receita.id);
       setFavIds(prev => { const s = new Set(prev); s.delete(receita.id); return s; });
       setReceitasFavoritas(prev => prev.filter(r => r.id !== receita.id));
+      const { error } = await supabase.from('receitas_favoritas')
+        .delete().eq('user_id', userId).eq('receita_id', receita.id);
+      if (error) {
+        setFavIds(prevFavIds);
+        setReceitasFavoritas(prevFavoritas);
+        toast.error('Erro ao salvar favorito. Tente novamente.');
+      }
     } else {
-      await supabase.from('receitas_favoritas').insert({
+      setFavIds(prev => new Set(Array.from(prev).concat(receita.id)));
+      setReceitasFavoritas(prev => [...prev, receita]);
+      const { error } = await supabase.from('receitas_favoritas').insert({
         user_id: userId,
         fase: fase,
         receita_id: receita.id,
         receita_data: receita,
       });
-      setFavIds(prev => new Set(Array.from(prev).concat(receita.id)));
-      setReceitasFavoritas(prev => [...prev, receita]);
+      if (error) {
+        setFavIds(prevFavIds);
+        setReceitasFavoritas(prevFavoritas);
+        toast.error('Erro ao salvar favorito. Tente novamente.');
+      }
     }
   }
 
@@ -126,29 +142,33 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
           Favoritas
         </button>
 
-        {RESTRICOES_OPTIONS.map((opt) => {
-          const active = restricoes.includes(opt.id);
-          return (
-            <button
-              key={opt.id}
-              onClick={() => toggleRestricao(opt.id)}
-              className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
-                active
-                  ? "bg-ember/10 border-ember/30 text-ember"
-                  : "border-surface-border text-muted"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-        {restricoes.length > 0 && (
-          <button
-            onClick={() => carregarReceitas(true)}
-            className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-ember text-white active:scale-95 transition-all"
-          >
-            Aplicar filtros →
-          </button>
+        {!filtrando && (
+          <>
+            {RESTRICOES_OPTIONS.map((opt) => {
+              const active = restricoes.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => toggleRestricao(opt.id)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
+                    active
+                      ? "bg-ember/10 border-ember/30 text-ember"
+                      : "border-surface-border text-muted"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+            {restricoes.length > 0 && (
+              <button
+                onClick={() => carregarReceitas(true)}
+                className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-ember text-white active:scale-95 transition-all"
+              >
+                Aplicar filtros →
+              </button>
+            )}
+          </>
         )}
       </div>
 

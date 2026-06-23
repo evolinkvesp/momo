@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { createHash } from "crypto";
 import { createRouteClient } from "@/lib/supabase-server";
 
 export const maxDuration = 60;
@@ -116,8 +117,16 @@ Emojis por tipo: cafe=☕🍳🥞, almoco=🍗🥘🍲, jantar=🐟🥩🍜, lan
     const content = response.choices[0].message.content ?? "{}";
     const data = JSON.parse(content);
 
+    const receitasComId = (data.receitas ?? []).map((r: any) => ({
+      ...r,
+      id: createHash('sha1')
+        .update(`${user.id}-${r.nome}-${r.calorias}`)
+        .digest('hex')
+        .slice(0, 16),
+    }));
+
     await supabase.from("receitas_geradas").upsert(
-      { user_id: user.id, fase, receitas: data.receitas, gerado_em: new Date().toISOString() },
+      { user_id: user.id, fase, receitas: receitasComId, gerado_em: new Date().toISOString() },
       { onConflict: "user_id,fase" }
     );
 
@@ -127,7 +136,7 @@ Emojis por tipo: cafe=☕🍳🥞, almoco=🍗🥘🍲, jantar=🐟🥩🍜, lan
       ultima_receita_data: hojeStr,
     }).eq("id", user.id);
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, receitas: receitasComId });
   } catch (error: any) {
     console.error("[Receitas] Error:", error?.message ?? error);
     return NextResponse.json({ error: "Erro ao gerar receitas" }, { status: 500 });

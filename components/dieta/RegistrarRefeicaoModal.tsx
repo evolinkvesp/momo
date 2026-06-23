@@ -64,17 +64,25 @@ export function RegistrarRefeicaoModal({
 
   async function analisar() {
     if (!text && !image) return toast.error("Adicione uma foto ou descrição.");
+    if (image && image.length > 2_000_000) {
+      toast.error('Imagem muito grande. Tente uma foto menor.');
+      return;
+    }
     setAnalyzing(true);
     try {
       const res = await fetch("/api/diet/analyze", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, image }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao analisar refeição');
+      }
       setResult(data);
       setMacrosEditados(null);
-    } catch {
-      toast.error("Erro ao analisar.");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao analisar.");
     } finally {
       setAnalyzing(false);
     }
