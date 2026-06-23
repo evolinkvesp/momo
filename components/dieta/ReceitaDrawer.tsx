@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, Pill } from "lucide-react";
 import { createPortal } from "react-dom";
-import { type ReceitaIA } from "./types";
+import { type ReceitaIA, detectarIngredientesIG } from "./types";
 
 interface ReceitaDrawerProps {
   receita: ReceitaIA;
@@ -14,6 +14,8 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
+
+  const igIngredientes = detectarIngredientesIG(receita);
 
   return createPortal(
     <div
@@ -52,6 +54,22 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
               </div>
             ))}
           </div>
+          {igIngredientes.length > 0 && (
+            <div className="rounded-2xl p-4 space-y-2"
+              style={{ background: 'rgba(255,165,0,0.08)', border: '1px solid rgba(255,165,0,0.2)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#b45309' }}>
+                ⚠️ Ingredientes de Alto Índice Glicêmico
+              </p>
+              <ul className="space-y-1">
+                {igIngredientes.map(({ ingrediente, substituto }) => (
+                  <li key={ingrediente} className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="font-semibold">{ingrediente}</span>
+                    {substituto && <span> → {substituto}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted mb-3 ml-1">Ingredientes</h3>
             <ul className="space-y-2">

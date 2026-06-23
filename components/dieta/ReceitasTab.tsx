@@ -7,7 +7,7 @@ import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { type FaseMounjaro } from "@/lib/diet-plans";
-import { type ReceitaIA } from "./types";
+import { type ReceitaIA, detectarIngredientesIG } from "./types";
 import { ReceitaDrawer } from "./ReceitaDrawer";
 
 const RESTRICOES_OPTIONS = [
@@ -122,6 +122,12 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
                   <span className="text-[10px] font-bold text-muted uppercase">🔥 {r.calorias} kcal</span>
                   <span className="text-[10px] font-bold text-muted uppercase">💪 {r.proteinas}g Prot</span>
                 </div>
+                {detectarIngredientesIG(r).length > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold mt-1"
+                    style={{ background: 'rgba(255,101,0,0.1)', color: 'var(--color-ember)' }}>
+                    ⚠️ Alto IG
+                  </span>
+                )}
               </div>
               <ChevronRight size={18} className="text-dim" />
             </Card>

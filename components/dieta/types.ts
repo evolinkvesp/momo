@@ -1,3 +1,5 @@
+import { ALIMENTOS_ALTO_IG, SUBSTITUICOES_IG } from '@/lib/diet-plans';
+
 export type TipoRefeicao = "cafe" | "almoco" | "jantar" | "lanche";
 
 export interface Refeicao {
@@ -57,4 +59,16 @@ export function getFavoritos(): FavoritoRefeicao[] {
 
 export function saveFavoritos(favs: FavoritoRefeicao[]) {
   localStorage.setItem("momo-fav-refeicoes", JSON.stringify(favs.slice(0, 10)));
+}
+
+export function detectarIngredientesIG(receita: ReceitaIA): { ingrediente: string; substituto?: string }[] {
+  const texto = (receita.ingredientes ?? []).join(' ').toLowerCase();
+  return ALIMENTOS_ALTO_IG
+    .filter(alimento => texto.includes(alimento.toLowerCase()))
+    .map(ingrediente => ({
+      ingrediente,
+      substituto: Object.entries(SUBSTITUICOES_IG).find(([k]) =>
+        ingrediente.toLowerCase().includes(k.toLowerCase())
+      )?.[1],
+    }));
 }

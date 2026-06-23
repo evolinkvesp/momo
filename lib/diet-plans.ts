@@ -281,6 +281,17 @@ export interface AnaliseRefeicao {
   gatilhos: string[];
 }
 
+export const SUBSTITUICOES_IG: Record<string, string> = {
+  'arroz branco':     'arroz integral',
+  'pão branco':       'pão integral ou wrap integral',
+  'batata':           'batata-doce',
+  'macarrão':         'macarrão integral ou de grão-de-bico',
+  'refrigerante':     'água com gás + limão',
+  'suco de fruta':    'fruta inteira',
+  'farinha de trigo': 'farinha de aveia ou amêndoa',
+  'açúcar':           'adoçante natural (stévia)',
+};
+
 /** Flags a diary entry as high-calorie and/or high glycemic index. */
 export function analisarRefeicao(
   descricao: string,
