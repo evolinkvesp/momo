@@ -44,6 +44,12 @@ export function RegistrarRefeicaoModal({
   const [result, setResult] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [macrosEditados, setMacrosEditados] = useState<{
+    calorias: number;
+    proteinas: number;
+    carboidratos: number;
+    gorduras: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => setMounted(true), []);
@@ -66,6 +72,7 @@ export function RegistrarRefeicaoModal({
       });
       const data = await res.json();
       setResult(data);
+      setMacrosEditados(null);
     } catch {
       toast.error("Erro ao analisar.");
     } finally {
@@ -74,7 +81,7 @@ export function RegistrarRefeicaoModal({
   }
 
   async function salvar(override?: { nome: string; calorias: number; proteinas: number; carboidratos: number; gorduras: number }) {
-    const dados = override ?? result;
+    const dados = override ?? (macrosEditados ? { ...result, ...macrosEditados } : result);
     if (!dados) return;
     setSaving(true);
     try {
@@ -261,6 +268,80 @@ export function RegistrarRefeicaoModal({
                   </div>
                 )}
               </div>
+
+              {/* Confidence banners */}
+              {result?.confianca === "media" && (
+                <div
+                  className="rounded-2xl p-3 text-sm border"
+                  style={{
+                    background: "rgba(234,179,8,0.1)",
+                    borderColor: "rgba(234,179,8,0.3)",
+                    color: "#92400e",
+                  }}
+                >
+                  Estimativa aproximada — confira se os valores parecem certos
+                </div>
+              )}
+
+              {result?.confianca === "baixa" && (
+                <>
+                  <div
+                    className="rounded-2xl p-3 text-sm border"
+                    style={{
+                      background: "rgba(239,68,68,0.08)",
+                      borderColor: "rgba(239,68,68,0.2)",
+                      color: "#991b1b",
+                    }}
+                  >
+                    Precisão baixa — edite os valores antes de salvar
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        { field: "calorias" as const, placeholder: "Kcal" },
+                        { field: "proteinas" as const, placeholder: "Prot (g)" },
+                        { field: "carboidratos" as const, placeholder: "Carb (g)" },
+                        { field: "gorduras" as const, placeholder: "Gord (g)" },
+                      ]
+                    ).map(({ field, placeholder }) => (
+                      <input
+                        key={field}
+                        type="number"
+                        placeholder={placeholder}
+                        value={
+                          macrosEditados !== null
+                            ? macrosEditados[field]
+                            : result[field]
+                        }
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setMacrosEditados((prev) => ({
+                            calorias: result.calorias,
+                            proteinas: result.proteinas,
+                            carboidratos: result.carboidratos,
+                            gorduras: result.gorduras,
+                            ...(prev ?? {}),
+                            [field]: val,
+                          }));
+                        }}
+                        style={{
+                          background: "var(--color-surface-mid)",
+                          border: "1px solid var(--color-surface-border)",
+                          borderRadius: "0.75rem",
+                          padding: "0.5rem 0.75rem",
+                          height: "40px",
+                          color: "var(--color-text)",
+                          fontSize: "0.875rem",
+                          fontWeight: 700,
+                          width: "100%",
+                          outline: "none",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setResult(null)}
@@ -271,9 +352,19 @@ export function RegistrarRefeicaoModal({
                 <button
                   onClick={() => salvar()}
                   disabled={saving}
-                  className="flex-1 h-14 bg-ember text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-ember disabled:opacity-50"
+                  className={`flex-1 h-14 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 ${
+                    result?.confianca === "baixa"
+                      ? "bg-ember/70 text-white/90"
+                      : "bg-ember text-white shadow-ember"
+                  }`}
                 >
-                  {saving ? <LoadingSpinner size="sm" color="white" /> : "Confirmar"}
+                  {saving ? (
+                    <LoadingSpinner size="sm" color="white" />
+                  ) : result?.confianca === "baixa" ? (
+                    "Salvar assim mesmo"
+                  ) : (
+                    "Confirmar"
+                  )}
                 </button>
               </div>
             </div>
