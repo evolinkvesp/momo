@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Pill } from "lucide-react";
 import { createPortal } from "react-dom";
 import { type ReceitaIA } from "./types";
 
@@ -79,6 +79,28 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
               ))}
             </div>
           </div>
+          {receita.dica_mounjaro && (
+            <div
+              className="rounded-2xl p-4 border"
+              style={{
+                background: "var(--color-ember-glow)",
+                borderColor: "var(--color-ember-glow-strong)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Pill size={14} style={{ color: "var(--color-ember)" }} />
+                <p
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: "var(--color-ember)" }}
+                >
+                  Dica Mounjaro
+                </p>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                {receita.dica_mounjaro}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>,
