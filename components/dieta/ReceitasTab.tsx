@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight, Heart } from "lucide-react";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { type FaseMounjaro } from "@/lib/diet-plans";
 import { type ReceitaIA, detectarIngredientesIG } from "./types";
 import { ReceitaDrawer } from "./ReceitaDrawer";
+import { supabase } from "@/lib/supabase";
 
 const RESTRICOES_OPTIONS = [
   { id: "sem_gluten",   label: "Sem glúten"  },
@@ -28,6 +29,9 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
   const [loading, setLoading] = useState(false);
   const [selecionada, setSelecionada] = useState<ReceitaIA | null>(null);
   const [restricoes, setRestricoes] = useState<string[]>([]);
+  const [favIds, setFavIds] = useState<Set<string>>(new Set());
+  const [filtrando, setFiltrando] = useState(false);
+  const [receitasFavoritas, setReceitasFavoritas] = useState<ReceitaIA[]>([]);
 
   async function carregarReceitas(forcar = false) {
     setLoading(true);
@@ -47,13 +51,49 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
     }
   }
 
+  async function carregarFavoritos(uid: string) {
+    const { data } = await supabase
+      .from('receitas_favoritas')
+      .select('receita_id, receita_data')
+      .eq('user_id', uid);
+    if (data) {
+      setFavIds(new Set(data.map((f: { receita_id: string }) => f.receita_id)));
+      setReceitasFavoritas(data.map((f: { receita_data: ReceitaIA }) => f.receita_data as ReceitaIA));
+    }
+  }
+
+  async function toggleFavorito(receita: ReceitaIA) {
+    if (!userId) return;
+    if (favIds.has(receita.id)) {
+      await supabase.from('receitas_favoritas')
+        .delete().eq('user_id', userId).eq('receita_id', receita.id);
+      setFavIds(prev => { const s = new Set(prev); s.delete(receita.id); return s; });
+      setReceitasFavoritas(prev => prev.filter(r => r.id !== receita.id));
+    } else {
+      await supabase.from('receitas_favoritas').insert({
+        user_id: userId,
+        fase: fase,
+        receita_id: receita.id,
+        receita_data: receita,
+      });
+      setFavIds(prev => new Set(Array.from(prev).concat(receita.id)));
+      setReceitasFavoritas(prev => [...prev, receita]);
+    }
+  }
+
   useEffect(() => { carregarReceitas(); }, []);
+
+  useEffect(() => {
+    if (userId) carregarFavoritos(userId);
+  }, [userId]);
 
   function toggleRestricao(id: string) {
     setRestricoes((prev) =>
       prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   }
+
+  const receitasExibidas = filtrando ? receitasFavoritas : receitas;
 
   return (
     <div className="space-y-5">
@@ -71,8 +111,21 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
         </button>
       </div>
 
-      {/* Dietary restrictions */}
+      {/* Dietary restrictions + favorites filter */}
       <div className="flex flex-wrap gap-2 items-center">
+        {/* Favorites pill */}
+        <button
+          onClick={() => setFiltrando(prev => !prev)}
+          className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all flex items-center gap-1 ${
+            filtrando
+              ? "bg-ember/10 border-ember/30 text-ember"
+              : "border-surface-border text-muted"
+          }`}
+        >
+          <Heart size={11} fill={filtrando ? "currentColor" : "none"} />
+          Favoritas
+        </button>
+
         {RESTRICOES_OPTIONS.map((opt) => {
           const active = restricoes.includes(opt.id);
           return (
@@ -100,14 +153,14 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {receitas.length === 0 && !loading ? (
+        {receitasExibidas.length === 0 && !loading ? (
           <EmptyState
             icon={<Sparkles />}
-            title="Nenhuma receita"
-            description="Gere sugestões personalizadas para seu tratamento."
+            title={filtrando ? "Nenhuma receita favorita" : "Nenhuma receita"}
+            description={filtrando ? "Marque receitas com ❤️ para salvá-las aqui." : "Gere sugestões personalizadas para seu tratamento."}
           />
         ) : (
-          receitas.map((r) => (
+          receitasExibidas.map((r) => (
             <Card
               key={r.id}
               onClick={() => setSelecionada(r)}
@@ -129,6 +182,13 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
                   </span>
                 )}
               </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleFavorito(r); }}
+                className="p-2 text-ember transition-transform active:scale-90"
+                aria-label={favIds.has(r.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              >
+                <Heart size={18} fill={favIds.has(r.id) ? "currentColor" : "none"} />
+              </button>
               <ChevronRight size={18} className="text-dim" />
             </Card>
           ))
@@ -136,7 +196,12 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
       </div>
 
       {selecionada && (
-        <ReceitaDrawer receita={selecionada} onClose={() => setSelecionada(null)} />
+        <ReceitaDrawer
+          receita={selecionada}
+          onClose={() => setSelecionada(null)}
+          favIds={favIds}
+          onToggleFavorito={toggleFavorito}
+        />
       )}
     </div>
   );

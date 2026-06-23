@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Pill } from "lucide-react";
+import { ChevronDown, Pill, Heart } from "lucide-react";
 import { createPortal } from "react-dom";
 import { type ReceitaIA, detectarIngredientesIG } from "./types";
 
 interface ReceitaDrawerProps {
   receita: ReceitaIA;
   onClose: () => void;
+  favIds: Set<string>;
+  onToggleFavorito: (r: ReceitaIA) => void;
 }
 
-export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
+export function ReceitaDrawer({ receita, onClose, favIds, onToggleFavorito }: ReceitaDrawerProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
   const igIngredientes = detectarIngredientesIG(receita);
+  const isFav = favIds.has(receita.id);
 
   return createPortal(
     <div
@@ -34,6 +37,13 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
         <div className="relative p-6 bg-surface-mid text-center">
           <button onClick={onClose} className="absolute right-6 top-6 p-2 text-dim">
             <ChevronDown size={24} />
+          </button>
+          <button
+            onClick={() => onToggleFavorito(receita)}
+            className="absolute left-6 top-6 p-2 text-ember transition-transform active:scale-90"
+            aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          >
+            <Heart className="h-5 w-5" fill={isFav ? "currentColor" : "none"} />
           </button>
           <div className="h-20 w-20 rounded-3xl bg-ember/10 flex items-center justify-center text-4xl mx-auto mb-4">
             {receita.emoji}
