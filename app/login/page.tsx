@@ -48,8 +48,8 @@ export default function LoginPage() {
       setNeedsConfirmation(friendlyError.needsConfirmation);
       setLoading(false);
     } else {
-      router.push('/');
       router.refresh();
+      router.push('/');
     }
   };
 

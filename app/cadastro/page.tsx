@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, ArrowRight, Check, User, Activity, Target, Star, Bell, TrendingUp, Utensils, Package, BookOpen, ShieldCheck, Smartphone, Share2, MoreVertical, Plus, Phone } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, User, Activity, Target, Star, Bell, TrendingUp, Utensils, Package, BookOpen, ShieldCheck, Smartphone, Share2, MoreVertical, Plus, Phone, Mail, MailCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { StripeCheckout } from '@/components/StripeCheckout';
 
@@ -19,6 +19,23 @@ const DIAS_SEMANA = [
   { id: 6, label: 'Sáb' },
 ];
 
+const getFriendlySignupError = (error: { code?: string; message?: string; status?: number }) => {
+  const msg = error.message?.toLowerCase() ?? "";
+  if (msg.includes("already registered") || msg.includes("user already exists") || msg.includes("already been registered")) {
+    return "Este e-mail já tem uma conta. Tente fazer login.";
+  }
+  if (msg.includes("invalid email") || msg.includes("unable to validate email")) {
+    return "Digite um e-mail válido.";
+  }
+  if (msg.includes("password") && (msg.includes("characters") || msg.includes("least"))) {
+    return "A senha deve ter pelo menos 8 caracteres.";
+  }
+  if (msg.includes("network") || msg.includes("fetch") || error.status === 0) {
+    return "Sem conexão. Verifique sua internet e tente novamente.";
+  }
+  return "Não foi possível criar a conta. Tente novamente.";
+};
+
 const BENEFICIOS = [
   { icon: <Bell size={15} />, text: 'Lembretes automáticos de dose' },
   { icon: <TrendingUp size={15} />, text: 'Gráficos de peso e progresso' },
@@ -32,7 +49,13 @@ export default function CadastroPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailPendente, setEmailPendente] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const creatingRef = React.useRef(false);
+
+  useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -57,7 +80,7 @@ export default function CadastroPage() {
     setLoading(true);
     setError(null);
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
@@ -78,10 +101,16 @@ export default function CadastroPage() {
     setLoading(false);
 
     if (signUpError) {
-      creatingRef.current = false;  // allow retry on error
-      setError(signUpError.message);
+      creatingRef.current = false;
+      setError(getFriendlySignupError(signUpError));
       return false;
     }
+
+    // Supabase retorna session=null quando email confirmation está ativo
+    if (!data.session) {
+      setEmailPendente(true);
+    }
+
     return true;
   };
 
@@ -100,8 +129,8 @@ export default function CadastroPage() {
         toast.error('Digite um telefone válido com DDD');
         return;
       }
-      if (formData.password.length < 6) {
-        toast.error('A senha deve ter pelo menos 6 caracteres');
+      if (formData.password.length < 8) {
+        toast.error('A senha deve ter pelo menos 8 caracteres');
         return;
       }
     }
@@ -135,9 +164,9 @@ export default function CadastroPage() {
           className="rounded-full p-2 transition-all active:scale-95"
           style={{
             background: "var(--color-surface-mid)",
-            color: step === 4 ? "transparent" : "var(--color-text-muted)",
+            color: step >= 4 ? "transparent" : "var(--color-text-muted)",
             border: "1px solid var(--color-surface-border)",
-            pointerEvents: step === 4 ? "none" : "auto",
+            pointerEvents: step >= 4 ? "none" : "auto",
           }}
         >
           <ArrowLeft className="h-6 w-6" />
@@ -184,7 +213,7 @@ export default function CadastroPage() {
               <DarkInput label="Nome completo" name="nome" value={formData.nome} onChange={handleChange} placeholder="Como deseja ser chamado?" />
               <DarkInput label="E-mail" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" />
               <DarkInput label="Telefone (WhatsApp)" name="telefone" type="tel" value={formData.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
-              <DarkInput label="Senha" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 6 caracteres" />
+              <DarkInput label="Senha" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Mínimo 8 caracteres" />
             </div>
           )}
 
@@ -250,62 +279,98 @@ export default function CadastroPage() {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 4 && emailPendente && (
             <div className="space-y-5 animate-fade-up">
-              <StepHeader icon={<Smartphone className="h-5 w-5" />} title="Baixe o app" subtitle="Adicione o Momo à tela inicial" />
-
+              <StepHeader icon={<Mail className="h-5 w-5" />} title="Confirme seu e-mail" subtitle="Um link foi enviado para você" />
               <div
-                className="rounded-[24px] p-5 space-y-5"
+                className="rounded-[24px] p-6 space-y-4 text-center"
                 style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
               >
-                <p className="text-sm font-medium text-center" style={{ color: "var(--color-text-muted)" }}>
-                  O Momo é um app que funciona direto no seu navegador — sem precisar da App Store.
+                <div
+                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: "var(--color-ember-glow)", color: "var(--color-ember)" }}
+                >
+                  <MailCheck className="h-8 w-8" />
+                </div>
+                <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                  Enviamos um link de confirmação para{' '}
+                  <span className="font-bold" style={{ color: "var(--color-text)" }}>{formData.email}</span>.
+                  Clique no link para ativar sua conta e continuar.
                 </p>
-
-                {/* iOS */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0" style={{ background: "var(--color-ember)" }}>
-                      🍎
-                    </div>
-                    <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>iPhone (Safari)</p>
-                  </div>
-                  <div className="space-y-2 ml-8">
-                    {[
-                      { icon: <Share2 size={14} />, text: 'Toque no botão Compartilhar (ícone de caixa com seta)' },
-                      { icon: <Plus size={14} />, text: 'Role para baixo e toque em "Adicionar à Tela de Início"' },
-                      { icon: <Check size={14} />, text: 'Toque em "Adicionar" — pronto!' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-start gap-3 rounded-xl p-3" style={{ background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}>
-                        <span className="mt-0.5 shrink-0" style={{ color: "var(--color-ember)" }}>{item.icon}</span>
-                        <p className="text-xs font-medium leading-snug" style={{ color: "var(--color-text)" }}>{item.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Android */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0" style={{ background: "var(--color-ember)" }}>
-                      🤖
-                    </div>
-                    <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>Android (Chrome)</p>
-                  </div>
-                  <div className="space-y-2 ml-8">
-                    {[
-                      { icon: <MoreVertical size={14} />, text: 'Toque no menu (3 pontinhos) no canto superior direito' },
-                      { icon: <Plus size={14} />, text: 'Toque em "Adicionar à tela inicial"' },
-                      { icon: <Check size={14} />, text: 'Confirme tocando em "Adicionar" — pronto!' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-start gap-3 rounded-xl p-3" style={{ background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}>
-                        <span className="mt-0.5 shrink-0" style={{ color: "var(--color-ember)" }}>{item.icon}</span>
-                        <p className="text-xs font-medium leading-snug" style={{ color: "var(--color-text)" }}>{item.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <p className="text-xs" style={{ color: "var(--color-text-dim)" }}>
+                  Não encontrou? Verifique a pasta de spam.
+                </p>
               </div>
+            </div>
+          )}
+
+          {step === 4 && !emailPendente && (
+            <div className="space-y-5 animate-fade-up">
+              <StepHeader icon={<Smartphone className="h-5 w-5" />} title="Instale o app" subtitle="Adicione o Momo à tela inicial" />
+
+              {isMobile ? (
+                <div
+                  className="rounded-[24px] p-5 space-y-5"
+                  style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
+                >
+                  <p className="text-sm font-medium text-center" style={{ color: "var(--color-text-muted)" }}>
+                    O Momo funciona direto no navegador — sem App Store.
+                  </p>
+
+                  {/* iOS */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🍎</span>
+                      <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>iPhone (Safari)</p>
+                    </div>
+                    <div className="space-y-2 ml-6">
+                      {[
+                        { icon: <Share2 size={14} />, text: 'Toque no botão Compartilhar (ícone de caixa com seta)' },
+                        { icon: <Plus size={14} />, text: 'Role e toque em "Adicionar à Tela de Início"' },
+                        { icon: <Check size={14} />, text: 'Toque em "Adicionar" — pronto!' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3 rounded-xl p-3" style={{ background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}>
+                          <span className="mt-0.5 shrink-0" style={{ color: "var(--color-ember)" }}>{item.icon}</span>
+                          <p className="text-xs font-medium leading-snug" style={{ color: "var(--color-text)" }}>{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Android */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🤖</span>
+                      <p className="text-sm font-bold" style={{ color: "var(--color-text)" }}>Android (Chrome)</p>
+                    </div>
+                    <div className="space-y-2 ml-6">
+                      {[
+                        { icon: <MoreVertical size={14} />, text: 'Toque no menu (3 pontinhos) no canto superior direito' },
+                        { icon: <Plus size={14} />, text: 'Toque em "Adicionar à tela inicial"' },
+                        { icon: <Check size={14} />, text: 'Confirme tocando em "Adicionar" — pronto!' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3 rounded-xl p-3" style={{ background: "var(--color-surface-mid)", border: "1px solid var(--color-surface-border)" }}>
+                          <span className="mt-0.5 shrink-0" style={{ color: "var(--color-ember)" }}>{item.icon}</span>
+                          <p className="text-xs font-medium leading-snug" style={{ color: "var(--color-text)" }}>{item.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="rounded-[24px] p-6 text-center space-y-3"
+                  style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
+                >
+                  <Smartphone className="mx-auto h-10 w-10" style={{ color: "var(--color-ember)" }} />
+                  <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                    Para instalar o Momo como app, abra este site no seu celular e siga as instruções.
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--color-text-dim)" }}>
+                    No computador, você pode usar normalmente pelo navegador.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -396,7 +461,31 @@ export default function CadastroPage() {
             </button>
           )}
 
-          {step === 4 && (
+          {step === 4 && emailPendente && (
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/login')}
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-lg transition-all active:scale-95"
+                style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
+              >
+                <MailCheck className="h-5 w-5" />
+                Já confirmei, ir para login
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.resend({ type: 'signup', email: formData.email, options: { emailRedirectTo: `${window.location.origin}/login` } });
+                  toast.success('E-mail reenviado!');
+                }}
+                className="flex h-12 w-full items-center justify-center rounded-full text-sm font-bold transition-all active:scale-95"
+                style={{ background: "transparent", border: "1px solid var(--color-surface-border)", color: "var(--color-text-dim)" }}
+              >
+                Reenviar e-mail de confirmação
+              </button>
+            </div>
+          )}
+
+          {step === 4 && !emailPendente && (
             <button
               onClick={() => setStep(5)}
               className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-lg transition-all active:scale-95"

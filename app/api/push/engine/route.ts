@@ -6,17 +6,11 @@ import { format, parseISO, differenceInDays } from "date-fns";
 
 export const runtime = "nodejs";
 
-/**
- * GET /api/push/engine
- *
- * Motor de notificações automáticas.
- * Chamado pelo Vercel Cron (Authorization: Bearer <CRON_SECRET>) ou
- * manualmente com ?secret=<N8N_SECRET> para compatibilidade.
- *
- * Schedule em vercel.json: "0 */4 * * *"
- * Cobre todos os horários: dose, peso, estoque, trial, dieta, hidratação,
- * marcos de peso, streak, onboarding, primeiro mês, consulta médica, pós-entrega.
- */
+// GET /api/push/engine
+// Motor de notificações automáticas.
+// Chamado pelo Vercel Cron (Authorization: Bearer <CRON_SECRET>) ou
+// manualmente com ?secret=<N8N_SECRET> para compatibilidade.
+// Schedule em vercel.json: "0 */4 * * *"
 export async function GET(req: Request) {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
