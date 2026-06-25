@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Mail, Lock, Eye, EyeOff, MailCheck, ArrowRight } from 'lucide-react';
+import { SocialProofBox } from '@/components/SocialProofBox';
 
 const getFriendlyLoginError = (error: { code?: string; message?: string; status?: number }) => {
   const code = error.code?.toLowerCase() ?? "";
@@ -117,7 +118,12 @@ export default function LoginPage() {
           style={{ animation: "fadeUp 1s 0.15s cubic-bezier(0.32,0.72,0,1) both" }}
         >
           <div className="rounded-[calc(2.5rem-0.375rem)] bg-white px-6 py-8 shadow-[inset_0_1px_1px_rgba(255,255,255,1),0_8px_32px_rgba(0,0,0,0.04)] sm:px-8">
-            
+
+            {/* Social Proof Before Login */}
+            <div className="mb-8">
+              <SocialProofBox type="trust" />
+            </div>
+
             <form className="space-y-4" onSubmit={handleEmailLogin}>
               {error && (
                 <div className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-red-100">

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, ArrowRight, Check, User, Activity, Target, Star, Bell, TrendingUp, Utensils, Package, BookOpen, ShieldCheck, Smartphone, Share2, MoreVertical, Plus, Phone, Mail, MailCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { StripeCheckout } from '@/components/StripeCheckout';
+import { SocialProofBox } from '@/components/SocialProofBox';
 
 const DOSES = ['2.5', '5', '7.5', '10', '12.5', '15'];
 const DIAS_SEMANA = [
@@ -51,10 +51,17 @@ export default function CadastroPage() {
   const [error, setError] = useState<string | null>(null);
   const [emailPendente, setEmailPendente] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [refCode, setRefCode] = useState('');
   const creatingRef = React.useRef(false);
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) setRefCode(ref);
   }, []);
 
   const [formData, setFormData] = useState({
@@ -111,6 +118,15 @@ export default function CadastroPage() {
       setEmailPendente(true);
     }
 
+    // Processa referral se veio de convite
+    if (refCode) {
+      await fetch('/api/referral/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: refCode }),
+      }).catch(() => {}); // não bloqueia o fluxo se falhar
+    }
+
     return true;
   };
 
@@ -147,11 +163,11 @@ export default function CadastroPage() {
 
   const prevStep = () => {
     if (step === 1) { router.push('/login'); }
-    else if (step === 4 || step === 5) { /* can't go back after account created */ }
+    else if (step === 4) { /* can't go back after account created */ }
     else { setStep(step - 1); }
   };
 
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = 4;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text transition-colors duration-300">
@@ -210,6 +226,10 @@ export default function CadastroPage() {
           {step === 1 && (
             <div className="space-y-4 animate-fade-up">
               <StepHeader icon={<User className="h-5 w-5" />} title="Dados pessoais" subtitle="Comece sua jornada" />
+
+              {/* Social Proof in Step 1 */}
+              <SocialProofBox type="trust" className="mb-4" />
+
               <DarkInput label="Nome completo" name="nome" value={formData.nome} onChange={handleChange} placeholder="Como deseja ser chamado?" />
               <DarkInput label="E-mail" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" />
               <DarkInput label="Telefone (WhatsApp)" name="telefone" type="tel" value={formData.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
@@ -220,6 +240,10 @@ export default function CadastroPage() {
           {step === 2 && (
             <div className="space-y-6 animate-fade-up">
               <StepHeader icon={<Activity className="h-5 w-5" />} title="Seu tratamento" subtitle="Personalize seu acompanhamento" />
+
+              {/* Urgency Banner in Step 2 */}
+              <SocialProofBox type="urgency" />
+
               <DarkInput label="Início do tratamento" name="data_inicio_tratamento" type="date" value={formData.data_inicio_tratamento} onChange={handleChange} />
 
               <div>
@@ -254,6 +278,9 @@ export default function CadastroPage() {
             <div className="space-y-6 animate-fade-up">
               <StepHeader icon={<Target className="h-5 w-5" />} title="Metas e rotina" subtitle="Onde você quer chegar?" />
               <DarkInput label="Peso meta (opcional)" name="peso_meta" type="number" value={formData.peso_meta} onChange={handleChange} placeholder="Ex: 70.0" />
+
+              {/* Objection Crusher before final details */}
+              <SocialProofBox type="objection" />
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-text">Dia da aplicação</label>
@@ -301,6 +328,9 @@ export default function CadastroPage() {
                   Não encontrou? Verifique a pasta de spam.
                 </p>
               </div>
+
+              {/* Social Proof while waiting for confirmation */}
+              <SocialProofBox type="waiting" />
             </div>
           )}
 
@@ -374,62 +404,6 @@ export default function CadastroPage() {
             </div>
           )}
 
-          {step === 5 && (
-            <div className="space-y-5 animate-fade-up">
-              <StepHeader icon={<Star className="h-5 w-5" />} title="Seu plano" subtitle="Comece agora" />
-
-              <div
-                className="space-y-5 rounded-[24px] p-6"
-                style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
-              >
-                {/* Header do plano */}
-                <div
-                  className="relative overflow-hidden rounded-2xl p-5"
-                  style={{ background: "linear-gradient(135deg, #1a0800, #2d1200)", border: "1px solid rgba(255,101,0,0.2)" }}
-                >
-                  <div
-                    className="absolute right-0 top-0 h-32 w-32 rounded-full opacity-10"
-                    style={{ background: "#ff6500", filter: "blur(40px)", transform: "translate(20%, -20%)" }}
-                  />
-                  <div className="relative z-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,101,0,0.8)" }}>
-                      Momo Premium
-                    </p>
-                    <div className="mt-2 flex items-end gap-1">
-                      <span className="text-3xl font-black text-white">R$ 29,90</span>
-                      <span className="mb-1 text-sm font-medium text-white/50">/mês</span>
-                    </div>
-                    <p className="mt-1 text-sm font-bold" style={{ color: "rgba(255,101,0,0.9)" }}>
-                      Cancele quando quiser
-                    </p>
-                  </div>
-                </div>
-
-                {/* Benefícios */}
-                <div className="space-y-3">
-                  {BENEFICIOS.map((b, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                        style={{ background: "rgba(255,101,0,0.1)", color: "#ff6500" }}
-                      >
-                        {b.icon}
-                      </div>
-                      <span className="text-sm font-medium text-text">{b.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Badge segurança */}
-                <div className="flex items-center justify-center gap-2 text-[11px] font-medium text-text-dim">
-                  <ShieldCheck size={13} style={{ color: "#ff6500" }} />
-                  Pagamento seguro · Cancele quando quiser
-                </div>
-
-                <StripeCheckout />
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
@@ -487,7 +461,7 @@ export default function CadastroPage() {
 
           {step === 4 && !emailPendente && (
             <button
-              onClick={() => setStep(5)}
+              onClick={() => router.push('/')}
               className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-lg transition-all active:scale-95"
               style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
             >
@@ -496,19 +470,6 @@ export default function CadastroPage() {
             </button>
           )}
 
-          {step === 5 && (
-            <button
-              onClick={() => router.push('/')}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-sm font-bold transition-all active:scale-95"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--color-surface-border)",
-                color: "var(--color-text-dim)",
-              }}
-            >
-              Prefiro pular por agora
-            </button>
-          )}
         </div>
         <p className="mt-4 text-center text-sm text-text-dim">
           Já tem uma conta?{' '}
