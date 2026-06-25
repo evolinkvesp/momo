@@ -2,34 +2,6 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Rotas que NÃO exigem plano ativo (trial/premium).
-const ROTAS_LIVRES = [
-  '/',
-  '/login',
-  '/cadastro',
-  '/plano',
-  '/api/stripe/webhook',
-  '/esqueceu-senha',
-  '/redefinir-senha',
-];
-
-// Verifica se o profile tem acesso liberado (trial válido ou premium ativo).
-function verificarAcesso(p: {
-  plano_ativo: string | null;
-  trial_expira_em: string | null;
-  assinatura_expira_em: string | null;
-} | null): boolean {
-  if (!p) return false;
-  const agora = Date.now();
-  if (p.plano_ativo === 'premium') {
-    return !p.assinatura_expira_em || new Date(p.assinatura_expira_em).getTime() > agora;
-  }
-  if (p.plano_ativo === 'trial') {
-    return !!p.trial_expira_em && new Date(p.trial_expira_em).getTime() > agora;
-  }
-  return false;
-}
-
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
@@ -38,7 +10,8 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const isPublicRoute = ['/login', '/cadastro'].some(route => req.nextUrl.pathname.startsWith(route));
+  const isConviteLanding = /^\/convite\/.+/.test(req.nextUrl.pathname);
+  const isPublicRoute = ['/login', '/cadastro'].some(route => req.nextUrl.pathname.startsWith(route)) || isConviteLanding;
   const isFornecedorRoute = req.nextUrl.pathname.startsWith('/fornecedor');
   const isSupplier = session?.user?.user_metadata?.is_fornecedor === true;
 
@@ -68,20 +41,28 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/fornecedor', req.url));
   }
 
-  // Paywall: pacientes (não-fornecedores) precisam de plano ativo. Se o trial
-  // expirou e não há assinatura, redireciona para /plano — exceto nas rotas
-  // livres.
-  if (session && !isSupplier && !isFornecedorRoute) {
-    const onRotaLivre = ROTAS_LIVRES.some(r => req.nextUrl.pathname.startsWith(r));
-    if (!onRotaLivre) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plano_ativo, trial_expira_em, assinatura_expira_em')
-        .eq('id', session.user.id)
-        .single();
+  // Referral gate: non-suppliers after 7 days must have invited 3 friends
+  const isConviteRoute = req.nextUrl.pathname.startsWith('/convite');
+  if (session && !isSupplier && !isFornecedorRoute && !isPublicRoute && !isConviteRoute) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('created_at, acesso_vitalicio')
+      .eq('id', session.user.id)
+      .single();
 
-      if (!verificarAcesso(profile)) {
-        return NextResponse.redirect(new URL('/plano', req.url));
+    if (!profile?.acesso_vitalicio && profile?.created_at) {
+      const createdAt = new Date(profile.created_at);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      if (createdAt < sevenDaysAgo) {
+        const { count } = await supabase
+          .from('referral_invites')
+          .select('*', { count: 'exact', head: true })
+          .eq('referrer_id', session.user.id);
+
+        if ((count ?? 0) < 3) {
+          return NextResponse.redirect(new URL('/convite', req.url));
+        }
       }
     }
   }

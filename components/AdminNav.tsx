@@ -9,14 +9,15 @@ import {
   ShoppingBag,
   Bell,
   DollarSign,
+  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard",    href: "/admin",              icon: LayoutDashboard },
+  { label: "Crescimento",  href: "/admin/crescimento",  icon: TrendingUp },
   { label: "Fornecedores", href: "/admin/fornecedores", icon: Building2 },
   { label: "Usuários",     href: "/admin/usuarios",     icon: Users },
   { label: "Pedidos",      href: "/admin/pedidos",      icon: ShoppingBag },
-  { label: "Notificações", href: "/admin/notificacoes", icon: Bell },
   { label: "Financeiro",   href: "/admin/financeiro",   icon: DollarSign },
 ];
 

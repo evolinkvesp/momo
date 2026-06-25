@@ -16,16 +16,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (!profile) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   let update: Record<string, unknown> = {};
-  if (action === "dar_premium") {
-    const exp = new Date(); exp.setDate(exp.getDate() + (dias || 30));
-    update = { plano_ativo: "premium", assinatura_expira_em: exp.toISOString() };
-  } else if (action === "resetar_trial") {
-    const exp = new Date(); exp.setDate(exp.getDate() + 7);
-    update = { plano_ativo: "trial", trial_expira_em: exp.toISOString() };
-  } else if (action === "bloquear") {
-    update = { plano_ativo: "bloqueado" };
-  } else if (action === "desbloquear") {
-    update = { plano_ativo: "trial" };
+  if (action === "dar_vitalicio") {
+    update = { acesso_vitalicio: true };
+  } else if (action === "revogar_vitalicio") {
+    update = { acesso_vitalicio: false };
   } else {
     return NextResponse.json({ error: "invalid action" }, { status: 400 });
   }

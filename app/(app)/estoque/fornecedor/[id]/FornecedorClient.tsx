@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   MapPin,
   ShoppingBag,
+  BadgeCheck
 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Stars } from "@/components/Stars";
@@ -75,7 +76,10 @@ export function FornecedorClient({
             </div>
           )}
           <div className="min-w-0 flex-1 pt-1">
-            <h2 className="text-xl font-bold text-text leading-tight">{nome}</h2>
+            <h2 className="text-xl font-bold text-text leading-tight flex items-center gap-1.5">
+              {nome}
+              {fornecedor.verificado && <BadgeCheck size={20} className="text-blue-500 shrink-0" />}
+            </h2>
             <div className="mt-1.5">
               <Stars
                 rating={fornecedor.avaliacao_media ?? 0}

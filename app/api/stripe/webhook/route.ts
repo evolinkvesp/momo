@@ -19,63 +19,54 @@ export async function POST(req: NextRequest) {
   console.log('[stripe/webhook] event:', event.type)
 
   const supabase = createServiceClient()
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
 
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as any
-        const userId: string = session.metadata?.user_id ?? ''
-        if (!userId) {
-          console.error('[stripe/webhook] checkout.session.completed: no user_id in metadata')
+        const fornecedorId: string = session.metadata?.fornecedor_id ?? ''
+        if (!fornecedorId) {
+          console.error('[stripe/webhook] checkout.session.completed: no fornecedor_id in metadata')
           break
         }
 
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-        const isTrial = (subscription as any).status === 'trialing'
-        // Durante trial, trial_end é quando vence (e quando cobra); fora de trial usa current_period_end
-        const periodEnd = new Date(
-          ((subscription as any).trial_end ?? (subscription as any).current_period_end) * 1000
-        )
+        const periodEnd = new Date((subscription as any).current_period_end * 1000)
 
-        const planoTipo: string = session.metadata?.plano ?? 'mensal'
-
-        await supabase.from('assinaturas').upsert({
-          user_id: userId,
+        const { error: upsertError } = await supabase.from('fornecedor_assinaturas').upsert({
+          fornecedor_id: fornecedorId,
           stripe_session_id: session.id,
           stripe_subscription_id: session.subscription,
           stripe_customer_id: session.customer,
-          status: isTrial ? 'trial' : 'ativa',
+          status: 'ativa',
           current_period_end: periodEnd.toISOString(),
           cancel_at_period_end: false,
-          plano_tipo: planoTipo,
-        }, { onConflict: 'user_id' })
+        }, { onConflict: 'fornecedor_id' })
 
-        await supabase.from('profiles').update({
-          plano_ativo: 'premium',
-          assinatura_expira_em: periodEnd.toISOString(),
-        }).eq('id', userId)
+        if (upsertError) {
+          console.error('[stripe/webhook] checkout.session.completed: upsert error:', upsertError.message)
+        } else {
+          console.log('[stripe/webhook] checkout.session.completed: assinatura ativada para fornecedor', fornecedorId)
+        }
 
-        console.log('[stripe/webhook] checkout.session.completed: premium ativado para', userId)
-
+        // Notifica o fornecedor via push
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
-          await fetch(`${baseUrl}/api/push/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Internal-Key': process.env.N8N_SECRET ?? '' },
-            body: JSON.stringify({ userId, title: '💎 Assinatura Premium Ativada!', body: 'Parabéns! Seu acesso total ao Momo já está liberado.', url: '/' }),
-          })
-
-          const adminEmail = process.env.ADMIN_EMAIL
-          if (adminEmail) {
-            const { data: adminProfile } = await supabase.from('profiles').select('id').eq('email', adminEmail).maybeSingle()
-            if (adminProfile?.id) {
-              const { data: userProfile } = await supabase.from('profiles').select('nome').eq('id', userId).maybeSingle()
-              await fetch(`${baseUrl}/api/push/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Internal-Key': process.env.N8N_SECRET ?? '' },
-                body: JSON.stringify({ userId: adminProfile.id, title: '💎 Nova Assinatura!', body: `${userProfile?.nome || 'Um usuário'} acabou de assinar o plano premium!`, url: '/admin/financeiro' }),
-              })
-            }
+          const userId: string = session.metadata?.user_id ?? ''
+          if (userId) {
+            await fetch(`${baseUrl}/api/push/send`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Internal-Key': process.env.N8N_SECRET ?? '',
+              },
+              body: JSON.stringify({
+                userId,
+                title: 'Assinatura Ativada!',
+                body: 'Sua assinatura foi ativada. Seu perfil já está visível na plataforma.',
+                url: '/fornecedor/plano',
+              }),
+            })
           }
         } catch (e) {
           console.error('[stripe/webhook] push notification failed:', e)
@@ -91,17 +82,16 @@ export async function POST(req: NextRequest) {
         const subscription = await stripe.subscriptions.retrieve(subId)
         const periodEnd = new Date((subscription as any).current_period_end * 1000)
 
-        const { data: assinatura } = await supabase.from('assinaturas')
-          .update({ status: 'ativa', current_period_end: periodEnd.toISOString(), cancel_at_period_end: false })
+        const { error } = await supabase.from('fornecedor_assinaturas')
+          .update({
+            status: 'ativa',
+            current_period_end: periodEnd.toISOString(),
+            inadimplente_desde: null,
+          })
           .eq('stripe_subscription_id', subId)
-          .select('user_id')
-          .single()
 
-        if (assinatura) {
-          await supabase.from('profiles').update({
-            plano_ativo: 'premium',
-            assinatura_expira_em: periodEnd.toISOString(),
-          }).eq('id', assinatura.user_id)
+        if (error) {
+          console.error('[stripe/webhook] invoice.paid: update error:', error.message)
         }
         break
       }
@@ -111,79 +101,70 @@ export async function POST(req: NextRequest) {
         const subId: string = invoice.subscription ?? ''
         if (!subId) break
 
-        const { data: assinatura } = await supabase.from('assinaturas')
-          .update({ status: 'expirada' })
+        // Período de graça: Stripe vai retentar — apenas marca inadimplente, não suspende fornecedor
+        const { error } = await supabase.from('fornecedor_assinaturas')
+          .update({
+            status: 'inadimplente',
+            inadimplente_desde: new Date().toISOString(),
+          })
           .eq('stripe_subscription_id', subId)
-          .select('user_id')
-          .single()
 
-        if (assinatura) {
-          await supabase.from('profiles').update({
-            plano_ativo: 'expirado',
-            assinatura_expira_em: null,
-          }).eq('id', assinatura.user_id)
+        if (error) {
+          console.error('[stripe/webhook] invoice.payment_failed: update error:', error.message)
         }
         break
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as any
-        const { data: assinatura } = await supabase.from('assinaturas')
+
+        const { data: assinatura, error } = await supabase.from('fornecedor_assinaturas')
           .update({ status: 'cancelada' })
           .eq('stripe_subscription_id', subscription.id)
-          .select('user_id')
+          .select('fornecedor_id')
           .single()
 
-        if (assinatura) {
-          await supabase.from('profiles').update({
-            plano_ativo: 'expirado',
-            assinatura_expira_em: null,
-          }).eq('id', assinatura.user_id)
+        if (error) {
+          console.error('[stripe/webhook] customer.subscription.deleted: update error:', error.message)
+          break
         }
-        break
-      }
 
-      case 'customer.subscription.trial_will_end': {
-        // Dispara 3 dias antes do trial terminar → avisa o cliente
-        const sub = event.data.object as any
-        const { data: assinatura } = await supabase
-          .from('assinaturas')
-          .select('user_id')
-          .eq('stripe_subscription_id', sub.id)
-          .maybeSingle()
+        if (assinatura?.fornecedor_id) {
+          const { error: suspendError } = await supabase.from('fornecedores')
+            .update({ status: 'suspenso' })
+            .eq('id', assinatura.fornecedor_id)
 
-        if (assinatura?.user_id) {
-          const trialEnd = sub.trial_end
-            ? new Date(sub.trial_end * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
-            : 'em breve'
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.usemomo.online'
-          await fetch(`${baseUrl}/api/push/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Internal-Key': process.env.N8N_SECRET ?? '' },
-            body: JSON.stringify({
-              userId: assinatura.user_id,
-              title: '⏰ Seu período gratuito termina em 3 dias',
-              body: `No dia ${trialEnd} o cartão cadastrado será cobrado R$29,90. Tudo automático!`,
-              url: '/plano',
-            }),
-          }).catch(() => {})
+          if (suspendError) {
+            console.error('[stripe/webhook] customer.subscription.deleted: suspend error:', suspendError.message)
+          }
         }
         break
       }
 
       case 'customer.subscription.updated': {
-        // Captura transição trial → ativa quando o plano começa a ser cobrado
         const sub = event.data.object as any
-        const prevAttrs = (event.data as any).previous_attributes ?? {}
-        const wasTrialing = prevAttrs.status === 'trialing'
-        const isNowActive = sub.status === 'active'
+        const periodEnd = new Date((sub as any).current_period_end * 1000)
 
-        if (wasTrialing && isNowActive) {
-          const periodEnd = new Date((sub as any).current_period_end * 1000)
-          await supabase
-            .from('assinaturas')
-            .update({ status: 'ativa', current_period_end: periodEnd.toISOString() })
-            .eq('stripe_subscription_id', sub.id)
+        // Mapeia status do Stripe para status interno
+        const statusMap: Record<string, string> = {
+          active: 'ativa',
+          past_due: 'inadimplente',
+          canceled: 'cancelada',
+          unpaid: 'inadimplente',
+          paused: 'inadimplente',
+        }
+        const novoStatus = statusMap[sub.status] ?? 'ativa'
+
+        const { error } = await supabase.from('fornecedor_assinaturas')
+          .update({
+            status: novoStatus,
+            current_period_end: periodEnd.toISOString(),
+            cancel_at_period_end: sub.cancel_at_period_end ?? false,
+          })
+          .eq('stripe_subscription_id', sub.id)
+
+        if (error) {
+          console.error('[stripe/webhook] customer.subscription.updated: update error:', error.message)
         }
         break
       }
@@ -193,17 +174,25 @@ export async function POST(req: NextRequest) {
         const customerId: string = charge.customer ?? ''
         if (!customerId) break
 
-        const { data: assinatura } = await supabase.from('assinaturas')
-          .update({ status: 'expirada' })
+        const { data: assinatura, error } = await supabase.from('fornecedor_assinaturas')
+          .update({ status: 'cancelada' })
           .eq('stripe_customer_id', customerId)
-          .select('user_id')
+          .select('fornecedor_id')
           .single()
 
-        if (assinatura) {
-          await supabase.from('profiles').update({
-            plano_ativo: 'expirado',
-            assinatura_expira_em: null,
-          }).eq('id', assinatura.user_id)
+        if (error) {
+          console.error('[stripe/webhook] charge.refunded: update error:', error.message)
+          break
+        }
+
+        if (assinatura?.fornecedor_id) {
+          const { error: suspendError } = await supabase.from('fornecedores')
+            .update({ status: 'suspenso' })
+            .eq('id', assinatura.fornecedor_id)
+
+          if (suspendError) {
+            console.error('[stripe/webhook] charge.refunded: suspend error:', suspendError.message)
+          }
         }
         break
       }

@@ -10,7 +10,8 @@ import {
   Building2, 
   Bike, 
   Clock, 
-  Star 
+  Star,
+  BadgeCheck
 } from "lucide-react";
 import { Stars } from "@/components/Stars";
 import {
@@ -157,8 +158,9 @@ export function FornecedoresSectionClient({
                   <div className="p-4 space-y-3">
                     <div className="flex justify-between items-start gap-4">
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-[15px] font-bold text-text truncate leading-tight">
+                        <h4 className="text-[15px] font-bold text-text truncate leading-tight flex items-center gap-1">
                           {nomeFornecedor(f)}
+                          {f.verificado && <BadgeCheck size={14} className="text-blue-500 shrink-0" />}
                         </h4>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Star size={12} className="text-amber-400 fill-amber-400" />

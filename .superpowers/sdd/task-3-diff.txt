@@ -1,0 +1,180 @@
+diff --git a/.superpowers/sdd/task-3-report.md b/.superpowers/sdd/task-3-report.md
+new file mode 100644
+index 0000000..31d7c7d
+--- /dev/null
++++ b/.superpowers/sdd/task-3-report.md
+@@ -0,0 +1,27 @@
++# Task 3 Report — Alertas de Alto IG
++
++## Status: COMPLETE
++
++## Changes Made
++
++### 1. `lib/diet-plans.ts`
++Added `SUBSTITUICOES_IG` constant (exported) mapping 8 high-GI ingredients to healthier substitutes, placed before `analisarRefeicao`.
++
++### 2. `components/dieta/types.ts`
++- Added import for `ALIMENTOS_ALTO_IG` and `SUBSTITUICOES_IG` from `@/lib/diet-plans`
++- Added exported `detectarIngredientesIG(receita: ReceitaIA)` function that joins ingredient strings, filters against `ALIMENTOS_ALTO_IG`, and maps each match to its substitute from `SUBSTITUICOES_IG`.
++
++### 3. `components/dieta/ReceitasTab.tsx`
++- Imported `detectarIngredientesIG` from `./types`
++- Added `⚠️ Alto IG` chip (ember-colored pill) below the macro line in each recipe card, rendered only when `detectarIngredientesIG(r).length > 0`.
++
++### 4. `components/dieta/ReceitaDrawer.tsx`
++- Imported `detectarIngredientesIG` from `./types`
++- Computed `igIngredientes` at top of component body (after mounted guard)
++- Added amber warning banner above the ingredients section listing each flagged ingredient and its suggested substitute.
++
++## TypeScript
++`npx tsc --noEmit` — passed with zero errors.
++
++## One-line Summary
++Wired ALIMENTOS_ALTO_IG to flag high-GI recipe ingredients with an IG chip on cards and a substitution banner inside the drawer.
+diff --git a/components/dieta/ReceitaDrawer.tsx b/components/dieta/ReceitaDrawer.tsx
+index 11f187f..4cb5ec9 100644
+--- a/components/dieta/ReceitaDrawer.tsx
++++ b/components/dieta/ReceitaDrawer.tsx
+@@ -1,11 +1,11 @@
+ "use client";
+ 
+ import { useEffect, useState } from "react";
+ import { ChevronDown, Pill } from "lucide-react";
+ import { createPortal } from "react-dom";
+-import { type ReceitaIA } from "./types";
++import { type ReceitaIA, detectarIngredientesIG } from "./types";
+ 
+ interface ReceitaDrawerProps {
+   receita: ReceitaIA;
+   onClose: () => void;
+ }
+@@ -13,10 +13,12 @@ interface ReceitaDrawerProps {
+ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
+   const [mounted, setMounted] = useState(false);
+   useEffect(() => setMounted(true), []);
+   if (!mounted) return null;
+ 
++  const igIngredientes = detectarIngredientesIG(receita);
++
+   return createPortal(
+     <div
+       className="fixed inset-0 flex items-end sm:items-center justify-center p-4"
+       style={{ zIndex: "var(--z-modal)" }}
+     >
+@@ -50,10 +52,26 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
+                 <p className="text-[9px] font-bold text-muted uppercase">{s.l}</p>
+                 <p className="text-sm font-black text-text">{s.v}</p>
+               </div>
+             ))}
+           </div>
++          {igIngredientes.length > 0 && (
++            <div className="rounded-2xl p-4 space-y-2"
++              style={{ background: 'rgba(255,165,0,0.08)', border: '1px solid rgba(255,165,0,0.2)' }}>
++              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#b45309' }}>
++                ⚠️ Ingredientes de Alto Índice Glicêmico
++              </p>
++              <ul className="space-y-1">
++                {igIngredientes.map(({ ingrediente, substituto }) => (
++                  <li key={ingrediente} className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
++                    <span className="font-semibold">{ingrediente}</span>
++                    {substituto && <span> → {substituto}</span>}
++                  </li>
++                ))}
++              </ul>
++            </div>
++          )}
+           <div>
+             <h3 className="text-xs font-bold uppercase tracking-widest text-muted mb-3 ml-1">Ingredientes</h3>
+             <ul className="space-y-2">
+               {receita.ingredientes.map((ing, i) => (
+                 <li
+diff --git a/components/dieta/ReceitasTab.tsx b/components/dieta/ReceitasTab.tsx
+index 5e4cf0f..d73f3a2 100644
+--- a/components/dieta/ReceitasTab.tsx
++++ b/components/dieta/ReceitasTab.tsx
+@@ -5,11 +5,11 @@ import { Sparkles, ChevronRight } from "lucide-react";
+ import toast from "react-hot-toast";
+ import { Card } from "@/components/Card";
+ import { EmptyState } from "@/components/EmptyState";
+ import { LoadingSpinner } from "@/components/LoadingSpinner";
+ import { type FaseMounjaro } from "@/lib/diet-plans";
+-import { type ReceitaIA } from "./types";
++import { type ReceitaIA, detectarIngredientesIG } from "./types";
+ import { ReceitaDrawer } from "./ReceitaDrawer";
+ 
+ const RESTRICOES_OPTIONS = [
+   { id: "sem_gluten",   label: "Sem glúten"  },
+   { id: "sem_lactose",  label: "Sem lactose" },
+@@ -120,10 +120,16 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+                 <h4 className="text-sm font-bold text-text leading-tight">{r.nome}</h4>
+                 <div className="flex items-center gap-3 mt-1">
+                   <span className="text-[10px] font-bold text-muted uppercase">🔥 {r.calorias} kcal</span>
+                   <span className="text-[10px] font-bold text-muted uppercase">💪 {r.proteinas}g Prot</span>
+                 </div>
++                {detectarIngredientesIG(r).length > 0 && (
++                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold mt-1"
++                    style={{ background: 'rgba(255,101,0,0.1)', color: 'var(--color-ember)' }}>
++                    ⚠️ Alto IG
++                  </span>
++                )}
+               </div>
+               <ChevronRight size={18} className="text-dim" />
+             </Card>
+           ))
+         )}
+diff --git a/components/dieta/types.ts b/components/dieta/types.ts
+index a699e40..6a5d47a 100644
+--- a/components/dieta/types.ts
++++ b/components/dieta/types.ts
+@@ -1,5 +1,7 @@
++import { ALIMENTOS_ALTO_IG, SUBSTITUICOES_IG } from '@/lib/diet-plans';
++
+ export type TipoRefeicao = "cafe" | "almoco" | "jantar" | "lanche";
+ 
+ export interface Refeicao {
+   id: string;
+   nome: string;
+@@ -56,5 +58,17 @@ export function getFavoritos(): FavoritoRefeicao[] {
+ }
+ 
+ export function saveFavoritos(favs: FavoritoRefeicao[]) {
+   localStorage.setItem("momo-fav-refeicoes", JSON.stringify(favs.slice(0, 10)));
+ }
++
++export function detectarIngredientesIG(receita: ReceitaIA): { ingrediente: string; substituto?: string }[] {
++  const texto = (receita.ingredientes ?? []).join(' ').toLowerCase();
++  return ALIMENTOS_ALTO_IG
++    .filter(alimento => texto.includes(alimento.toLowerCase()))
++    .map(ingrediente => ({
++      ingrediente,
++      substituto: Object.entries(SUBSTITUICOES_IG).find(([k]) =>
++        ingrediente.toLowerCase().includes(k.toLowerCase())
++      )?.[1],
++    }));
++}
+diff --git a/lib/diet-plans.ts b/lib/diet-plans.ts
+index 83ee6f2..8fa6c01 100644
+--- a/lib/diet-plans.ts
++++ b/lib/diet-plans.ts
+@@ -279,10 +279,21 @@ export interface AnaliseRefeicao {
+   altaCaloria: boolean;
+   altoIG: boolean;
+   gatilhos: string[];
+ }
+ 
++export const SUBSTITUICOES_IG: Record<string, string> = {
++  'arroz branco':     'arroz integral',
++  'pão branco':       'pão integral ou wrap integral',
++  'batata':           'batata-doce',
++  'macarrão':         'macarrão integral ou de grão-de-bico',
++  'refrigerante':     'água com gás + limão',
++  'suco de fruta':    'fruta inteira',
++  'farinha de trigo': 'farinha de aveia ou amêndoa',
++  'açúcar':           'adoçante natural (stévia)',
++};
++
+ /** Flags a diary entry as high-calorie and/or high glycemic index. */
+ export function analisarRefeicao(
+   descricao: string,
+   calorias: number | null | undefined,
+ ): AnaliseRefeicao {

@@ -34,6 +34,7 @@ export default function MeusProdutosPage() {
     preco: "",
     preco_promocional: "",
     estoque_disponivel: "10",
+    descricao: "",
     ativo: true,
   });
 
@@ -76,6 +77,7 @@ export default function MeusProdutosPage() {
       preco: "",
       preco_promocional: "",
       estoque_disponivel: "10",
+      descricao: "",
       ativo: true,
     });
     setShowForm(true);
@@ -90,6 +92,7 @@ export default function MeusProdutosPage() {
       preco: String(prod.preco),
       preco_promocional: prod.preco_promocional ? String(prod.preco_promocional) : "",
       estoque_disponivel: String(prod.estoque_disponivel),
+      descricao: prod.descricao || "",
       ativo: prod.ativo,
     });
     setShowForm(true);
@@ -403,6 +406,15 @@ function ProductFormModal({ editing, form, setForm, saving, onClose, onSave }: a
               value={form.estoque_disponivel} 
               onChange={(e) => setForm({ ...form, estoque_disponivel: e.target.value })} 
               className="w-full h-14 rounded-2xl px-5 text-sm font-bold text-text bg-surface-mid border border-surface-border focus:outline-none focus:ring-2 focus:ring-ember/20 transition-all" 
+            />
+          </DarkField>
+
+          <DarkField label="Descrição (Opcional)">
+            <textarea 
+              value={form.descricao} 
+              onChange={(e) => setForm({ ...form, descricao: e.target.value })} 
+              className="w-full h-24 rounded-2xl px-5 py-4 text-sm font-bold text-text bg-surface-mid border border-surface-border focus:outline-none focus:ring-2 focus:ring-ember/20 transition-all resize-none" 
+              placeholder="Ex: Validade 10/2027, lote X..." 
             />
           </DarkField>
 

@@ -15,7 +15,7 @@ export default async function AdminUsuariosPage() {
   const [{ data: usuarios }, { data: ultimasDoses }, { data: fornecedores }] = await Promise.all([
     admin
       .from("profiles")
-      .select("id, nome, email, plano_ativo, trial_expira_em, assinatura_expira_em, created_at")
+      .select("id, nome, email, acesso_vitalicio, created_at")
       .order("created_at", { ascending: false }),
     admin
       .from("doses")

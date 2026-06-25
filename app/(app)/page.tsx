@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       .eq('user_id', session.user.id)
   ]);
 
-  const profile = profileResult.data;
+  let profile = profileResult.data;
   const doses = dosesResult.data;
   const weights = weightsResult.data;
   const ampolas = ampolasResult.data;

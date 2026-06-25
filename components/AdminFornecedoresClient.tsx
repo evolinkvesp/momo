@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, MapPin, Star, Package, Phone, Mail, ExternalLink, Check, X, AlertTriangle, RefreshCw } from "lucide-react";
+import { Building2, MapPin, Star, Package, Phone, Mail, ExternalLink, Check, X, AlertTriangle, RefreshCw, BadgeCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-type Produto = { id: string; tipo_produto: string; dose_mg: number; preco: number; preco_promocional: number | null; estoque_disponivel: number; ativo: boolean };
+type Produto = { id: string; tipo_produto: string; dose_mg: number; preco: number; preco_promocional: number | null; estoque_disponivel: number; descricao?: string | null; ativo: boolean };
+type Assinatura = { status: string; current_period_end: string; cancel_at_period_end: boolean };
 type Fornecedor = {
   id: string; nome_fantasia: string | null; razao_social: string; cnpj: string;
   email_contato: string; telefone: string | null; whatsapp: string | null;
   tipo: string; endereco_cidade: string | null; endereco_estado: string | null;
   raio_entrega_km: number | null; status: string; avaliacao_media: number | null;
   total_pedidos: number | null; created_at: string; fornecedor_produtos: Produto[];
+  fornecedor_assinaturas: Assinatura[]; verificado: boolean;
 };
 
 const TIPO_LABEL: Record<string, string> = { farmacia: "Farmácia", distribuidor: "Distribuidor", fabricante: "Fabricante" };
@@ -45,8 +47,12 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro");
-      setFornecedores((prev) => prev.map((f) => f.id === id ? { ...f, status: data.novoStatus } : f));
-      const msgs: Record<string, string> = { aprovar: "Fornecedor aprovado!", rejeitar: "Fornecedor reprovado", suspender: "Fornecedor suspenso", reativar: "Fornecedor reativado" };
+      if (action === "verificar" || action === "remover_verificacao") {
+        setFornecedores((prev) => prev.map((f) => f.id === id ? { ...f, verificado: action === "verificar" } : f));
+      } else {
+        setFornecedores((prev) => prev.map((f) => f.id === id ? { ...f, status: data.novoStatus } : f));
+      }
+      const msgs: Record<string, string> = { aprovar: "Fornecedor aprovado!", rejeitar: "Fornecedor reprovado", suspender: "Fornecedor suspenso", reativar: "Fornecedor reativado", verificar: "Selo adicionado!", remover_verificacao: "Selo removido" };
       toast.success(msgs[action] || "Ação realizada");
     } catch (e: any) {
       toast.error(e.message || "Erro ao executar ação");
@@ -98,13 +104,18 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
             const isLoading = loading?.startsWith(f.id);
             const statusBadge = f.status === "ativo" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : f.status === "pendente" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : f.status === "suspenso" ? "bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest" : "bg-surface-mid text-text-muted border border-surface-border px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest";
             const statusLabel = { ativo: "ATIVO", pendente: "PENDENTE", suspenso: "SUSPENSO", reprovado: "REPROVADO" }[f.status] || f.status.toUpperCase();
+            const assinaturas = f.fornecedor_assinaturas || [];
+            const assinaturaAtiva = assinaturas.find(a => a.status === 'active');
 
             return (
               <motion.div key={f.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ delay: i * 0.04 }} className="bg-surface border border-surface-border rounded-3xl p-5 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-[16px] font-bold text-text">{nome}</h3>
+                      <h3 className="text-[16px] font-bold text-text flex items-center gap-1.5">
+                        {nome}
+                        {f.verificado && <BadgeCheck size={16} className="text-blue-500" />}
+                      </h3>
                       <span className={statusBadge}>{statusLabel}</span>
                     </div>
                     <p className="text-[11px] text-text-muted mt-0.5">Cadastrado em {format(new Date(f.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}</p>
@@ -117,9 +128,12 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
                   {f.raio_entrega_km && <div className="flex items-center gap-1.5 text-text-muted"><MapPin size={12} />Raio {f.raio_entrega_km}km</div>}
                 </div>
 
-                <div className="flex items-center gap-4 text-[12px]">
+                <div className="flex items-center gap-4 text-[12px] flex-wrap">
                   <span className="flex items-center gap-1.5 text-text-muted"><Package size={12} />{produtosAtivos.length} produto{produtosAtivos.length !== 1 ? "s" : ""}</span>
                   {doses && <span className="text-text-muted">{doses}</span>}
+                  <span className={`ml-auto font-bold text-[10px] uppercase tracking-widest ${assinaturaAtiva ? (assinaturaAtiva.cancel_at_period_end ? 'text-amber-500' : 'text-emerald-500') : 'text-text-muted'}`}>
+                    {assinaturaAtiva ? (assinaturaAtiva.cancel_at_period_end ? 'Assinatura Cancelada' : 'Assinatura Ativa') : 'Sem Assinatura'}
+                  </span>
                 </div>
 
                 {(f.avaliacao_media || f.total_pedidos) && (
@@ -152,9 +166,12 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
                         <p className="text-text-muted text-[10px] font-bold uppercase mb-2">Produtos cadastrados</p>
                         <div className="space-y-1.5">
                           {f.fornecedor_produtos.slice(0, 4).map((p) => (
-                            <div key={p.id} className="flex items-center justify-between text-[12px]">
-                              <span className="text-text-muted">{TIPO_PRODUTO_LABEL[p.tipo_produto] || p.tipo_produto} · {p.dose_mg}mg</span>
-                              <span className="text-text font-semibold">{formatBRL(p.preco_promocional || p.preco)}</span>
+                            <div key={p.id} className="flex flex-col text-[12px] pb-1 border-b border-surface-border/50 last:border-0 last:pb-0">
+                              <div className="flex items-center justify-between">
+                                <span className="text-text-muted">{TIPO_PRODUTO_LABEL[p.tipo_produto] || p.tipo_produto} · {p.dose_mg}mg</span>
+                                <span className="text-text font-semibold">{formatBRL(p.preco_promocional || p.preco)}</span>
+                              </div>
+                              {p.descricao && <span className="text-text-muted/70 text-[10px] mt-0.5 line-clamp-1">{p.descricao}</span>}
                             </div>
                           ))}
                           {f.fornecedor_produtos.length > 4 && <p className="text-text-muted text-[11px]">+{f.fornecedor_produtos.length - 4} mais...</p>}
@@ -177,6 +194,15 @@ export function AdminFornecedoresClient({ fornecedores: initial }: { fornecedore
                     <button onClick={() => handleAction(f.id, "suspender")} disabled={!!isLoading} className="bg-red-500 hover:bg-red-600 text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 text-[12px] py-2">
                       <AlertTriangle size={13} />{isLoading ? "Suspendendo..." : "Suspender fornecedor"}
                     </button>
+                    {f.verificado ? (
+                      <button onClick={() => handleAction(f.id, "remover_verificacao")} disabled={!!isLoading} className="bg-surface-hover hover:bg-surface-border text-text rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 text-[12px] py-2">
+                        <X size={13} />{isLoading ? "Processando..." : "Remover verificação"}
+                      </button>
+                    ) : (
+                      <button onClick={() => handleAction(f.id, "verificar")} disabled={!!isLoading} className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-xl px-4 py-2 font-bold transition-all disabled:opacity-50 flex items-center gap-2 text-[12px] py-2 border border-blue-500/20">
+                        <BadgeCheck size={13} />{isLoading ? "Verificando..." : "Dar selo de verificado"}
+                      </button>
+                    )}
                   </div>
                 )}
 

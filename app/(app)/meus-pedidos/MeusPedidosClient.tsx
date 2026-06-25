@@ -11,7 +11,8 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  BadgeCheck
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
@@ -40,6 +41,7 @@ interface PedidoComInfo {
     razao_social: string;
     nome_fantasia: string | null;
     logo_url: string | null;
+    verificado?: boolean;
   } | null;
   produto: {
     tipo_produto: string;
@@ -157,7 +159,10 @@ function PedidoCard({ pedido, index }: { pedido: PedidoComInfo, index: number })
               </div>
             )}
             <div>
-              <h3 className="text-sm font-bold text-text leading-tight">{fornecedorNome}</h3>
+              <h3 className="text-sm font-bold text-text leading-tight flex items-center gap-1">
+                {fornecedorNome}
+                {pedido.fornecedor?.verificado && <BadgeCheck size={14} className="text-blue-500 shrink-0" />}
+              </h3>
               <p className="text-[11px] font-bold text-dim mt-0.5">
                 {format(parseISO(pedido.created_at), "d 'de' MMMM", { locale: ptBR })}
               </p>

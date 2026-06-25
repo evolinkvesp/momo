@@ -1,0 +1,224 @@
+diff --git a/components/dieta/ReceitaDrawer.tsx b/components/dieta/ReceitaDrawer.tsx
+index 4cb5ec9..1ebbed9 100644
+--- a/components/dieta/ReceitaDrawer.tsx
++++ b/components/dieta/ReceitaDrawer.tsx
+@@ -1,23 +1,26 @@
+ "use client";
+ 
+ import { useEffect, useState } from "react";
+-import { ChevronDown, Pill } from "lucide-react";
++import { ChevronDown, Pill, Heart } from "lucide-react";
+ import { createPortal } from "react-dom";
+ import { type ReceitaIA, detectarIngredientesIG } from "./types";
+ 
+ interface ReceitaDrawerProps {
+   receita: ReceitaIA;
+   onClose: () => void;
++  favIds: Set<string>;
++  onToggleFavorito: (r: ReceitaIA) => void;
+ }
+ 
+-export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
++export function ReceitaDrawer({ receita, onClose, favIds, onToggleFavorito }: ReceitaDrawerProps) {
+   const [mounted, setMounted] = useState(false);
+   useEffect(() => setMounted(true), []);
+   if (!mounted) return null;
+ 
+   const igIngredientes = detectarIngredientesIG(receita);
++  const isFav = favIds.has(receita.id);
+ 
+   return createPortal(
+     <div
+       className="fixed inset-0 flex items-end sm:items-center justify-center p-4"
+       style={{ zIndex: "var(--z-modal)" }}
+@@ -33,10 +36,17 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
+       >
+         <div className="relative p-6 bg-surface-mid text-center">
+           <button onClick={onClose} className="absolute right-6 top-6 p-2 text-dim">
+             <ChevronDown size={24} />
+           </button>
++          <button
++            onClick={() => onToggleFavorito(receita)}
++            className="absolute left-6 top-6 p-2 text-ember transition-transform active:scale-90"
++            aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
++          >
++            <Heart className="h-5 w-5" fill={isFav ? "currentColor" : "none"} />
++          </button>
+           <div className="h-20 w-20 rounded-3xl bg-ember/10 flex items-center justify-center text-4xl mx-auto mb-4">
+             {receita.emoji}
+           </div>
+           <h2 className="text-xl font-black text-text">{receita.nome}</h2>
+         </div>
+diff --git a/components/dieta/ReceitasTab.tsx b/components/dieta/ReceitasTab.tsx
+index d73f3a2..e7394a8 100644
+--- a/components/dieta/ReceitasTab.tsx
++++ b/components/dieta/ReceitasTab.tsx
+@@ -1,16 +1,17 @@
+ "use client";
+ 
+ import { useEffect, useState } from "react";
+-import { Sparkles, ChevronRight } from "lucide-react";
++import { Sparkles, ChevronRight, Heart } from "lucide-react";
+ import toast from "react-hot-toast";
+ import { Card } from "@/components/Card";
+ import { EmptyState } from "@/components/EmptyState";
+ import { LoadingSpinner } from "@/components/LoadingSpinner";
+ import { type FaseMounjaro } from "@/lib/diet-plans";
+ import { type ReceitaIA, detectarIngredientesIG } from "./types";
+ import { ReceitaDrawer } from "./ReceitaDrawer";
++import { supabase } from "@/lib/supabase";
+ 
+ const RESTRICOES_OPTIONS = [
+   { id: "sem_gluten",   label: "Sem glúten"  },
+   { id: "sem_lactose",  label: "Sem lactose" },
+   { id: "vegetariano",  label: "Vegetariano" },
+@@ -26,10 +27,13 @@ interface ReceitasTabProps {
+ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+   const [receitas, setReceitas] = useState<ReceitaIA[]>([]);
+   const [loading, setLoading] = useState(false);
+   const [selecionada, setSelecionada] = useState<ReceitaIA | null>(null);
+   const [restricoes, setRestricoes] = useState<string[]>([]);
++  const [favIds, setFavIds] = useState<Set<string>>(new Set());
++  const [filtrando, setFiltrando] = useState(false);
++  const [receitasFavoritas, setReceitasFavoritas] = useState<ReceitaIA[]>([]);
+ 
+   async function carregarReceitas(forcar = false) {
+     setLoading(true);
+     try {
+       const res = await fetch("/api/receitas/gerar", {
+@@ -45,18 +49,54 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+     } finally {
+       setLoading(false);
+     }
+   }
+ 
++  async function carregarFavoritos(uid: string) {
++    const { data } = await supabase
++      .from('receitas_favoritas')
++      .select('receita_id, receita_data')
++      .eq('user_id', uid);
++    if (data) {
++      setFavIds(new Set(data.map((f: { receita_id: string }) => f.receita_id)));
++      setReceitasFavoritas(data.map((f: { receita_data: ReceitaIA }) => f.receita_data as ReceitaIA));
++    }
++  }
++
++  async function toggleFavorito(receita: ReceitaIA) {
++    if (!userId) return;
++    if (favIds.has(receita.id)) {
++      await supabase.from('receitas_favoritas')
++        .delete().eq('user_id', userId).eq('receita_id', receita.id);
++      setFavIds(prev => { const s = new Set(prev); s.delete(receita.id); return s; });
++      setReceitasFavoritas(prev => prev.filter(r => r.id !== receita.id));
++    } else {
++      await supabase.from('receitas_favoritas').insert({
++        user_id: userId,
++        fase: fase,
++        receita_id: receita.id,
++        receita_data: receita,
++      });
++      setFavIds(prev => new Set(Array.from(prev).concat(receita.id)));
++      setReceitasFavoritas(prev => [...prev, receita]);
++    }
++  }
++
+   useEffect(() => { carregarReceitas(); }, []);
+ 
++  useEffect(() => {
++    if (userId) carregarFavoritos(userId);
++  }, [userId]);
++
+   function toggleRestricao(id: string) {
+     setRestricoes((prev) =>
+       prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+     );
+   }
+ 
++  const receitasExibidas = filtrando ? receitasFavoritas : receitas;
++
+   return (
+     <div className="space-y-5">
+       <div className="flex items-center justify-between">
+         <div>
+           <h3 className="text-lg font-black text-text">Receitas IA</h3>
+@@ -69,12 +109,25 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+         >
+           {loading ? <LoadingSpinner size="sm" /> : <><Sparkles size={14} /> Atualizar</>}
+         </button>
+       </div>
+ 
+-      {/* Dietary restrictions */}
++      {/* Dietary restrictions + favorites filter */}
+       <div className="flex flex-wrap gap-2 items-center">
++        {/* Favorites pill */}
++        <button
++          onClick={() => setFiltrando(prev => !prev)}
++          className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all flex items-center gap-1 ${
++            filtrando
++              ? "bg-ember/10 border-ember/30 text-ember"
++              : "border-surface-border text-muted"
++          }`}
++        >
++          <Heart size={11} fill={filtrando ? "currentColor" : "none"} />
++          Favoritas
++        </button>
++
+         {RESTRICOES_OPTIONS.map((opt) => {
+           const active = restricoes.includes(opt.id);
+           return (
+             <button
+               key={opt.id}
+@@ -98,18 +151,18 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+           </button>
+         )}
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-4">
+-        {receitas.length === 0 && !loading ? (
++        {receitasExibidas.length === 0 && !loading ? (
+           <EmptyState
+             icon={<Sparkles />}
+-            title="Nenhuma receita"
+-            description="Gere sugestões personalizadas para seu tratamento."
++            title={filtrando ? "Nenhuma receita favorita" : "Nenhuma receita"}
++            description={filtrando ? "Marque receitas com ❤️ para salvá-las aqui." : "Gere sugestões personalizadas para seu tratamento."}
+           />
+         ) : (
+-          receitas.map((r) => (
++          receitasExibidas.map((r) => (
+             <Card
+               key={r.id}
+               onClick={() => setSelecionada(r)}
+               className="p-4 flex items-center gap-4 cursor-pointer hover:bg-surface-hover transition-all"
+             >
+@@ -127,17 +180,29 @@ export function ReceitasTab({ userId, fase, doseMg }: ReceitasTabProps) {
+                     style={{ background: 'rgba(255,101,0,0.1)', color: 'var(--color-ember)' }}>
+                     ⚠️ Alto IG
+                   </span>
+                 )}
+               </div>
++              <button
++                onClick={(e) => { e.stopPropagation(); toggleFavorito(r); }}
++                className="p-2 text-ember transition-transform active:scale-90"
++                aria-label={favIds.has(r.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
++              >
++                <Heart size={18} fill={favIds.has(r.id) ? "currentColor" : "none"} />
++              </button>
+               <ChevronRight size={18} className="text-dim" />
+             </Card>
+           ))
+         )}
+       </div>
+ 
+       {selecionada && (
+-        <ReceitaDrawer receita={selecionada} onClose={() => setSelecionada(null)} />
++        <ReceitaDrawer
++          receita={selecionada}
++          onClose={() => setSelecionada(null)}
++          favIds={favIds}
++          onToggleFavorito={toggleFavorito}
++        />
+       )}
+     </div>
+   );
+ }

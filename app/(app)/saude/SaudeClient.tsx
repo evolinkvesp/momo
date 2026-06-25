@@ -588,9 +588,9 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
 
       {/* Drawer Redesigned */}
       {showMedicaoForm && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center">
-          <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowMedicaoForm(false)} />
-          <div className="relative z-[101] w-full max-w-md rounded-t-[28px] shadow-xl animate-slide-up h-[92vh] flex flex-col overflow-hidden" style={{ background: "var(--color-surface-mid)" }}>
+        <div className="fixed inset-0 z-[1000] flex items-end justify-center">
+          <div className="absolute inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowMedicaoForm(false)} />
+          <div className="relative z-[1001] w-full max-w-md rounded-t-[28px] shadow-xl animate-slide-up h-[92vh] flex flex-col overflow-hidden" style={{ background: "var(--color-surface-mid)" }}>
             <div className="flex-shrink-0 pt-3 pb-2">
               <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--color-surface-border)" }} />
               <div className="px-6 flex justify-between items-center">
@@ -780,9 +780,9 @@ export function SaudeClient({ userId, profile, initialMedicoes, initialSintomas 
 
       {/* Sintoma Form */}
       {showSintomaForm && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center">
-          <div className="absolute inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowSintomaForm(false)} />
-          <div className="relative z-[101] w-full max-w-md bg-surface rounded-t-[32px] pt-6 px-6 pb-24 shadow-xl animate-slide-up">
+        <div className="fixed inset-0 z-[1000] flex items-end justify-center">
+          <div className="absolute inset-0 z-[1000] bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowSintomaForm(false)} />
+          <div className="relative z-[1001] w-full max-w-md bg-surface rounded-t-[32px] pt-6 px-6 pb-24 shadow-xl animate-slide-up">
             <div className="w-12 h-1.5 rounded-full mx-auto mb-6" style={{ background: "var(--color-surface-border)" }} />
             <h2 className="text-xl font-bold mb-6">Registrar Sintoma</h2>
             <form onSubmit={handleSintomaSubmit} className="space-y-4">

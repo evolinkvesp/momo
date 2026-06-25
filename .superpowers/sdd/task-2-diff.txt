@@ -1,0 +1,48 @@
+diff --git a/components/dieta/ReceitaDrawer.tsx b/components/dieta/ReceitaDrawer.tsx
+index ba418b6..11f187f 100644
+--- a/components/dieta/ReceitaDrawer.tsx
++++ b/components/dieta/ReceitaDrawer.tsx
+@@ -1,9 +1,9 @@
+ "use client";
+ 
+ import { useEffect, useState } from "react";
+-import { ChevronDown } from "lucide-react";
++import { ChevronDown, Pill } from "lucide-react";
+ import { createPortal } from "react-dom";
+ import { type ReceitaIA } from "./types";
+ 
+ interface ReceitaDrawerProps {
+   receita: ReceitaIA;
+@@ -77,10 +77,32 @@ export function ReceitaDrawer({ receita, onClose }: ReceitaDrawerProps) {
+                   <p className="text-sm text-text leading-relaxed">{step}</p>
+                 </div>
+               ))}
+             </div>
+           </div>
++          {receita.dica_mounjaro && (
++            <div
++              className="rounded-2xl p-4 border"
++              style={{
++                background: "var(--color-ember-glow)",
++                borderColor: "var(--color-ember-glow-strong)",
++              }}
++            >
++              <div className="flex items-center gap-2 mb-2">
++                <Pill size={14} style={{ color: "var(--color-ember)" }} />
++                <p
++                  className="text-[10px] font-bold uppercase tracking-widest"
++                  style={{ color: "var(--color-ember)" }}
++                >
++                  Dica Mounjaro
++                </p>
++              </div>
++              <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
++                {receita.dica_mounjaro}
++              </p>
++            </div>
++          )}
+         </div>
+       </div>
+     </div>,
+     document.body
+   );

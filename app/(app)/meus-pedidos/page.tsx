@@ -16,7 +16,7 @@ export default async function MeusPedidosPage() {
     .from("pedidos")
     .select(`
       *,
-      fornecedor:fornecedores(razao_social, nome_fantasia, logo_url),
+      fornecedor:fornecedores(razao_social, nome_fantasia, logo_url, verificado),
       produto:fornecedor_produtos(tipo_produto, dose_mg, unidades_por_caixa)
     `)
     .eq("paciente_id", session.user.id)

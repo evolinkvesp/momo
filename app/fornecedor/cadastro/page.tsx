@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Store, ShieldCheck, X, Plus } from "lucide-react";
+import { Store, ShieldCheck, X, Plus, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,9 +89,19 @@ export default function FornecedorCadastroPage() {
       return;
     }
 
-    toast.success("Cadastro enviado! Aguarde a aprovação.");
-    router.push("/fornecedor/aguardando");
-    router.refresh();
+    // Redireciona para checkout do Stripe
+    try {
+      const res = await fetch("/api/fornecedor/stripe/create-checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      toast.error(data.error || "Erro ao iniciar pagamento.");
+    } catch {
+      toast.error("Erro ao conectar com o serviço de pagamento.");
+    }
+    setLoading(false);
   };
 
   return (
@@ -226,6 +236,14 @@ export default function FornecedorCadastroPage() {
             <ShieldCheck className="w-5 h-5 text-ember shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed text-muted">
               Para garantir a segurança dos pacientes, novos fornecedores passam por uma análise documental manual antes de aparecerem na busca.
+            </p>
+          </div>
+
+          {/* Payment Banner */}
+          <div className="p-4 rounded-2xl flex gap-3 bg-ember/5 border border-ember/15">
+            <CreditCard className="w-5 h-5 text-ember shrink-0 mt-0.5" />
+            <p className="text-xs leading-relaxed text-muted">
+              Após enviar o cadastro, você será redirecionado para o pagamento da assinatura (R$99/mês).
             </p>
           </div>
 

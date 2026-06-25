@@ -1,11 +1,83 @@
 {
   "version": 1,
   "skills": {
+    "ad-angle-multiplier": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/operator-os/ad-angle-multiplier/SKILL.md",
+      "computedHash": "189aff0678deb97de60a192c7808150ef26addf64df72aaebb2323d72b539645"
+    },
+    "avatar-extraction": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/foundations/avatar-extraction/SKILL.md",
+      "computedHash": "8018bbc2d09fa064a2c2f0bef917cf7b0af5c0c893622caf22aaf7c76e99f877"
+    },
+    "conversion-path-builder": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/operator-os/conversion-path-builder/SKILL.md",
+      "computedHash": "1ab659273a6deceed31ad17e4a10b2a193fc88a6f1fea59abbddb57e4aa2bc89"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "full-funnel-campaign-orchestrator": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/orchestrators/full-funnel-campaign-orchestrator/SKILL.md",
+      "computedHash": "4a64e1c4a678750408849fb718d1f116df58533aefc81f9a5a7572d78986af68"
+    },
+    "generic-language-killer": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/qa/generic-language-killer/SKILL.md",
+      "computedHash": "44042069b5bb2d38bb41226d75e1da262b7446040dd4cd8ab9bb1b335380bdb2"
+    },
+    "headline-matrix": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/copy-chief/headline-matrix/SKILL.md",
+      "computedHash": "a484d2637293a18a75f6f7c3b0b63ae6ed74019a6aa1021e9ac56064fef47cc8"
+    },
+    "mechanism-builder": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/copy-chief/mechanism-builder/SKILL.md",
+      "computedHash": "41d4d2505c47ea3036c9d4d17e7f7c06b729c2e7031560268976cb4b3e85b004"
+    },
+    "objection-crusher": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/copy-chief/objection-crusher/SKILL.md",
+      "computedHash": "39fa6100f52449bec659ebe2ad1058b98aa1b0b3be39f0e90f4b1aa037793544"
+    },
+    "offer-extraction": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/foundations/offer-extraction/SKILL.md",
+      "computedHash": "b450c37f742ad778faab0c9679c3e11de15a75bea0f05e9a52895aacc44323d9"
+    },
+    "performance-diagnosis": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/operator-os/performance-diagnosis/SKILL.md",
+      "computedHash": "2aaf3ffd147878fb1507199da1063856632a1080bea6e750d5d6945cc9975a83"
+    },
+    "schwartz-awareness-mapper": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/copy-chief/schwartz-awareness-mapper/SKILL.md",
+      "computedHash": "2247da83bb8810d3d2b4ea5d62071209aff2ef0431ccc4aa5cb0dd0536423f7c"
+    },
+    "scroll-stopping-creative": {
+      "source": "realkimbarrett/advertising-skills",
+      "sourceType": "github",
+      "skillPath": "skills/operator-os/scroll-stopping-creative/SKILL.md",
+      "computedHash": "dccb1806ce33a439a733a6d7c61384aaf231f29dd52bd67756a44a191ea38ceb"
     },
     "supabase": {
       "source": "supabase/agent-skills",

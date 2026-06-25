@@ -27,13 +27,20 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const statusMap: Record<string, string> = { aprovar: "ativo", rejeitar: "reprovado", suspender: "suspenso", reativar: "ativo" };
   const novoStatus = statusMap[action];
-  if (!novoStatus) return NextResponse.json({ error: "invalid action" }, { status: 400 });
+  
+  if (!novoStatus && !["verificar", "remover_verificacao"].includes(action)) {
+    return NextResponse.json({ error: "invalid action" }, { status: 400 });
+  }
 
   const admin = createServiceClient();
   const { data: fornecedor, error } = await admin.from("fornecedores").select("id, user_id, nome_fantasia, razao_social").eq("id", params.id).single();
   if (error || !fornecedor) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  await admin.from("fornecedores").update({ status: novoStatus }).eq("id", params.id);
+  if (novoStatus) {
+    await admin.from("fornecedores").update({ status: novoStatus }).eq("id", params.id);
+  } else if (action === "verificar" || action === "remover_verificacao") {
+    await admin.from("fornecedores").update({ verificado: action === "verificar" }).eq("id", params.id);
+  }
 
   await admin.from("admin_logs").insert({
     admin_email: user.email, acao: action, entidade: "fornecedor", entidade_id: params.id,
@@ -45,6 +52,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     rejeitar:  { title: "❌ Cadastro reprovado", body: motivo || "Seu cadastro foi reprovado. Entre em contato com o suporte." },
     suspender: { title: "⚠️ Conta suspensa",     body: motivo || "Sua conta foi suspensa. Entre em contato com o suporte." },
     reativar:  { title: "✅ Conta reativada!",    body: "Sua conta no Momo foi reativada. Boas vendas!" },
+    verificar: { title: "⭐ Selo de Verificado!", body: "Sua farmácia agora possui o selo de verificado no Momo!" },
   };
 
   if (fornecedor.user_id && pushMessages[action]) {

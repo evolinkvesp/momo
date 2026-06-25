@@ -26,26 +26,18 @@ import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import { NotificationBell } from "./NotificationBell";
 
-const data = [
-  { name: "Seg", value: 400 },
-  { name: "Ter", value: 300 },
-  { name: "Qua", value: 600 },
-  { name: "Qui", value: 800 },
-  { name: "Sex", value: 500 },
-  { name: "Sáb", value: 900 },
-  { name: "Dom", value: 700 },
-];
-
 export function SupplierDashboardClient({
   userId,
   fornecedor,
   stats,
   recentes,
+  chartData,
 }: {
   userId: string;
   fornecedor: any;
   stats: any;
   recentes: any[];
+  chartData: { name: string; value: number }[];
 }) {
   const [pedidos, setPedidos] = useState(recentes);
 
@@ -111,11 +103,13 @@ export function SupplierDashboardClient({
         </div>
         
         <div className="flex items-center justify-between mt-4">
-          <p className="text-[12px] font-medium text-muted">Junho de 2026</p>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-ember" style={{ background: "var(--color-ember-glow)", border: "1px solid var(--f-ember-bd)" }}>
-            <TrendingUp size={12} />
-            +24% vs. mês anterior
-          </div>
+          <p className="text-[12px] font-medium text-muted capitalize">{stats.mesAtual}</p>
+          {stats.crescimento !== null && (
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${stats.crescimento >= 0 ? "text-ember" : "text-red-400"}`} style={{ background: "var(--color-ember-glow)", border: "1px solid var(--f-ember-bd)" }}>
+              <TrendingUp size={12} />
+              {stats.crescimento >= 0 ? "+" : ""}{stats.crescimento}% vs. mês anterior
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -125,7 +119,7 @@ export function SupplierDashboardClient({
           { label: "Pedidos novos", value: stats.novos, icon: ShoppingBag, color: "text-ember", bg: "bg-ember/10" },
           { label: "Total pedidos", value: stats.total, icon: ClipboardList, color: "text-blue-500", bg: "bg-blue-500/10" },
           { label: "Produtos ativos", value: stats.produtos, icon: Package, color: "text-warning", bg: "bg-warning/10" },
-          { label: "Avaliação", value: "4.9", icon: Star, color: "text-warning", bg: "bg-warning/10" },
+          { label: "Avaliação", value: fornecedor.avaliacao_media ? Number(fornecedor.avaliacao_media).toFixed(1) : "—", icon: Star, color: "text-warning", bg: "bg-warning/10" },
         ].map((item, i) => (
           <motion.div 
             key={item.label}
@@ -140,7 +134,6 @@ export function SupplierDashboardClient({
             <p className="text-[10px] font-bold text-muted uppercase tracking-[0.5px]">{item.label}</p>
             <div className="flex items-baseline justify-between mt-0.5">
               <p className="text-[22px] font-bold text-text tracking-[-0.5px]">{item.value}</p>
-              <span className="text-[10px] font-bold text-ember flex items-center">+5%</span>
             </div>
           </motion.div>
         ))}
@@ -171,7 +164,7 @@ export function SupplierDashboardClient({
 
         <div className="h-[120px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-ember)" stopOpacity={0.25}/>
