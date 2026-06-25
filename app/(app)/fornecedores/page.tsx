@@ -1,7 +1,6 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { FornecedoresSectionClient } from "@/app/(app)/estoque/FornecedoresSectionClient";
-import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -57,8 +56,7 @@ export default async function FornecedoresPage() {
   }
 
   return (
-    <div className="space-y-6 pb-32">
-      <PageHeader title="Fornecedores" />
+    <div className="pb-32 -mt-6">
       <FornecedoresSectionClient
         fornecedores={suppliersList}
         cidade={cidade}
