@@ -51,7 +51,7 @@ export default async function AdminDashboardPage() {
     { data: rawReceitas },
     { data: rawPushSubs },
   ] = await Promise.all([
-    admin.from("profiles").select("id, created_at, nome, email"),
+    admin.from("profiles").select("id, created_at, nome, email, acesso_vitalicio"),
     admin.from("referral_invites").select("referrer_id, invited_id, criado_em"),
     admin.from("medicoes_saude").select("user_id, data_medicao"),
     admin.from("doses").select("user_id, data_aplicacao"),
