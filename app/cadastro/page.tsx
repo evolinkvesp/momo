@@ -160,11 +160,11 @@ export default function CadastroPage() {
 
   const prevStep = () => {
     if (step === 1) { router.push('/login'); }
-    else if (step === 4) { /* can't go back after account created */ }
+    else if (step === 4 || step === 5) { /* can't go back after account created */ }
     else { setStep(step - 1); }
   };
 
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = emailPendente ? 5 : 4;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text transition-colors duration-300">
@@ -302,33 +302,7 @@ export default function CadastroPage() {
             </div>
           )}
 
-          {step === 4 && emailPendente && (
-            <div className="space-y-5 animate-fade-up">
-              <StepHeader icon={<Mail className="h-5 w-5" />} title="Confirme seu e-mail" subtitle="Um link foi enviado para você" />
-              <div
-                className="rounded-[24px] p-6 space-y-4 text-center"
-                style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
-              >
-                <div
-                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
-                  style={{ background: "var(--color-ember-glow)", color: "var(--color-ember)" }}
-                >
-                  <MailCheck className="h-8 w-8" />
-                </div>
-                <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
-                  Enviamos um link de confirmação para{' '}
-                  <span className="font-bold" style={{ color: "var(--color-text)" }}>{formData.email}</span>.
-                  Clique no link para ativar sua conta e continuar.
-                </p>
-                <p className="text-xs" style={{ color: "var(--color-text-dim)" }}>
-                  Não encontrou? Verifique a pasta de spam.
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {step === 4 && !emailPendente && (
+          {step === 4 && (
             <div className="space-y-5 animate-fade-up">
               <StepHeader icon={<Smartphone className="h-5 w-5" />} title="Instale o app" subtitle="Adicione o Momo à tela inicial" />
 
@@ -398,6 +372,32 @@ export default function CadastroPage() {
             </div>
           )}
 
+          {step === 5 && emailPendente && (
+            <div className="space-y-5 animate-fade-up">
+              <StepHeader icon={<Mail className="h-5 w-5" />} title="Confirme seu e-mail" subtitle="Um link foi enviado para você" />
+              <div
+                className="rounded-[24px] p-6 space-y-4 text-center"
+                style={{ background: "var(--color-surface)", border: "1px solid var(--color-surface-border)" }}
+              >
+                <div
+                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: "var(--color-ember-glow)", color: "var(--color-ember)" }}
+                >
+                  <MailCheck className="h-8 w-8" />
+                </div>
+                <p className="text-sm font-medium leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+                  Enviamos um link de confirmação para{' '}
+                  <span className="font-bold" style={{ color: "var(--color-text)" }}>{formData.email}</span>.
+                  Clique no link para ativar sua conta e continuar.
+                </p>
+                <p className="text-xs" style={{ color: "var(--color-text-dim)" }}>
+                  Não encontrou? Verifique a pasta de spam.
+                </p>
+              </div>
+
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -433,7 +433,24 @@ export default function CadastroPage() {
             </button>
           )}
 
-          {step === 4 && emailPendente && (
+          {step === 4 && (
+            <button
+              onClick={() => {
+                if (emailPendente) {
+                  setStep(5);
+                } else {
+                  router.push('/');
+                }
+              }}
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-lg transition-all active:scale-95"
+              style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
+            >
+              Já adicionei, continuar
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          )}
+
+          {step === 5 && emailPendente && (
             <div className="space-y-3">
               <button
                 onClick={() => router.push('/login')}
@@ -455,17 +472,6 @@ export default function CadastroPage() {
                 Reenviar e-mail de confirmação
               </button>
             </div>
-          )}
-
-          {step === 4 && !emailPendente && (
-            <button
-              onClick={() => router.push('/')}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-lg transition-all active:scale-95"
-              style={{ background: "linear-gradient(135deg, var(--color-ember), var(--color-ember-dim))", boxShadow: "var(--shadow-ember)" }}
-            >
-              Já adicionei, continuar
-              <ArrowRight className="h-5 w-5" />
-            </button>
           )}
 
         </div>
