@@ -15,13 +15,12 @@ import {
 const navItems = [
   { label: "Dashboard",    href: "/admin",              icon: LayoutDashboard },
   { label: "Crescimento",  href: "/admin/crescimento",  icon: TrendingUp },
-  { label: "Fornecedores", href: "/admin/fornecedores", icon: Building2 },
   { label: "Usuários",     href: "/admin/usuarios",     icon: Users },
   { label: "Pedidos",      href: "/admin/pedidos",      icon: ShoppingBag },
   { label: "Financeiro",   href: "/admin/financeiro",   icon: DollarSign },
 ];
 
-export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
+export function AdminNav() {
   const pathname = usePathname();
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
@@ -50,7 +49,6 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
           {navItems.map((navItem) => {
             const active = isActive(navItem.href);
             const Icon = navItem.icon;
-            const isFornecedores = navItem.href === "/admin/fornecedores";
             return (
               <Link
                 key={navItem.href}
@@ -63,11 +61,6 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
               >
                 <Icon size={18} strokeWidth={active ? 2.5 : 2} className={active ? "text-[#ff6500]" : "text-text-dim group-hover:text-text-muted"} />
                 {navItem.label}
-                {isFornecedores && pendingCount > 0 && (
-                  <span className="ml-auto text-[10px] font-black px-2 py-0.5 rounded-full min-w-[20px] text-center leading-none bg-[#ff6500] text-white">
-                    {pendingCount > 99 ? "99+" : pendingCount}
-                  </span>
-                )}
               </Link>
             );
           })}
@@ -95,7 +88,6 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
           {navItems.map((navItem) => {
             const active = isActive(navItem.href);
             const Icon = navItem.icon;
-            const isFornecedores = navItem.href === "/admin/fornecedores";
             return (
               <Link
                 key={navItem.href}
@@ -108,11 +100,6 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
                 <span className="text-[9px] font-bold uppercase tracking-wider">
                   {navItem.label.split(" ")[0]}
                 </span>
-                {isFornecedores && pendingCount > 0 && (
-                  <span className="absolute top-0 right-2 h-4 w-4 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none bg-[#ff6500] shadow-sm">
-                    {pendingCount > 9 ? "9+" : pendingCount}
-                  </span>
-                )}
               </Link>
             );
           })}

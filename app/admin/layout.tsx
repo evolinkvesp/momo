@@ -23,15 +23,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/login");
   }
 
-  const admin = createServiceClient();
-  const { count: pendingCount } = await admin
-    .from("fornecedores")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pendente");
-
   return (
     <div data-portal="admin" className="min-h-screen bg-bg text-text transition-colors duration-300">
-      <AdminNav pendingCount={pendingCount || 0} />
+      <AdminNav />
       <main className="md:pl-60 min-h-screen">
         <div className="w-full px-6 pt-8 pb-32 md:pb-10">
           {children}
