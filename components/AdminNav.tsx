@@ -4,13 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Building2,
   Users,
   ShoppingBag,
-  Bell,
   DollarSign,
   TrendingUp,
 } from "lucide-react";
+import { InteractiveMenu } from "./InteractiveMenu";
 
 const navItems = [
   { label: "Dashboard",    href: "/admin",              icon: LayoutDashboard },
@@ -83,28 +82,9 @@ export function AdminNav() {
       </aside>
 
       {/* ── Mobile Bottom Nav ────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-t border-surface-border">
-        <div className="flex items-center overflow-x-auto pt-3 pb-safe px-4 gap-6 no-scrollbar relative">
-          {navItems.map((navItem) => {
-            const active = isActive(navItem.href);
-            const Icon = navItem.icon;
-            return (
-              <Link
-                key={navItem.href}
-                href={navItem.href}
-                className={`flex flex-col items-center gap-1.5 py-1 relative transition-colors whitespace-nowrap min-w-[64px] ${
-                  active ? "text-[#ff6500]" : "text-text-muted"
-                }`}
-              >
-                <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-                <span className="text-[9px] font-bold uppercase tracking-wider">
-                  {navItem.label.split(" ")[0]}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-surface/80 backdrop-blur-xl border-t border-surface-border pb-safe">
+        <InteractiveMenu items={navItems} accentColor="#ff6500" />
+      </div>
     </>
   );
 }
