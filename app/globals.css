@@ -184,3 +184,13 @@ input, select, textarea {
 .text-text { color: var(--color-text); }
 .text-muted { color: var(--color-text-muted); }
 .text-dim { color: var(--color-text-dim); }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}

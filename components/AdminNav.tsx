@@ -90,31 +90,33 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
       </aside>
 
       {/* ── Mobile Bottom Nav ────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center pt-3 pb-safe px-2 bg-surface/80 backdrop-blur-xl border-t border-surface-border">
-        {navItems.slice(0, 5).map((navItem) => {
-          const active = isActive(navItem.href);
-          const Icon = navItem.icon;
-          const isFornecedores = navItem.href === "/admin/fornecedores";
-          return (
-            <Link
-              key={navItem.href}
-              href={navItem.href}
-              className={`flex flex-col items-center gap-1.5 px-2 py-1 relative transition-colors ${
-                active ? "text-[#ff6500]" : "text-text-muted"
-              }`}
-            >
-              <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-              <span className="text-[9px] font-bold uppercase tracking-wider">
-                {navItem.label.split(" ")[0]}
-              </span>
-              {isFornecedores && pendingCount > 0 && (
-                <span className="absolute top-0 right-1 h-4 w-4 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none bg-[#ff6500] shadow-sm">
-                  {pendingCount > 9 ? "9+" : pendingCount}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-t border-surface-border">
+        <div className="flex items-center overflow-x-auto pt-3 pb-safe px-4 gap-6 no-scrollbar relative">
+          {navItems.map((navItem) => {
+            const active = isActive(navItem.href);
+            const Icon = navItem.icon;
+            const isFornecedores = navItem.href === "/admin/fornecedores";
+            return (
+              <Link
+                key={navItem.href}
+                href={navItem.href}
+                className={`flex flex-col items-center gap-1.5 py-1 relative transition-colors whitespace-nowrap min-w-[64px] ${
+                  active ? "text-[#ff6500]" : "text-text-muted"
+                }`}
+              >
+                <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+                <span className="text-[9px] font-bold uppercase tracking-wider">
+                  {navItem.label.split(" ")[0]}
                 </span>
-              )}
-            </Link>
-          );
-        })}
+                {isFornecedores && pendingCount > 0 && (
+                  <span className="absolute top-0 right-2 h-4 w-4 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none bg-[#ff6500] shadow-sm">
+                    {pendingCount > 9 ? "9+" : pendingCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </>
   );

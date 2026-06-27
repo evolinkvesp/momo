@@ -17,6 +17,7 @@ export interface Fornecedor {
   total_pedidos: number | null;
   endereco_cidade?: string | null;
   endereco_estado?: string | null;
+  verificado: boolean;
 }
 
 export interface FornecedorProduto {
