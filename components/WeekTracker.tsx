@@ -16,7 +16,7 @@ export function WeekTracker({ doseDates, nextDoseDate }: WeekTrackerProps) {
   const isDark = theme === "dark";
 
   const today = new Date();
-  const start = startOfWeek(today, { weekStartsOn: 0 });
+  const start = startOfWeek(today, { weekStartsOn: 1 });
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(start, i);
