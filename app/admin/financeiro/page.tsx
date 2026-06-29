@@ -18,7 +18,7 @@ export default async function AdminFinanceiroPage() {
     { data: assinaturasAtivas },
     { data: todasAssinaturas },
   ] = await Promise.all([
-    admin.from("profiles").select("id", { count: "exact", head: true }).eq("plano_ativo", "premium"),
+    admin.from("profiles").select("id", { count: "exact", head: true }).eq("acesso_vitalicio", true),
     admin
       .from("assinaturas")
       .select("user_id, status, current_period_end, criado_em, profiles!user_id(nome, email)")

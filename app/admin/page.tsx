@@ -55,7 +55,7 @@ export default async function AdminDashboardPage() {
     admin.from("referral_invites").select("referrer_id, invited_id, criado_em"),
     admin.from("medicoes_saude").select("user_id, data_medicao"),
     admin.from("doses").select("user_id, data_aplicacao"),
-    admin.from("receitas_geradas").select("id, created_at"),
+    admin.from("receitas_geradas").select("user_id, gerado_em"),
     admin.from("push_subscriptions").select("user_id").eq("active", true),
   ]);
 
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
   const loginsToday = authUsers.filter(u => u.last_sign_in_at && parseISO(u.last_sign_in_at) >= today).length;
   const dosesToday = new Set(doses.filter(d => parseISO(d.data_aplicacao) >= today).map(d => d.user_id)).size;
   const medicaesToday = new Set(medicoes.filter(m => parseISO(m.data_medicao) >= today).map(m => m.user_id)).size;
-  const receitasToday = receitas.filter(r => parseISO(r.created_at) >= today).length;
+  const receitasToday = receitas.filter(r => parseISO(r.gerado_em) >= today).length;
   const invitesToday = invites.filter(i => parseISO(i.criado_em) >= today).length;
 
   // ── Deep Metrics ──

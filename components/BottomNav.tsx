@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Store,
   Salad,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -38,6 +39,7 @@ export function BottomNav() {
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [role, setRole] = useState<'paciente' | 'fornecedor'>('paciente');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [pendingOrders, setPendingOrders] = useState(0);
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -46,6 +48,10 @@ export function BottomNav() {
     async function checkRole() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+
+      if (session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        setIsAdmin(true);
+      }
 
       const { data: fornecedor } = await supabase
         .from('fornecedores')
@@ -92,6 +98,9 @@ export function BottomNav() {
     { label: "Configurações", href: "/configuracoes", icon: Settings },
     ...(role === 'paciente' ? [
       { label: "Estoque", href: "/estoque", icon: PackageOpen },
+    ] : []),
+    ...(isAdmin ? [
+      { label: "Admin", href: "/admin", icon: ShieldCheck },
     ] : []),
   ];
 
